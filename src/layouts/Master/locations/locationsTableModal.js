@@ -31,53 +31,12 @@ const style = {
   flexDirection: "column",
 };
 
-export function SelectRole({
-  availableItems,
-  handleChange,
-  selectedItem,
-  fieldName,
-  helperText,
-  labelKey,
-}) {
-  return (
-    <div>
-      <FormControl sx={{ m: 0, minWidth: 80 }}>
-        <InputLabel id="demo-simple-select-autowidth-label">{fieldName}</InputLabel>
-        <Select
-          labelId="demo-simple-select-autowidth-label"
-          id="demo-simple-select-autowidth"
-          value={selectedItem}
-          onChange={handleChange}
-          autoWidth
-          sx={{ height: "2.75rem", width: "330px" }}
-        >
-          {availableItems.map((Loacations) => (
-            <MenuItem key={Loacations._id} value={Loacations._id}>
-              {Loacations[labelKey]}
-            </MenuItem>
-          ))}
-        </Select>
-        <FormHelperText>{helperText}</FormHelperText>
-      </FormControl>
-    </div>
-  );
-}
-
-export default function LocationsTableModal({ warehouseId = null, setIsRefetch = () => {} }) {
+export default function LocationsTableModal({ locationId = null, setIsRefetch = () => {} }) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const [selectedLocation, setSelectedLocation] = useState("");
-  const [availableLoacations, setAvailableLoacations] = useState([]);
-
-  const [selectedWarehouse, setSelectedWarehouse] = useState("");
-  const [availableWarehouses, setAvailableWarehouses] = useState([]);
   const [formData, setFormData] = useState({
-    seller_name: "",
-    seller_location: "",
-    phone: "",
-    warehouse: "",
-    aadhar_number: "",
+    location_name: "",
   });
 
   useEffect(() => {
@@ -85,23 +44,11 @@ export default function LocationsTableModal({ warehouseId = null, setIsRefetch =
       try {
         const locationResponse = await axios.get(`${environment.api_path}/${GET_LOCATION_API}`);
         const locationData = locationResponse.data.data;
-        setAvailableLoacations(locationData);
 
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
-        const warehouseData = warehouseResponse.data.data;
-        setAvailableWarehouses(warehouseData);
-
-        const sellersResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
-        const sellerData = sellersResponse.data.data;
-
-        const seller = sellerData.find((seller) => seller._id === warehouseId);
+        const location = locationData.find((location) => location._id === locationId);
 
         setFormData({
-          seller_name: seller ? seller.seller_name : "",
-          seller_location: seller ? seller.seller_location : "",
-          phone: seller ? seller.phone : 0,
-          warehouse: seller ? seller.warehouse : "",
-          aadhar_number: seller ? seller.aadhar_number : "",
+          location_name: location ? location.location_name : "",
         });
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -109,38 +56,22 @@ export default function LocationsTableModal({ warehouseId = null, setIsRefetch =
     };
 
     fetchData();
-  }, [warehouseId]);
-
-  const handleChangeLoacations = (event) => {
-    setSelectedLocation(event.target.value);
-  };
-
-  const handleChangeWarehouse = (event) => {
-    setSelectedWarehouse(event.target.value);
-  };
+  }, [locationId]);
 
   const handleSubmit = async () => {
     try {
       let formData;
-      if (warehouseId) {
+      if (locationId) {
         formData = {
-          seller_name: document.getElementById("seller_name")?.value || "",
-          aadhar_number: document.getElementById("aadhar_number")?.value || "",
-          phone: document.getElementById("phone")?.value || "",
-          warehouse: selectedWarehouse,
-          seller_location: selectedLocation,
+          location_name: document.getElementById("location_name")?.value || "",
         };
-        await axios.put(`${environment.api_path}/${GET_SELLER_API}/${warehouseId}`, formData);
+        await axios.put(`${environment.api_path}/location/${locationId}`, formData);
       } else {
         formData = {
-          seller_name: document.getElementById("seller_name")?.value || "",
-          aadhar_number: document.getElementById("aadhar_number")?.value || "",
-          phone: document.getElementById("phone")?.value || "",
-          warehouse: selectedWarehouse,
-          seller_location: selectedLocation,
+          location_name: document.getElementById("location_name")?.value || "",
         };
 
-        await axios.post(`${environment.api_path}/${GET_SELLER_API}`, formData);
+        await axios.post(`${environment.api_path}/location`, formData);
         window.location.reload();
       }
       setIsRefetch(true);
@@ -156,7 +87,7 @@ export default function LocationsTableModal({ warehouseId = null, setIsRefetch =
 
   return (
     <div>
-      {warehouseId ? (
+      {locationId ? (
         <EditIcon onClick={handleOpen} />
       ) : (
         <Button variant="text" style={{ color: "white" }} onClick={handleOpen}>
@@ -172,52 +103,12 @@ export default function LocationsTableModal({ warehouseId = null, setIsRefetch =
         <Box sx={style}>
           <FormControl>
             <TextField
-              id="seller_name"
-              label="Seller Name"
+              id="location_name"
+              label="Location Name"
               variant="outlined"
-              helperText="Enter Seller Name"
-              value={formData.seller_name}
+              helperText="Enter Location"
+              value={formData.location_name}
               onChange={handleInputChange}
-            />
-          </FormControl>
-          <FormControl>
-            <TextField
-              id="phone"
-              label="Contact Number "
-              variant="outlined"
-              helperText="Enter Contact Number "
-              value={formData.phone}
-              onChange={handleInputChange}
-            />
-          </FormControl>
-          <FormControl>
-            <TextField
-              id="aadhar_number"
-              label="Aadhaar Number "
-              variant="outlined"
-              helperText="Enter Aadhaar Number "
-              value={formData.aadhar_number}
-              onChange={handleInputChange}
-            />
-          </FormControl>
-          <FormControl>
-            <SelectRole
-              availableItems={availableLoacations}
-              handleChange={handleChangeLoacations}
-              selectedItem={selectedLocation}
-              fieldName={"Location"}
-              helperText={"Select Location"}
-              labelKey={"location_name"}
-            />
-          </FormControl>
-          <FormControl>
-            <SelectRole
-              availableItems={availableWarehouses}
-              handleChange={handleChangeWarehouse}
-              selectedItem={selectedWarehouse}
-              fieldName={"Warehouse"}
-              helperText={"Select Warehouse"}
-              labelKey={"warehouse_name"}
             />
           </FormControl>
           <FormControl>

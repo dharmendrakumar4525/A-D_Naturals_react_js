@@ -11,7 +11,7 @@ import { GET_USERS_API, GET_ROLES_API, GET_SELLER_API } from "environments/apiPa
 import { environment } from "environments/environment";
 
 function MasterTables() {
-  const [userCount, setUserLength] = useState([]);
+  const [locationCount, setLocationCount] = useState([]);
   const [sellerCount, setSellerCount] = useState([]);
   const [vendorCount, setVendorCount] = useState([]);
   const [warehouseCount, setWarehouseCount] = useState([]);
@@ -19,17 +19,17 @@ function MasterTables() {
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const usersResponse = await axios.get(`${environment.api_path}/${GET_USERS_API}`);
+        const locationResponse = await axios.get(`${environment.api_path}/location`);
         const sellerResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
         const vendorResponse = await axios.get(`${environment.api_path}/vendor`);
         const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
 
-        const usersData = usersResponse.data.length;
+        const locationData = locationResponse.data.data.length;
         const sellerData = sellerResponse.data.data.length;
         const vendorData = vendorResponse.data.data.length;
         const warehouseData = warehouseResponse.data.data.length;
 
-        setUserLength(usersData);
+        setLocationCount(locationData);
         setSellerCount(sellerData);
         setVendorCount(vendorData);
         setWarehouseCount(warehouseData);
@@ -53,7 +53,7 @@ function MasterTables() {
                   color="success"
                   icon="store"
                   title="Locations"
-                  count={warehouseCount}
+                  count={locationCount}
                   percentage={{
                     color: "success",
                     label: "Locations Table",

@@ -116,17 +116,17 @@ export default function UserTableModal({ userId = null, setIsRefetch = () => {} 
           password: document.getElementById("password")?.value || "",
         };
         const response = await axios.put(`http://localhost:3000/api/web/users/${userId}`, formData);
-        console.log("responceccccccccccc", response);
       } else {
         formData = {
           name: document.getElementById("name")?.value || "",
           email: document.getElementById("email")?.value || "",
           phone: document.getElementById("phone")?.value || "",
           role: selectedRole,
-          password: document.getElementById("outlined-adornment-password")?.value || "",
+          password: document.getElementById("password")?.value || "",
         };
         console.log("Form Data", formData);
         const response = await axios.post("http://localhost:3000/api/web/users/register", formData);
+        console.log("response", response);
         window.location.reload();
       }
       setIsRefetch(true);

@@ -111,10 +111,6 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
     fetchData();
   }, [sellerId]);
 
-  const handleChangeLoacations = (event) => {
-    setSelectedLocation(event.target.value);
-  };
-
   const handleChangeWarehouse = (event) => {
     setSelectedWarehouse(event.target.value);
   };
@@ -128,7 +124,7 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
           aadhar_number: document.getElementById("aadhar_number")?.value || "",
           phone: document.getElementById("phone")?.value || "",
           warehouse: selectedWarehouse,
-          seller_location: selectedLocation,
+          seller_location: document.getElementById("seller_location")?.value || "",
         };
         await axios.put(`${environment.api_path}/${GET_SELLER_API}/${sellerId}`, formData);
       } else {
@@ -137,7 +133,7 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
           aadhar_number: document.getElementById("aadhar_number")?.value || "",
           phone: document.getElementById("phone")?.value || "",
           warehouse: selectedWarehouse,
-          seller_location: selectedLocation,
+          seller_location: document.getElementById("seller_location")?.value || "",
         };
 
         await axios.post(`${environment.api_path}/${GET_SELLER_API}`, formData);
@@ -182,6 +178,16 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
           </FormControl>
           <FormControl>
             <TextField
+              id="seller_location"
+              label="Seller Location"
+              variant="outlined"
+              helperText="Enter Seller Location"
+              value={formData.seller_location}
+              onChange={handleInputChange}
+            />
+          </FormControl>
+          <FormControl>
+            <TextField
               id="phone"
               label="Contact Number "
               variant="outlined"
@@ -200,7 +206,7 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
               onChange={handleInputChange}
             />
           </FormControl>
-          <FormControl>
+          {/* <FormControl>
             <SelectRole
               availableItems={availableLoacations}
               handleChange={handleChangeLoacations}
@@ -209,7 +215,7 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
               helperText={"Select Location"}
               labelKey={"location_name"}
             />
-          </FormControl>
+          </FormControl> */}
           <FormControl>
             <SelectRole
               availableItems={availableWarehouses}

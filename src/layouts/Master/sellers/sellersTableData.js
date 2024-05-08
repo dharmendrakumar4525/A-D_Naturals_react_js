@@ -27,25 +27,25 @@ export default function data() {
         const locationData = locationResponse.data.data;
 
         const mappedData = sellerData.map((seller) => {
-          const sellerLocation = locationData.find((location) => {
-            return location._id === seller.seller_location;
-          });
+          // const sellerLocation = locationData.find((location) => {
+          //   return location._id === seller.seller_location;
+          // });
 
           const warehouse = warehouseData.find((warehouse) => {
             return warehouse._id === seller.warehouse;
           });
 
-          let seller_location;
-          if (sellerLocation && sellerLocation.location_name) {
-            seller_location = sellerLocation.location_name;
-          } else {
-            seller_location = "Not Known";
-          }
+          // let seller_location;
+          // if (sellerLocation && sellerLocation.location_name) {
+          //   seller_location = sellerLocation.location_name;
+          // } else {
+          //   seller_location = "Not Known";
+          // }
 
           return {
             ...seller,
             warehouse_name: warehouse ? warehouse.warehouse_name : "Not Known",
-            seller_location: seller_location,
+            // seller_location: seller_location,
           };
         });
 

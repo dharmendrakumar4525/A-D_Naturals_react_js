@@ -12,7 +12,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { FormControl, FormHelperText } from "@mui/material";
 import Select from "@mui/material/Select";
 import { environment } from "environments/environment";
-import { GET_SELLER_API, GET_WAREHOUSE_API, GET_LOCATION_API } from "environments/apiPaths";
+import { GET_WAREHOUSE_API, GET_LOCATION_API } from "environments/apiPaths";
 
 import EditIcon from "@mui/icons-material/Edit";
 
@@ -31,25 +31,65 @@ const style = {
   flexDirection: "column",
 };
 
-export default function WarehouseTableModal({ warehouseId = null, setIsRefetch = () => {} }) {
+export function SelectRole({
+  availableItems,
+  handleChange,
+  selectedItem,
+  fieldName,
+  helperText,
+  labelKey,
+}) {
+  return (
+    <div>
+      <FormControl sx={{ m: 0, minWidth: 80 }}>
+        <InputLabel id="demo-simple-select-autowidth-label">{fieldName}</InputLabel>
+        <Select
+          labelId="demo-simple-select-autowidth-label"
+          id="demo-simple-select-autowidth"
+          value={selectedItem}
+          onChange={handleChange}
+          autoWidth
+          sx={{ height: "2.75rem", width: "330px" }}
+        >
+          {availableItems.map((Loacations) => (
+            <MenuItem key={Loacations._id} value={Loacations._id}>
+              {Loacations[labelKey]}
+            </MenuItem>
+          ))}
+        </Select>
+        <FormHelperText>{helperText}</FormHelperText>
+      </FormControl>
+    </div>
+  );
+}
+
+export default function SellerTableModal({ warehouseId = null, setIsRefetch = () => {} }) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [availableLoacations, setAvailableLoacations] = useState([]);
   const [formData, setFormData] = useState({
-    warehouse_name: "",
+    warehouse: "",
+    location: "",
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const locationResponse = await axios.get(`${environment.api_path}/${GET_LOCATION_API}`);
+        const locationData = locationResponse.data.data;
+        setAvailableLoacations(locationData);
+
         const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
+        // setAvailableWarehouses(warehouseData);
 
         const warehouse = warehouseData.find((warehouse) => warehouse._id === warehouseId);
 
         setFormData({
           warehouse_name: warehouse ? warehouse.warehouse_name : "",
+          location: warehouse ? warehouse.location_name : "",
         });
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -59,20 +99,27 @@ export default function WarehouseTableModal({ warehouseId = null, setIsRefetch =
     fetchData();
   }, [warehouseId]);
 
+  const handleChangeLoacations = (event) => {
+    setSelectedLocation(event.target.value);
+  };
+
   const handleSubmit = async () => {
     try {
       let formData;
       if (warehouseId) {
         formData = {
           warehouse_name: document.getElementById("warehouse_name")?.value || "",
+          location: selectedLocation,
         };
-        await axios.put(`${environment.api_path}/${GET_WAREHOUSE_API}/${warehouseId}`, formData);
+        await axios.put(`${environment.api_path}/warehouse/${warehouseId}`, formData);
       } else {
         formData = {
           warehouse_name: document.getElementById("warehouse_name")?.value || "",
+          location: selectedLocation,
         };
 
-        await axios.post(`${environment.api_path}/${GET_WAREHOUSE_API}`, formData);
+        await axios.post(`${environment.api_path}/warehouse`, formData);
+
         window.location.reload();
       }
       setIsRefetch(true);
@@ -110,6 +157,17 @@ export default function WarehouseTableModal({ warehouseId = null, setIsRefetch =
               helperText="Enter Warehouse Name"
               value={formData.warehouse_name}
               onChange={handleInputChange}
+            />
+          </FormControl>
+
+          <FormControl>
+            <SelectRole
+              availableItems={availableLoacations}
+              handleChange={handleChangeLoacations}
+              selectedItem={selectedLocation}
+              fieldName={"Location"}
+              helperText={"Select Location"}
+              labelKey={"location_name"}
             />
           </FormControl>
           <FormControl>

@@ -91,7 +91,7 @@ const routes = [
   },
 
   {
-    type: "collapse",
+    type: "noCollapse",
     name: "Location",
     key: "location",
     icon: <Icon fontSize="small">receipt_long</Icon>,

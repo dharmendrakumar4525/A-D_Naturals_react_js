@@ -20,10 +20,9 @@ export default function data() {
       try {
         const locationResponse = await axios.get(`${environment.api_path}/location`);
         const locationData = locationResponse.data.data;
-        // console.log("locationData", locationData);
 
-        const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
-        const warehouseData = warehouseResponse.data.data;
+        // const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
+        // const warehouseData = warehouseResponse.data.data;
         // console.log("warehouseData", warehouseData);
 
         // const mappedData = locationData.map((location) => {
@@ -67,31 +66,13 @@ export default function data() {
     </MDBox>
   );
 
-  const Job = ({ warehouses }) => (
-    <MDBox lineHeight={1} textAlign="left">
-      {warehouses.map((value, index) => (
-        <MDTypography
-          key={index}
-          display="block"
-          variant="caption"
-          color="text"
-          fontWeight="medium"
-        >
-          {value}
-        </MDTypography>
-      ))}
-    </MDBox>
-  );
-
   return {
     columns: [
       { Header: "Name", accessor: "name", width: "45%", align: "left" },
-      { Header: "Warehouses", accessor: "warehouses", align: "left" },
       { Header: "Action", accessor: "action", align: "center" },
     ],
-    rows: rowData.map((warehouse) => ({
-      name: <Author name={warehouse.location_name} />,
-      warehouses: <Job warehouses={warehouse.warehouse} />,
+    rows: rowData.map((location) => ({
+      name: <Author name={location.location_name} />,
       action: (
         <>
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -101,13 +82,13 @@ export default function data() {
               variant="caption"
               color="text"
               fontWeight="medium"
-              onClick={() => handleDelete(warehouse._id)}
+              onClick={() => handleDelete(location._id)}
               style={{ marginRight: "8px" }}
             >
               <DeleteIcon />
             </MDTypography>
             <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-              <LocationsTableModal warehouseId={warehouse._id} setIsRefetch={setIsRefetch} />
+              <LocationsTableModal locationId={location._id} setIsRefetch={setIsRefetch} />
             </MDTypography>
           </div>
         </>
