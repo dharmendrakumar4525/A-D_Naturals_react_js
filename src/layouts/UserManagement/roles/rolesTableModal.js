@@ -7,7 +7,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
-import { FormControl } from "@mui/material";
+import { FormControl, FormHelperText } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 
 const style = {
@@ -28,6 +28,7 @@ const style = {
 export default function RolesTableModal({ userId = null, setIsRefetch = () => {} }) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({ role: "" });
+  const [roleError, setRoleError] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,6 +45,10 @@ export default function RolesTableModal({ userId = null, setIsRefetch = () => {}
 
   const handleSubmit = async () => {
     try {
+      if (!formData.role.trim()) {
+        setRoleError("Role is required");
+        return; // Don't submit if there are validation errors
+      }
       const response = await (userId
         ? axios.put(`http://localhost:3000/api/web/roles/${userId}`, formData)
         : axios.post("http://localhost:3000/api/web/roles", formData));
@@ -83,8 +88,10 @@ export default function RolesTableModal({ userId = null, setIsRefetch = () => {}
               id="role"
               label="Role"
               variant="outlined"
-              helperText="Enter Role"
             />
+            <FormHelperText style={{ color: roleError ? "red" : "inherit" }}>
+              {roleError || "Enter Role"}
+            </FormHelperText>
           </FormControl>
 
           <FormControl>

@@ -17,6 +17,7 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
+import { validateEmail, validatePhoneNumber } from "validatorsFunctions/contactValidators";
 
 const style = {
   position: "absolute",
@@ -33,7 +34,7 @@ const style = {
   flexDirection: "column",
 };
 
-export function SelectRole({ availableRoles, handleChange, selectedRole }) {
+export function SelectRole({ availableRoles, handleChange, selectedRole, roleError }) {
   return (
     <div>
       <FormControl sx={{ m: 0, minWidth: 80 }}>
@@ -53,7 +54,10 @@ export function SelectRole({ availableRoles, handleChange, selectedRole }) {
             </MenuItem>
           ))}
         </Select>
-        <FormHelperText>Select Role</FormHelperText>
+
+        <FormHelperText style={{ color: roleError ? "red" : "inherit" }}>
+          {roleError ? roleError : "Select Role"}
+        </FormHelperText>
       </FormControl>
     </div>
   );
@@ -72,6 +76,11 @@ export default function UserTableModal({ userId = null, setIsRefetch = () => {} 
     phone: "",
     password: "",
   });
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [roleError, setRoleError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,14 +88,18 @@ export default function UserTableModal({ userId = null, setIsRefetch = () => {} 
         const rolesResponse = await axios.get("http://localhost:3000/api/web/roles");
         setAvailableRoles(rolesResponse.data);
 
-        const usersResponse = await axios.get("http://localhost:3000/api/web/users");
-        const user = usersResponse.data.find((user) => user._id === userId);
-        setFormData({
-          name: user ? user.name : "",
-          email: user ? user.email : "",
-          phone: user ? user.phone : 0,
-          password: "",
-        });
+        if (userId) {
+          const usersResponse = await axios.get("http://localhost:3000/api/web/users");
+          const user = usersResponse.data.find((user) => user._id === userId);
+
+          setSelectedRole(user.role);
+          setFormData({
+            name: user ? user.name : "",
+            email: user ? user.email : "",
+            phone: user ? user.phone : "",
+            password: "",
+          });
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -97,6 +110,7 @@ export default function UserTableModal({ userId = null, setIsRefetch = () => {} 
 
   const handleChange = (event) => {
     setSelectedRole(event.target.value);
+    setRoleError("");
   };
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -106,27 +120,58 @@ export default function UserTableModal({ userId = null, setIsRefetch = () => {} 
 
   const handleSubmit = async () => {
     try {
-      let formData;
+      if (!selectedRole) {
+        setRoleError("Role is required");
+      }
+      if (!formData.name.trim()) {
+        setNameError("Name is required");
+      }
+      if (!validateEmail(formData.email) || !formData.email.trim()) {
+        setEmailError("Enter a valid email address");
+      }
+      if (!validatePhoneNumber(formData.phone)) {
+        setPhoneError("Enter a valid 10-digit phone number");
+      }
+      if (!formData.password.trim()) {
+        setPasswordError("Password is required");
+      }
+
+      if (
+        !selectedRole ||
+        !formData.name.trim() ||
+        !formData.password.trim() ||
+        !validateEmail(formData.email) ||
+        !validatePhoneNumber(formData.phone)
+      ) {
+        return; // Don't submit if there are validation errors
+      }
+      let formPayload;
       if (userId) {
-        formData = {
-          name: document.getElementById("name")?.value || "",
-          email: document.getElementById("email")?.value || "",
-          phone: document.getElementById("phone")?.value || "",
+        formPayload = {
+          name: formData.name || "",
+          email: formData.email || "",
+          phone: formData.phone || "",
           role: selectedRole,
-          password: document.getElementById("password")?.value || "",
+          password: formData.password || "",
         };
-        const response = await axios.put(`http://localhost:3000/api/web/users/${userId}`, formData);
+        const response = await axios.put(
+          `http://localhost:3000/api/web/users/${userId}`,
+          formPayload
+        );
         console.log("responceccccccccccc", response);
       } else {
-        formData = {
-          name: document.getElementById("name")?.value || "",
-          email: document.getElementById("email")?.value || "",
-          phone: document.getElementById("phone")?.value || "",
+        formPayload = {
+          name: formData.name || "",
+          email: formData.email || "",
+          phone: formData.phone || "",
           role: selectedRole,
-          password: document.getElementById("outlined-adornment-password")?.value || "",
+          password: formData.password || "",
         };
-        console.log("Form Data", formData);
-        const response = await axios.post("http://localhost:3000/api/web/users/register", formData);
+        console.log("formPayload", formPayload);
+        const response = await axios.post(
+          "http://localhost:3000/api/web/users/register",
+          formPayload
+        );
         window.location.reload();
       }
       setIsRefetch(true);
@@ -137,8 +182,29 @@ export default function UserTableModal({ userId = null, setIsRefetch = () => {} 
   };
 
   const handleInputChange = (event) => {
-    setFormData({ ...formData, [event.target.id]: event.target.value });
-    console.log("handleInputChange", formData);
+    const { id, value } = event.target;
+    setFormData({ ...formData, [id]: value });
+    if (id === "email") {
+      if (!validateEmail(value)) {
+        setEmailError("Enter a valid email address");
+      } else {
+        setEmailError("");
+      }
+    }
+    if (id === "phone") {
+      if (!validatePhoneNumber(value)) {
+        setPhoneError("Enter a valid 10-digit phone number");
+      } else {
+        setPhoneError("");
+      }
+    }
+    if (id === "name") {
+      if (!value.trim()) {
+        setNameError("Name is required");
+      } else {
+        setNameError("");
+      }
+    }
   };
 
   return (
@@ -157,44 +223,52 @@ export default function UserTableModal({ userId = null, setIsRefetch = () => {} 
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          <FormControl>
+          <FormControl error={!!nameError}>
             <TextField
               id="name"
               label="Name"
               variant="outlined"
-              helperText="Enter User Name"
               value={formData.name}
               onChange={handleInputChange}
             />
+            <FormHelperText style={{ color: nameError ? "red" : "inherit" }}>
+              {nameError || "Enter User Name"}
+            </FormHelperText>
           </FormControl>
-          <FormControl>
+          <FormControl error={!!emailError}>
             <TextField
               id="email"
               label="Email"
               variant="outlined"
-              helperText="Enter User Email"
               value={formData.email}
               onChange={handleInputChange}
             />
+            <FormHelperText style={{ color: emailError ? "red" : "inherit" }}>
+              {emailError || "Enter User Email"}
+            </FormHelperText>
           </FormControl>
-          <FormControl>
+
+          <FormControl error={!!phoneError}>
             <TextField
               id="phone"
-              label="Contact Number "
+              label="Contact Number"
               variant="outlined"
-              helperText="Enter Contact Number "
               value={formData.phone}
               onChange={handleInputChange}
             />
+            <FormHelperText style={{ color: phoneError ? "red" : "inherit" }}>
+              {phoneError || "Enter Contact Number"}
+            </FormHelperText>
           </FormControl>
           <FormControl>
             <SelectRole
               availableRoles={availableRoles}
               handleChange={handleChange}
               selectedRole={selectedRole}
+              roleError={roleError}
             />
           </FormControl>
-          <FormControl sx={{ m: 0, width: "330px" }} variant="outlined">
+          <FormControl sx={{ m: 0, width: "330px" }} variant="outlined" error={!!formData.password}>
             <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
             <OutlinedInput
               id="password"
@@ -215,7 +289,9 @@ export default function UserTableModal({ userId = null, setIsRefetch = () => {} 
               }
               label="Password"
             />
-            <FormHelperText>Enter Password</FormHelperText>
+            <FormHelperText style={{ color: passwordError ? "red" : "inherit" }}>
+              {passwordError || "Enter Password"}
+            </FormHelperText>
           </FormControl>
           <FormControl>
             <Button

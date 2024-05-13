@@ -35,7 +35,7 @@ export default function WarehouseTableModal({ warehouseId = null, setIsRefetch =
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-
+  const [inputError, setInputError] = useState("");
   const [formData, setFormData] = useState({
     warehouse_name: "",
   });
@@ -61,17 +61,13 @@ export default function WarehouseTableModal({ warehouseId = null, setIsRefetch =
 
   const handleSubmit = async () => {
     try {
-      let formData;
+      if (!formData.warehouse_name.trim()) {
+        setInputError("Warehouse Name is required");
+        return; // Don't submit if there are validation errors
+      }
       if (warehouseId) {
-        formData = {
-          warehouse_name: document.getElementById("warehouse_name")?.value || "",
-        };
         await axios.put(`${environment.api_path}/${GET_WAREHOUSE_API}/${warehouseId}`, formData);
       } else {
-        formData = {
-          warehouse_name: document.getElementById("warehouse_name")?.value || "",
-        };
-
         await axios.post(`${environment.api_path}/${GET_WAREHOUSE_API}`, formData);
         window.location.reload();
       }
@@ -107,10 +103,12 @@ export default function WarehouseTableModal({ warehouseId = null, setIsRefetch =
               id="warehouse_name"
               label="Warehouse Name"
               variant="outlined"
-              helperText="Enter Warehouse Name"
               value={formData.warehouse_name}
               onChange={handleInputChange}
             />
+            <FormHelperText style={{ color: inputError ? "red" : "inherit" }}>
+              {inputError || "Enter Warehouse Name"}
+            </FormHelperText>
           </FormControl>
           <FormControl>
             <Button
