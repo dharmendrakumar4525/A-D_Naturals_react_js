@@ -13,6 +13,7 @@ import { FormControl, FormHelperText } from "@mui/material";
 import Select from "@mui/material/Select";
 import { environment } from "environments/environment";
 import { GET_SELLER_API, GET_WAREHOUSE_API, GET_LOCATION_API } from "environments/apiPaths";
+import { validatePhoneNumber, validateAadhar } from "validatorsFunctions/contactValidators";
 
 import EditIcon from "@mui/icons-material/Edit";
 
@@ -38,6 +39,7 @@ export function SelectRole({
   fieldName,
   helperText,
   labelKey,
+  error,
 }) {
   return (
     <div>
@@ -57,7 +59,9 @@ export function SelectRole({
             </MenuItem>
           ))}
         </Select>
-        <FormHelperText>{helperText}</FormHelperText>
+        <FormHelperText style={{ color: error ? "red" : "inherit" }}>
+          {error ? error : helperText}
+        </FormHelperText>
       </FormControl>
     </div>
   );
@@ -65,8 +69,6 @@ export function SelectRole({
 
 export default function SellerTableModal({ sellerId = null, setIsRefetch = () => {} }) {
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [availableLoacations, setAvailableLoacations] = useState([]);
 
@@ -79,37 +81,102 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
     warehouse: "",
     aadhar_number: "",
   });
+  const [phoneError, setPhoneError] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [locationError, setLocationError] = useState("");
+  const [wareHouseError, setWareHouseError] = useState("");
+  const [aadharError, setAadharError] = useState("");
+  const [submitError, setSubmitError] = useState("");
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  const handleOpen = async () => {
+    setOpen(true);
+    if (sellerId) {
       try {
-        const locationResponse = await axios.get(`${environment.api_path}/${GET_LOCATION_API}`);
-        const locationData = locationResponse.data.data;
-        setAvailableLoacations(locationData);
-
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
-        const warehouseData = warehouseResponse.data.data;
-        setAvailableWarehouses(warehouseData);
-
         const sellersResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
         const sellerData = sellersResponse.data.data;
 
         const seller = sellerData.find((seller) => seller._id === sellerId);
-
+        setSelectedWarehouse(seller ? seller.warehouse : "");
         setFormData({
           seller_name: seller ? seller.seller_name : "",
           seller_location: seller ? seller.seller_location : "",
-          phone: seller ? seller.phone : 0,
+          phone: seller ? seller.phone : "",
           warehouse: seller ? seller.warehouse : "",
           aadhar_number: seller ? seller.aadhar_number : "",
         });
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+    } else {
+      // Clear form data if there is no sellerId
+      setFormData({
+        seller_name: "",
+        seller_location: "",
+        phone: "",
+        warehouse: "",
+        aadhar_number: "",
+      });
+    }
+  };
+
+  // useEffect to fetch initial data
+  useEffect(() => {
+    const fetchData = async () => {
+      if (sellerId) {
+        try {
+          const locationResponse = await axios.get(`${environment.api_path}/${GET_LOCATION_API}`);
+          const locationData = locationResponse.data.data;
+          setAvailableLoacations(locationData);
+
+          const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+          const warehouseData = warehouseResponse.data.data;
+          setAvailableWarehouses(warehouseData);
+
+          const sellersResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
+          const sellerData = sellersResponse.data.data;
+
+          const seller = sellerData.find((seller) => seller._id === sellerId);
+          setSelectedWarehouse(seller ? seller.warehouse : "");
+          setFormData({
+            seller_name: seller ? seller.seller_name : "",
+            seller_location: seller ? seller.seller_location : "",
+            phone: seller ? seller.phone : "",
+            warehouse: seller ? seller.warehouse : "",
+            aadhar_number: seller ? seller.aadhar_number : "",
+          });
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      }
     };
 
     fetchData();
   }, [sellerId]);
+
+  const handleClose = () => {
+    setOpen(false);
+    setFormData({
+      seller_name: "",
+      seller_location: "",
+      phone: "",
+      warehouse: "",
+      aadhar_number: "",
+    });
+    setSelectedWarehouse("");
+    setAadharError("");
+    setLocationError("");
+    setNameError("");
+    setPhoneError("");
+    setSubmitError("");
+    setWareHouseError("");
+  };
+
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
+  };
 
   const handleChangeWarehouse = (event) => {
     setSelectedWarehouse(event.target.value);
@@ -117,37 +184,83 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
 
   const handleSubmit = async () => {
     try {
-      let formData;
+      if (!formData.seller_location.trim()) {
+        console.log(selectedLocation, "Location");
+        setLocationError("Location is required");
+      }
+      if (!formData.seller_name.trim()) {
+        setNameError("Seller Name is required");
+      }
+      if (!validateAadhar(formData.aadhar_number)) {
+        setAadharError("Enter a valid 12 digit Aadhar Number");
+      }
+      if (!validatePhoneNumber(formData.phone)) {
+        setPhoneError("Enter a valid 10-digit phone number");
+      }
+      if (!selectedWarehouse) {
+        setWareHouseError("Warehouse Name is required");
+      }
+
+      if (
+        !formData.seller_location.trim() ||
+        !formData.seller_name.trim() ||
+        !selectedWarehouse ||
+        !validateAadhar(formData.aadhar_number) ||
+        !validatePhoneNumber(formData.phone)
+      ) {
+        return; // Don't submit if there are validation errors
+      }
+      let payloadformData;
       if (sellerId) {
-        formData = {
-          seller_name: document.getElementById("seller_name")?.value || "",
-          aadhar_number: document.getElementById("aadhar_number")?.value || "",
-          phone: document.getElementById("phone")?.value || "",
+        payloadformData = {
+          seller_name: formData.seller_name || "",
+          aadhar_number: formData.aadhar_number || "",
+          phone: formData.phone || "",
           warehouse: selectedWarehouse,
-          seller_location: document.getElementById("seller_location")?.value || "",
+          seller_location: formData.seller_location || "",
         };
-        await axios.put(`${environment.api_path}/${GET_SELLER_API}/${sellerId}`, formData);
+        await axios.put(`${environment.api_path}/${GET_SELLER_API}/${sellerId}`, payloadformData);
       } else {
-        formData = {
-          seller_name: document.getElementById("seller_name")?.value || "",
-          aadhar_number: document.getElementById("aadhar_number")?.value || "",
-          phone: document.getElementById("phone")?.value || "",
+        payloadformData = {
+          seller_name: formData.seller_name || "",
+          aadhar_number: formData.aadhar_number || "",
+          phone: formData.phone || "",
           warehouse: selectedWarehouse,
-          seller_location: document.getElementById("seller_location")?.value || "",
+          seller_location: formData.seller_location || "",
         };
 
-        await axios.post(`${environment.api_path}/${GET_SELLER_API}`, formData);
+        await axios.post(`${environment.api_path}/${GET_SELLER_API}`, payloadformData);
         window.location.reload();
       }
       setIsRefetch(true);
       handleClose();
     } catch (error) {
       console.error("Error submitting form:", error);
+      if (error.response && error.response.data && error.response.data.message) {
+        handleError(error.response.data.message);
+      } else {
+        handleError("An error occurred while submitting the form. Please try again later.");
+      }
     }
   };
 
   const handleInputChange = (event) => {
-    setFormData({ ...formData, [event.target.id]: event.target.value });
+    const { id, value } = event.target;
+    setFormData({ ...formData, [id]: value });
+    if (id === "phone") {
+      if (!validatePhoneNumber(value)) {
+        setPhoneError("Enter a valid 10-digit phone number");
+      } else {
+        setPhoneError("");
+      }
+    }
+    if (id === "aadhar_number") {
+      if (!validateAadhar(value)) {
+        setAadharError("Enter a valid 12-digit Aadhar number");
+      } else {
+        setAadharError("");
+      }
+    }
   };
 
   return (
@@ -171,40 +284,49 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
               id="seller_name"
               label="Seller Name"
               variant="outlined"
-              helperText="Enter Seller Name"
               value={formData.seller_name}
               onChange={handleInputChange}
             />
+            <FormHelperText style={{ color: nameError ? "red" : "inherit" }}>
+              {nameError || "Enter Seller Name"}
+            </FormHelperText>
           </FormControl>
+
           <FormControl>
             <TextField
               id="seller_location"
               label="Seller Location"
               variant="outlined"
-              helperText="Enter Seller Location"
               value={formData.seller_location}
               onChange={handleInputChange}
             />
+            <FormHelperText style={{ color: locationError ? "red" : "inherit" }}>
+              {locationError || "Enter Seller Location"}
+            </FormHelperText>
           </FormControl>
           <FormControl>
             <TextField
               id="phone"
               label="Contact Number "
               variant="outlined"
-              helperText="Enter Contact Number "
               value={formData.phone}
               onChange={handleInputChange}
             />
+            <FormHelperText style={{ color: phoneError ? "red" : "inherit" }}>
+              {phoneError || "Enter Contact Number"}
+            </FormHelperText>
           </FormControl>
           <FormControl>
             <TextField
               id="aadhar_number"
               label="Aadhaar Number "
               variant="outlined"
-              helperText="Enter Aadhaar Number "
               value={formData.aadhar_number}
               onChange={handleInputChange}
             />
+            <FormHelperText style={{ color: aadharError ? "red" : "inherit" }}>
+              {aadharError || "Enter Aadhaar Number"}
+            </FormHelperText>
           </FormControl>
           {/* <FormControl>
             <SelectRole
@@ -224,6 +346,7 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
               fieldName={"Warehouse"}
               helperText={"Select Warehouse"}
               labelKey={"warehouse_name"}
+              error={wareHouseError}
             />
           </FormControl>
           <FormControl>
