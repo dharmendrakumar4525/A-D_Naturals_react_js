@@ -11,6 +11,8 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import { FormControl, FormHelperText } from "@mui/material";
 import Select from "@mui/material/Select";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 import { environment } from "environments/environment";
 import { GET_SELLER_API, GET_WAREHOUSE_API, GET_LOCATION_API } from "environments/apiPaths";
 import { validatePhoneNumber, validateAadhar } from "validatorsFunctions/contactValidators";
@@ -361,6 +363,16 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
           </FormControl>
         </Box>
       </Modal>
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setOpenSnackbar(false)}
+          severity="error"
+        >
+          {submitError}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 }

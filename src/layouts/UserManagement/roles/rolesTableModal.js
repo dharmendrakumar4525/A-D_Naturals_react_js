@@ -7,6 +7,8 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 import { FormControl, FormHelperText } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 
@@ -29,6 +31,9 @@ export default function RolesTableModal({ userId = null, setIsRefetch = () => {}
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({ role: "" });
   const [roleError, setRoleError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,6 +47,11 @@ export default function RolesTableModal({ userId = null, setIsRefetch = () => {}
     };
     fetchData();
   }, [userId]);
+
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
+  };
 
   const handleSubmit = async () => {
     try {
@@ -59,6 +69,11 @@ export default function RolesTableModal({ userId = null, setIsRefetch = () => {}
       window.location.reload();
     } catch (error) {
       console.error("Error submitting form:", error);
+      if (error.response && error.response.data && error.response.data.message) {
+        handleError(error.response.data.message);
+      } else {
+        handleError("An error occurred while submitting the form. Please try again later.");
+      }
     }
   };
 
@@ -106,6 +121,16 @@ export default function RolesTableModal({ userId = null, setIsRefetch = () => {}
           </FormControl>
         </Box>
       </Modal>
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setOpenSnackbar(false)}
+          severity="error"
+        >
+          {submitError}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 }

@@ -11,6 +11,8 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import { FormControl, FormHelperText } from "@mui/material";
 import Select from "@mui/material/Select";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 import { environment } from "environments/environment";
 import { GET_SELLER_API, GET_WAREHOUSE_API, GET_LOCATION_API } from "environments/apiPaths";
 
@@ -38,6 +40,9 @@ export default function LocationsTableModal({ locationId = null, setIsRefetch = 
   const [formData, setFormData] = useState({
     location_name: "",
   });
+  const [locationError, setLocationError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,6 +62,11 @@ export default function LocationsTableModal({ locationId = null, setIsRefetch = 
 
     fetchData();
   }, [locationId]);
+
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
+  };
 
   const handleSubmit = async () => {
     try {
@@ -78,6 +88,11 @@ export default function LocationsTableModal({ locationId = null, setIsRefetch = 
       handleClose();
     } catch (error) {
       console.error("Error submitting form:", error);
+      if (error.response && error.response.data && error.response.data.message) {
+        handleError(error.response.data.message);
+      } else {
+        handleError("An error occurred while submitting the form. Please try again later.");
+      }
     }
   };
 
@@ -123,6 +138,16 @@ export default function LocationsTableModal({ locationId = null, setIsRefetch = 
           </FormControl>
         </Box>
       </Modal>
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setOpenSnackbar(false)}
+          severity="error"
+        >
+          {submitError}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 }

@@ -10,6 +10,8 @@ import TextField from "@mui/material/TextField";
 import { FormControl, FormHelperText } from "@mui/material";
 import { environment } from "environments/environment";
 import { GET_VENDOR_API } from "environments/apiPaths";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 import {
   validatePhoneNumber,
   validateEmail,
@@ -52,6 +54,9 @@ export default function VendorTableModal({ vendorId = null, setIsRefetch = () =>
   const [addressError, setAddressError] = useState("");
   const [gstError, setGstError] = useState("");
   const [panError, setPanError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -122,7 +127,17 @@ export default function VendorTableModal({ vendorId = null, setIsRefetch = () =>
       handleClose();
     } catch (error) {
       console.error("Error submitting form:", error);
+      if (error.response && error.response.data && error.response.data.message) {
+        handleError(error.response.data.message);
+      } else {
+        handleError("An error occurred while submitting the form. Please try again later.");
+      }
     }
+  };
+
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
   };
 
   const handleInputChange = (event) => {
@@ -296,6 +311,16 @@ export default function VendorTableModal({ vendorId = null, setIsRefetch = () =>
           </FormControl>
         </Box>
       </Modal>
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setOpenSnackbar(false)}
+          severity="error"
+        >
+          {submitError}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 }
