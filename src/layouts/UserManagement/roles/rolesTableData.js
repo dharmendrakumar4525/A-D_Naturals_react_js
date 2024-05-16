@@ -13,8 +13,9 @@ import RolesTableModal from "layouts/UserManagement/roles/rolesTableModal";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
-export default function Data() {
+export default function data() {
   // Capitalized component name
+
   const [rowData, setRowData] = useState([]);
   const [isRefetch, setIsRefetch] = useState(false);
 
@@ -25,6 +26,7 @@ export default function Data() {
         const rolesData = rolesResponse.data;
         console.log("Role Data", rolesData);
         setRowData(rolesData);
+        setOriginalData(rolesData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }

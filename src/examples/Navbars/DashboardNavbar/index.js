@@ -53,12 +53,24 @@ import {
   setOpenConfigurator,
 } from "context";
 
-function DashboardNavbar({ absolute, light, isMini }) {
+function DashboardNavbar({ absolute, light, isMini, onSearch }) {
   const [navbarType, setNavbarType] = useState();
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator, darkMode } = controller;
   const [openMenu, setOpenMenu] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const route = useLocation().pathname.split("/").slice(1);
+
+  const handleChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  useEffect(() => {
+    if (onSearch) {
+      // Execute the search functionality only if onSearch prop is provided
+      onSearch(searchQuery);
+    }
+  }, [searchQuery, onSearch]);
 
   useEffect(() => {
     // Setting the navbar type
@@ -136,7 +148,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
         {isMini ? null : (
           <MDBox sx={(theme) => navbarRow(theme, { isMini })}>
             <MDBox pr={1}>
-              <MDInput label="Search here" />
+              <MDInput label="Search here" value={searchQuery} onChange={handleChange} />
             </MDBox>
             <MDBox color={light ? "white" : "inherit"}>
               <Link to="/authentication/sign-in/basic">
@@ -197,6 +209,7 @@ DashboardNavbar.propTypes = {
   absolute: PropTypes.bool,
   light: PropTypes.bool,
   isMini: PropTypes.bool,
+  onSearch: PropTypes.func,
 };
 
 export default DashboardNavbar;
