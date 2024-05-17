@@ -44,6 +44,8 @@ function RolesTable() {
     setSearchQuery(query);
   };
 
+  //----------------------------Delete Function---------------------------------
+
   const handleDelete = async (roleId) => {
     try {
       await axios.delete(`${environment.api_path}/${GET_ROLES_API}/${roleId}`);
@@ -52,6 +54,8 @@ function RolesTable() {
       console.error("Error deleting role:", error);
     }
   };
+
+  //----------------------------Filter Function ---------------------------------
 
   const filterData = () => {
     console.log(searchQuery, "Here");
@@ -69,6 +73,12 @@ function RolesTable() {
   };
 
   useEffect(() => {
+    filterData();
+  }, [searchQuery]);
+
+  //----------------------------Fetch Function---------------------------------
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const rolesResponse = await axios.get(`${environment.api_path}/${GET_ROLES_API}`);
@@ -84,10 +94,7 @@ function RolesTable() {
     fetchData();
   }, [isRefetch]);
 
-  useEffect(() => {
-    filterData();
-  }, [searchQuery]);
-
+  //----------------------------Row Data---------------------------------
   const data = {
     columns: [
       { Header: "Role", accessor: "role", width: "30%", align: "left" },
@@ -118,7 +125,7 @@ function RolesTable() {
       ),
     })),
   };
-
+  //----------------------------Main Component---------------------------------
   return (
     <DashboardLayout>
       <DashboardNavbar onSearch={onSearch} />
@@ -165,6 +172,7 @@ function RolesTable() {
 
 export default RolesTable;
 
+//----------------------------Roles Component---------------------------------
 const Role = ({ title }) => (
   <MDBox lineHeight={1} textAlign="left" key={title}>
     <MDTypography display="block" variant="button" fontWeight="medium">

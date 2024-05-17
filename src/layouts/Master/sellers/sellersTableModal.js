@@ -151,6 +151,14 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
         } catch (error) {
           console.error("Error fetching data:", error);
         }
+      } else {
+        try {
+          const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+          const warehouseData = warehouseResponse.data.data;
+          setAvailableWarehouses(warehouseData);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
       }
     };
 
