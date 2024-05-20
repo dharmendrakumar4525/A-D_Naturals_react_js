@@ -23,9 +23,6 @@ export default function data() {
         const rolesResponse = await axios.get(`${environment.api_path}/${GET_ROLES_API}`);
         const rolesData = rolesResponse.data;
 
-        console.log("usersDaaata", usersData);
-        console.log("rolesData", rolesData);
-
         const mappedData = usersData.map((user) => {
           const role = rolesData.find((role) => role._id === user.role);
           return {

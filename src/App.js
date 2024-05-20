@@ -154,7 +154,9 @@ export default function App() {
           <>
             <Sidenav
               color={sidenavColor}
-              brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
+              brand={
+                "https://assets-global.website-files.com/65e842c42311b272adf8e5b4/65e852d6f077a29ce526db21_Frame-3854-5-1-pdf_1-removebg-preview%20(1)%202.svg"
+              }
               brandName="Material Dashboard 2"
               routes={routes}
               onMouseEnter={handleOnMouseEnter}
@@ -178,7 +180,9 @@ export default function App() {
         <>
           <Sidenav
             color={sidenavColor}
-            brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
+            brand={
+              "https://assets-global.website-files.com/65e842c42311b272adf8e5b4/65e852d6f077a29ce526db21_Frame-3854-5-1-pdf_1-removebg-preview%20(1)%202.svg"
+            }
             brandName="A&D Naturals"
             routes={routes}
             onMouseEnter={handleOnMouseEnter}

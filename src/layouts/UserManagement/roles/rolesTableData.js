@@ -23,7 +23,7 @@ export default function Data() {
       try {
         const rolesResponse = await axios.get(`${environment.api_path}/${GET_ROLES_API}`);
         const rolesData = rolesResponse.data;
-        console.log("Role Data", rolesData);
+
         setRowData(rolesData);
       } catch (error) {
         console.error("Error fetching data:", error);

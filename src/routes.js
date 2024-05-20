@@ -50,6 +50,7 @@ import SellersTable from "layouts/Master/sellers";
 import VendorsTable from "layouts/Master/vendors";
 import WarehouseTable from "layouts/Master/warehouse";
 import LocationsTable from "layouts/Master/locations";
+import { LoginRoute } from "loginRedirect";
 
 const routes = [
   {
@@ -169,12 +170,16 @@ const routes = [
   },
 
   {
-    type: "collapse",
+    type: "noCollapse",
     name: "Sign In",
     key: "sign-in",
     icon: <Icon fontSize="small">login</Icon>,
     route: "/authentication/sign-in",
-    component: <SignIn />,
+    component: (
+      <LoginRoute>
+        <SignIn />
+      </LoginRoute>
+    ),
   },
 ];
 
