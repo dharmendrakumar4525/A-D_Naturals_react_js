@@ -14,9 +14,10 @@ Coded by www.creative-tim.com
 */
 
 import { useEffect } from "react";
+import MDButton from "components/MDButton";
 
 // react-router-dom components
-import { useLocation, NavLink } from "react-router-dom";
+import { useLocation, NavLink, Navigate, useNavigate } from "react-router-dom";
 
 // prop-types is a library for typechecking of props.
 import PropTypes from "prop-types";
@@ -45,6 +46,7 @@ import {
   setTransparentSidenav,
   setWhiteSidenav,
 } from "context";
+import { Box } from "@mui/material";
 
 function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const [controller, dispatch] = useMaterialUIController();
@@ -139,6 +141,12 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
     return returnValue;
   });
 
+  const logoutRedirect = useNavigate();
+  const handleLogout = () => {
+    localStorage.removeItem("A&D_Login_Token");
+    logoutRedirect("/authentication/sign-in");
+  };
+
   return (
     <SidenavRoot
       {...rest}
@@ -178,6 +186,12 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
         }
       />
       <List>{renderRoutes}</List>
+
+      <MDBox p={2} mt="auto" onClick={handleLogout}>
+        <MDButton variant="gradient" color={sidenavColor} fullWidth>
+          Log Out
+        </MDButton>
+      </MDBox>
     </SidenavRoot>
   );
 }

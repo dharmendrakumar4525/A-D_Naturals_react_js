@@ -150,6 +150,15 @@ function RolesTable() {
                 >
                   Roles Table
                   <RolesTableModal />
+                  {/* <MDBox pr={1}>
+                    <MDInput
+                      style={{ backgroundColor: "white", borderRadius: 8, Text: "white" }}
+                      label="Search here"
+                      InputLabelProps={{
+                        style: { color: "grey" }, // Setting the label color to white
+                      }}
+                    />
+                  </MDBox> */}
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>

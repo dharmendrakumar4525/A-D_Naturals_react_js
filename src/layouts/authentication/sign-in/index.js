@@ -62,7 +62,6 @@ function Basic() {
       const andLoginToken = response.data.token;
 
       if (response) {
-        console.log("kjsdhckjsdjk");
         localStorage.setItem("A&D_Login_Token", andLoginToken);
         dashboardNavigate("/dashboard");
       }
@@ -78,6 +77,11 @@ function Basic() {
 
   return (
     <BasicLayout image={bgImage}>
+      {/* <BasicLayout
+      image={
+        "https://assets-global.website-files.com/65e842c42311b272adf8e5b4/65e85eb8d772ca02a714c694_Group%201000001773.png"
+      }
+    > */}
       <Card>
         <MDBox
           variant="gradient"
@@ -116,8 +120,8 @@ function Basic() {
               />
             </MDBox>
             <MDBox display="flex" alignItems="center" ml={-1}>
-              <Switch checked={rememberMe} onChange={handleSetRememberMe} />
-              <Typography // Changed MuiLink to Typography
+              {/* <Switch checked={rememberMe} onChange={handleSetRememberMe} /> */}
+              {/* <Typography // Changed MuiLink to Typography
                 variant="button"
                 fontWeight="regular"
                 color="text"
@@ -125,7 +129,7 @@ function Basic() {
                 sx={{ cursor: "pointer", userSelect: "none", ml: -1 }}
               >
                 &nbsp;&nbsp;Remember me
-              </Typography>
+              </Typography> */}
             </MDBox>
             <MDBox mt={4} mb={1}>
               <MDButton

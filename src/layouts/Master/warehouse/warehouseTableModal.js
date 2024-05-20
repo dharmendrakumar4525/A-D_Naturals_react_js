@@ -47,6 +47,7 @@ export function SelectRole({
       <FormControl sx={{ m: 0, minWidth: 80 }}>
         <InputLabel id="demo-simple-select-autowidth-label">{fieldName}</InputLabel>
         <Select
+          label={fieldName}
           labelId="demo-simple-select-autowidth-label"
           id="demo-simple-select-autowidth"
           value={selectedItem}
