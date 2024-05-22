@@ -39,6 +39,7 @@ Coded by www.creative-tim.com
 import Dashboard from "layouts/dashboard";
 import Tables from "layouts/UserManagement";
 import SignIn from "layouts/authentication/sign-in";
+import Procurement from "layouts/Procurement.js";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
@@ -62,6 +63,18 @@ const routes = [
     component: (
       <PrivateRoute>
         <Dashboard />
+      </PrivateRoute>
+    ),
+  },
+  {
+    type: "collapse",
+    name: "Procurement",
+    key: "procurement",
+    icon: <Icon fontSize="small">dashboard</Icon>,
+    route: "/Procurement",
+    component: (
+      <PrivateRoute>
+        <Procurement />
       </PrivateRoute>
     ),
   },

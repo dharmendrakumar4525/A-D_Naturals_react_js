@@ -76,10 +76,18 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
   const [formData, setFormData] = useState({
     warehouse_name: "",
     location_name: "",
+    address: {
+      street_address: "",
+      state: "",
+      city: "",
+      zip_code: "",
+    },
   });
   const [locationError, setLocationError] = useState("");
   const [wareHouseError, setWareHouseError] = useState("");
   const [submitError, setSubmitError] = useState("");
+  const [addressError, setAddressError] = useState("");
+  const [zipError, setZipError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const handleOpen = async () => {
@@ -99,6 +107,12 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
         setFormData({
           warehouse_name: warehouse ? warehouse.warehouse_name : "",
           location_name: warehouse ? warehouse.location_name : "",
+          address: {
+            street_address: warehouse ? warehouse.address?.street_address : "",
+            state: "",
+            city: "",
+            zip_code: warehouse ? warehouse.address?.zip_code : "",
+          },
         });
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -152,13 +166,22 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
     setFormData({
       warehouse_name: "",
       location_name: "",
+      address: {
+        street_address: "",
+        state: "",
+        city: "",
+        zip_code: "",
+      },
     });
     setSelectedLocation("");
     setLocationError("");
     setWareHouseError("");
+    setAddressError("");
+    setZipError("");
   };
 
   const handleSubmit = async () => {
+    console.log(formData);
     try {
       if (!formData.warehouse_name.trim()) {
         setWareHouseError("Warehouse Name is required");
@@ -166,8 +189,19 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
       if (!selectedLocation) {
         setLocationError("Location is required");
       }
+      if (!formData?.address?.street_address.trim()) {
+        setAddressError("Address is required");
+      }
+      if (!formData?.address?.zip_code.trim()) {
+        setZipError("ZIP Code is required");
+      }
 
-      if (!formData.warehouse_name.trim() || !selectedLocation) {
+      if (
+        !formData.warehouse_name.trim() ||
+        !formData?.address?.zip_code.trim() ||
+        !formData?.address?.street_address.trim() ||
+        !selectedLocation
+      ) {
         return; // Don't submit if there are validation errors
       }
       let NewformData;
@@ -175,12 +209,15 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
         NewformData = {
           warehouse_name: formData.warehouse_name || "",
           location: selectedLocation,
+          address: formData.address,
         };
+        console.log(NewformData);
         await axios.put(`${environment.api_path}/warehouse/${warehouseId}`, NewformData);
       } else {
         NewformData = {
           warehouse_name: formData.warehouse_name || "",
           location: selectedLocation,
+          address: formData.address,
         };
 
         await axios.post(`${environment.api_path}/warehouse`, NewformData);
@@ -200,7 +237,24 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
   };
 
   const handleInputChange = (event) => {
-    setFormData({ ...formData, [event.target.id]: event.target.value });
+    const { id, value } = event.target;
+
+    if (["street_address", "state", "city", "zip_code"].includes(id)) {
+      // Update the address object within formData
+      setFormData((prevData) => ({
+        ...prevData,
+        address: {
+          ...prevData.address,
+          [id]: value,
+        },
+      }));
+    } else {
+      // Update the main formData object
+      setFormData((prevData) => ({
+        ...prevData,
+        [id]: value,
+      }));
+    }
   };
 
   return (
@@ -242,6 +296,30 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
               labelKey={"location_name"}
               error={locationError}
             />
+          </FormControl>
+          <FormControl>
+            <TextField
+              id="street_address"
+              label="Warehouse Address"
+              variant="outlined"
+              value={formData?.address?.street_address}
+              onChange={handleInputChange}
+            />
+            <FormHelperText style={{ color: addressError ? "red" : "inherit" }}>
+              {addressError || "Enter Warehouse Address"}
+            </FormHelperText>
+          </FormControl>
+          <FormControl>
+            <TextField
+              id="zip_code"
+              label="ZIP Code"
+              variant="outlined"
+              value={formData?.address?.zip_code}
+              onChange={handleInputChange}
+            />
+            <FormHelperText style={{ color: zipError ? "red" : "inherit" }}>
+              {zipError || "Enter ZIP Code"}
+            </FormHelperText>
           </FormControl>
           <FormControl>
             <Button
