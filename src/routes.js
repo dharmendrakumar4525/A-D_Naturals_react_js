@@ -39,7 +39,6 @@ Coded by www.creative-tim.com
 import Dashboard from "layouts/dashboard";
 import Tables from "layouts/UserManagement";
 import SignIn from "layouts/authentication/sign-in";
-import Procurement from "layouts/Procurement.js";
 
 // @mui icons
 import Icon from "@mui/material/Icon";
@@ -51,7 +50,15 @@ import SellersTable from "layouts/Master/sellers";
 import VendorsTable from "layouts/Master/vendors";
 import WarehouseTable from "layouts/Master/warehouse";
 import LocationsTable from "layouts/Master/locations";
+import WarehouseOrder from "layouts/Inventory/WarehouseOrder";
+import SellerOrder from "layouts/Inventory/SellerOrder";
+import PurchaseOrder from "layouts/Inventory/PurchaseOrder";
 import { LoginRoute } from "loginRedirect";
+import InventoryTable from "layouts/Inventory";
+import OrderTable from "layouts/Orders";
+import PurchaseOrderTable from "layouts/Orders/PurchaseOrders";
+import SellerOrderTable from "layouts/Orders/SellerOrders";
+import WarehouseOrderTable from "layouts/Orders/WarehouseOrders";
 
 const routes = [
   {
@@ -63,18 +70,6 @@ const routes = [
     component: (
       <PrivateRoute>
         <Dashboard />
-      </PrivateRoute>
-    ),
-  },
-  {
-    type: "collapse",
-    name: "Procurement",
-    key: "procurement",
-    icon: <Icon fontSize="small">dashboard</Icon>,
-    route: "/Procurement",
-    component: (
-      <PrivateRoute>
-        <Procurement />
       </PrivateRoute>
     ),
   },
@@ -192,6 +187,109 @@ const routes = [
       <LoginRoute>
         <SignIn />
       </LoginRoute>
+    ),
+  },
+
+  {
+    type: "collapse",
+    name: "Inventory",
+    key: "Inventory",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/inventory",
+    component: (
+      <PrivateRoute>
+        <InventoryTable />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "PurchaseOrder",
+    key: "PurchaseOrder",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/inventory/purchase-order",
+    component: (
+      <PrivateRoute>
+        <PurchaseOrder />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "WarehouseOrder",
+    key: "warehouseOrder",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/inventory/warehouse-order",
+    component: (
+      <PrivateRoute>
+        <WarehouseOrder />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "SellerOrder",
+    key: "sellerOrder",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/master/seller-order",
+    component: (
+      <PrivateRoute>
+        <SellerOrder />
+      </PrivateRoute>
+    ),
+  },
+  {
+    type: "collapse",
+    name: "Orders",
+    key: "Orders",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/view-orders",
+    component: (
+      <PrivateRoute>
+        <OrderTable />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "PurchaseOrderTable",
+    key: "PurchaseOrderTable",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/view-orders/purchase-orders",
+    component: (
+      <PrivateRoute>
+        <PurchaseOrderTable />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "WarehouseOrderTable",
+    key: "warehouseOrderTable",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/view-orders/warehouse-orders",
+    component: (
+      <PrivateRoute>
+        <WarehouseOrderTable />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "SellerOrderTab;e",
+    key: "sellerOrderTable",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/view-orders/seller-orders",
+    component: (
+      <PrivateRoute>
+        <SellerOrderTable />
+      </PrivateRoute>
     ),
   },
 ];

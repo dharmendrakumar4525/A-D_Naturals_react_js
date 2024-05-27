@@ -7,4 +7,4 @@ export const GET_SELLER_API = "/seller";
 export const GET_WAREHOUSE_API = "/warehouse";
 export const GET_LOCATION_API = "/location";
 export const GET_VENDOR_API = "/vendor";
-export const GET_PURCHASEORDER_API = "/PurchaseOrder";
+export const GET_PURCHASEORDER_API = "/purchase_order";

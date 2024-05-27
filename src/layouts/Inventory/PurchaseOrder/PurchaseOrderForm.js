@@ -7,7 +7,7 @@ import Box from "@mui/material/Box";
 import MDBox from "components/MDBox";
 import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
-
+import { useNavigate } from "react-router-dom";
 import {
   Checkbox,
   ListItemText,
@@ -40,12 +40,11 @@ import { GET_WAREHOUSE_API, GET_VENDOR_API, GET_PURCHASEORDER_API } from "enviro
 import EditIcon from "@mui/icons-material/Edit";
 
 const style = {
-  position: "absolute",
-  left: "50%",
-  transform: "translate(-50%, 0%)",
-  width: "90%",
+  position: "relative",
+  width: "95%", // Ensure it fits within the parent
+  maxWidth: "95%", // Ensure it fits within the parent
   bgcolor: "background.paper",
-
+  left: "5%",
   boxShadow: 24,
   p: 4,
   display: "flex",
@@ -128,7 +127,7 @@ export function SelectVendor({
   );
 }
 
-export default function Procurement() {
+export default function PurchaseOrderForm() {
   const [selectedWarehouse, setSelectedHouses] = useState([]);
   const [selectedVendor, setSelectedVedor] = useState("");
   const [availableVendors, setAvailableVendor] = useState([]);
@@ -148,6 +147,8 @@ export default function Procurement() {
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -184,7 +185,8 @@ export default function Procurement() {
     const diff = formData.order_qty - formData.resale.qty - totalQuantity;
     console.log(diff);
     if (diff < 0) {
-      setSubmitError("quantity Exceeds");
+      setSubmitError("Assigned Quantity Exeeds");
+      setOpenSnackbar(true);
       return;
     }
     try {
@@ -202,7 +204,7 @@ export default function Procurement() {
         },
       };
       console.log(NewformData);
-      await axios.post(`${environment.api_path}/PurchaseOrder`, NewformData);
+      await axios.post(`${environment.api_path}/${GET_PURCHASEORDER_API}`, NewformData);
       setSubmitError("Purchase Order Created Sucessfully");
       setFormData({
         order_qty: 0,
@@ -215,9 +217,11 @@ export default function Procurement() {
           price: "",
         },
       });
+
       setSelectedVedor("");
       setSelectedHouses([]);
       setWarehouseArray([]);
+      navigate("/view-orders/purchase-orders");
     } catch (error) {
       console.error("Error submitting form:", error);
       if (error.response && error.response.data && error.response.data.message) {
@@ -226,6 +230,11 @@ export default function Procurement() {
         handleError("An error occurred while submitting the form. Please try again later.");
       }
     }
+  };
+
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
   };
 
   const handleWareHouse = (event) => {
@@ -323,170 +332,165 @@ export default function Procurement() {
     );
   };
   return (
-    <DashboardLayout>
-      <DashboardNavbar />
-      <MDBox pt={6} pb={3}>
-        <Grid container spacing={6}>
-          <Box sx={style}>
-            <Box
-              sx={{
-                flexDirection: "row",
-                display: "flex",
-                width: "70%",
-                justifyContent: "space-between",
-              }}
-            >
-              <FormControl sx={{ width: "47%" }}>
-                <TextField
-                  id="order_qty"
-                  label="Order Quantity"
-                  variant="outlined"
-                  value={formData.order_qty}
-                  onChange={handleInputChange}
-                  type="number"
-                />
-                <FormHelperText style={{ color: "inherit" }}>
-                  {"Enter Purchased Order Quantity"}
-                </FormHelperText>
-              </FormControl>
-              <FormControl sx={{ width: "47%" }}>
-                <TextField
-                  id="po_no"
-                  label="PO Number"
-                  variant="outlined"
-                  value={formData.po_no}
-                  onChange={handleInputChange}
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                />
-                <FormHelperText style={{ color: "inherit" }}>{"Enter PO Number"}</FormHelperText>
-              </FormControl>
-            </Box>
-            <Box
-              sx={{
-                flexDirection: "row",
-                width: "70%",
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <FormControl style={{ width: "47%" }}>
-                <SelectVendor
-                  availableItems={availableVendors}
-                  handleChange={handleChangeVendor}
-                  selectedItem={selectedVendor}
-                  fieldName={"Vendor"}
-                  helperText={"Select Vendor"}
-                  labelKey={"vendor_name"}
-                />
-              </FormControl>
-              <FormControl sx={{ width: "47%" }}>
-                <TextField
-                  id="price"
-                  label="Enter Price"
-                  variant="outlined"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  type="number"
-                />
-                <FormHelperText style={{ color: "inherit" }}>
-                  {"Enter Cost Price per item"}
-                </FormHelperText>
-              </FormControl>
-            </Box>
-            <Box
-              sx={{
-                flexDirection: "row",
-                width: "70%",
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <FormControl sx={{ width: "47%" }}>
-                <SelectWarehouse
-                  availableItems={availableWarehouses}
-                  handleChange={handleWareHouse}
-                  selectedItem={selectedWarehouse}
-                  fieldName={"Warehouse"}
-                  helperText={"Select Warehouses"}
-                  labelKey={"warehouses"}
-                />
-              </FormControl>
+    <MDBox pt={6} pb={3}>
+      <Grid container spacing={6}>
+        <Box sx={style}>
+          <Box
+            sx={{
+              flexDirection: "row",
+              display: "flex",
+              width: "70%",
+              justifyContent: "space-between",
+            }}
+          >
+            <FormControl sx={{ m: 0, width: "100%" }}>
+              <TextField
+                id="order_qty"
+                label="Order Quantity"
+                variant="outlined"
+                value={formData.order_qty}
+                onChange={handleInputChange}
+                type="number"
+              />
+              <FormHelperText style={{ color: "inherit" }}>
+                {"Enter Purchased Order Quantity"}
+              </FormHelperText>
+            </FormControl>
+            <FormControl sx={{ width: "47%" }}>
+              <TextField
+                id="po_no"
+                label="PO Number"
+                variant="outlined"
+                value={formData.po_no}
+                onChange={handleInputChange}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+              <FormHelperText style={{ color: "inherit" }}>{"Enter PO Number"}</FormHelperText>
+            </FormControl>
+          </Box>
+          <Box
+            sx={{
+              flexDirection: "row",
+              width: "70%",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <FormControl style={{ width: "47%" }}>
+              <SelectVendor
+                availableItems={availableVendors}
+                handleChange={handleChangeVendor}
+                selectedItem={selectedVendor}
+                fieldName={"Vendor"}
+                helperText={"Select Vendor"}
+                labelKey={"vendor_name"}
+              />
+            </FormControl>
+            <FormControl sx={{ width: "47%" }}>
+              <TextField
+                id="price"
+                label="Enter Price"
+                variant="outlined"
+                value={formData.price}
+                onChange={handleInputChange}
+                type="number"
+              />
+              <FormHelperText style={{ color: "inherit" }}>
+                {"Enter Cost Price per item"}
+              </FormHelperText>
+            </FormControl>
+          </Box>
+          <Box
+            sx={{
+              flexDirection: "row",
+              width: "70%",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <FormControl sx={{ width: "47%" }}>
+              <SelectWarehouse
+                availableItems={availableWarehouses}
+                handleChange={handleWareHouse}
+                selectedItem={selectedWarehouse}
+                fieldName={"Warehouse"}
+                helperText={"Select Warehouses"}
+                labelKey={"warehouses"}
+              />
+            </FormControl>
 
-              <FormControl sx={{ width: "47%" }}>
-                {selectedWarehouse.length !== 0 ? (
-                  <WarehousePriceTable warehouses={selectedWarehouse} />
-                ) : (
-                  ""
-                )}
-              </FormControl>
-            </Box>
-
-            <CustomDivider text="ReSelling Details" />
-
-            <Box
-              sx={{
-                flexDirection: "row",
-                width: "70%",
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <FormControl sx={{ width: "47%" }}>
-                <TextField
-                  id="qty"
-                  label="Enter Quantity"
-                  variant="outlined"
-                  value={formData.resale.qty}
-                  onChange={handleReSellValueChange}
-                />
-                <FormHelperText style={{ color: "inherit" }}>
-                  {"Enter Resell Quantity"}
-                </FormHelperText>
-              </FormControl>
-              <FormControl sx={{ width: "47%" }}>
-                <TextField
-                  id="price"
-                  label="Resell Price"
-                  variant="outlined"
-                  value={formData.resale.price}
-                  onChange={handleReSellValueChange}
-                />
-                <FormHelperText style={{ color: "inherit" }}>
-                  {"Enter Price per Item"}
-                </FormHelperText>
-              </FormControl>
-            </Box>
-            <FormControl>
-              <Button
-                onClick={handleSubmit}
-                variant="contained"
-                color="primary"
-                style={{ color: "white" }}
-              >
-                Submit
-              </Button>
+            <FormControl sx={{ width: "47%" }}>
+              {selectedWarehouse.length !== 0 ? (
+                <WarehousePriceTable warehouses={selectedWarehouse} />
+              ) : (
+                ""
+              )}
             </FormControl>
           </Box>
 
-          <Snackbar
-            open={openSnackbar}
-            autoHideDuration={6000}
-            onClose={() => setOpenSnackbar(false)}
+          <CustomDivider text="ReSelling Details" />
+
+          <Box
+            sx={{
+              flexDirection: "row",
+              width: "70%",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
           >
-            <MuiAlert
-              elevation={6}
-              variant="filled"
-              onClose={() => setOpenSnackbar(false)}
-              severity="error"
+            <FormControl sx={{ width: "47%" }}>
+              <TextField
+                id="qty"
+                label="Enter Quantity"
+                variant="outlined"
+                value={formData.resale.qty}
+                onChange={handleReSellValueChange}
+              />
+              <FormHelperText style={{ color: "inherit" }}>
+                {"Enter Resell Quantity"}
+              </FormHelperText>
+            </FormControl>
+            <FormControl sx={{ width: "47%" }}>
+              <TextField
+                id="price"
+                label="Resell Price"
+                variant="outlined"
+                value={formData.resale.price}
+                onChange={handleReSellValueChange}
+              />
+              <FormHelperText style={{ color: "inherit" }}>{"Enter Price per Item"}</FormHelperText>
+            </FormControl>
+          </Box>
+          <FormControl>
+            <Button
+              onClick={handleSubmit}
+              variant="contained"
+              color="primary"
+              style={{ color: "white" }}
             >
-              {submitError}
-            </MuiAlert>
-          </Snackbar>
-        </Grid>
-      </MDBox>
-    </DashboardLayout>
+              Submit
+            </Button>
+          </FormControl>
+        </Box>
+
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={6000}
+          onClose={() => setOpenSnackbar(false)}
+        >
+          <MuiAlert
+            elevation={6}
+            variant="filled"
+            onClose={() => setOpenSnackbar(false)}
+            severity="error"
+          >
+            {submitError}
+          </MuiAlert>
+        </Snackbar>
+      </Grid>
+    </MDBox>
   );
 }
 
