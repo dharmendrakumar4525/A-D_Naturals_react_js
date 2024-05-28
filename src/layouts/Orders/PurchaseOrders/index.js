@@ -5,7 +5,18 @@ import PropTypes from "prop-types";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-
+import { Button } from "@mui/material";
+import {
+  format,
+  isWithinInterval,
+  startOfQuarter,
+  endOfQuarter,
+  startOfMonth,
+  endOfMonth,
+  parseISO,
+  addMonths,
+  addYears,
+} from "date-fns";
 // Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
@@ -16,41 +27,97 @@ import axios from "axios";
 import { environment } from "environments/environment";
 import { GET_PURCHASEORDER_API } from "environments/apiPaths";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { getVendorNameByID } from "../utils";
+import { getVendorNameByID, formatDate } from "../utils";
 import DetailsModal from "./DetailsModal";
+import FilterModal from "./FilterModal";
 
 function PurchaseOrderTable() {
-  const [searchQuery, setSearchQuery] = useState("");
   const [vendors, setVendors] = useState([]);
   const [warehouses, setWarehouse] = useState([]);
   const [rowData, setRowData] = useState([]);
   const [originalData, setOriginalData] = useState([]);
   const [isRefetch, setIsRefetch] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
-  const onSearch = (query) => {
-    setSearchQuery(query);
+  const openFilterModal = () => {
+    setIsFilterModalOpen(true);
+  };
+
+  //----------------------------Delete Function---------------------------------
+
+  const handleDelete = async (purchaseOrderID) => {
+    try {
+      await axios.delete(`${environment.api_path}/${GET_PURCHASEORDER_API}/${purchaseOrderID}`);
+      setRowData((prevData) => prevData.filter((purchase) => purchase._id !== purchaseOrderID));
+    } catch (error) {
+      console.error("Error deleting PurchaseOrder:", error);
+    }
   };
 
   //----------------------------Filter Function ---------------------------------
 
-  const filterData = () => {
-    console.log(searchQuery, "Here");
-    if (!searchQuery) {
-      setRowData(originalData);
-      return;
-    }
+  const handleFilter = (filterType, year, month, quarter, halfYear) => {
+    let filteredData = [];
 
-    const filteredData = originalData.filter((location) =>
-      location.location_name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    console.log(filteredData, "here");
+    const startYear = parseInt(year, 10);
+    const startDate = new Date(startYear, 3, 1); // Start from April of the given year
+    const endDate = new Date(startYear + 1, 2, 31); // End at March of the next year
+
+    switch (filterType) {
+      case "monthly":
+        filteredData = originalData.filter((order) => {
+          const orderDate = parseISO(order.created_at);
+          return isWithinInterval(orderDate, {
+            start: startOfMonth(new Date(startYear, month - 1, 1)),
+            end: endOfMonth(new Date(startYear, month - 1, 1)),
+          });
+        });
+        break;
+
+      case "quarterly":
+        filteredData = originalData.filter((order) => {
+          const orderDate = parseISO(order.created_at);
+          return isWithinInterval(orderDate, {
+            start: startOfQuarter(addMonths(new Date(startYear, 3, 1), (quarter - 1) * 3)),
+            end: endOfQuarter(addMonths(new Date(startYear, 3, 1), (quarter - 1) * 3)),
+          });
+        });
+        break;
+
+      case "halfyearly":
+        if (halfYear === "1") {
+          filteredData = originalData.filter((order) => {
+            const orderDate = parseISO(order.created_at);
+            return isWithinInterval(orderDate, {
+              start: new Date(startYear, 3, 1),
+              end: new Date(startYear, 8, 30),
+            });
+          });
+        } else {
+          filteredData = originalData.filter((order) => {
+            const orderDate = parseISO(order.created_at);
+            return isWithinInterval(orderDate, {
+              start: new Date(startYear, 9, 1),
+              end: new Date(startYear + 1, 2, 31),
+            });
+          });
+        }
+        break;
+
+      case "yearly":
+        filteredData = originalData.filter((order) => {
+          const orderDate = parseISO(order.created_at);
+          return isWithinInterval(orderDate, { start: startDate, end: endDate });
+        });
+        break;
+
+      default:
+        filteredData = originalData;
+        break;
+    }
 
     setRowData(filteredData);
   };
-
-  useEffect(() => {
-    filterData();
-  }, [searchQuery]);
 
   //----------------------------Fetch Function---------------------------------
 
@@ -62,7 +129,7 @@ function PurchaseOrderTable() {
         );
         const PurchaseOrdersList = PurchaseOrderResponse.data.data;
 
-        console.log(PurchaseOrdersList);
+        console.log(PurchaseOrdersList, "Here");
 
         const vendorResponse = await axios.get(`${environment.api_path}/vendor`);
         const vendorData = vendorResponse.data.data;
@@ -96,13 +163,18 @@ function PurchaseOrderTable() {
       PONo: <Author name={orders.po_no} />,
       vendor: <Author name={getVendorNameByID(vendors, orders.vendor)} />,
       quantity: <Author name={orders.order_qty} />,
-      date: <Author name={orders.created_at} />,
+      date: <Author name={formatDate(orders.created_at)} />,
 
       action: (
         <>
           <div style={{ display: "flex", alignItems: "center" }}>
             <MDTypography component="a" href="#" variant="caption" color="blue" fontWeight="medium">
-              <DetailsModal purchaseOrderData={orders} vendors={vendors} warehouses={warehouses} />
+              <DetailsModal
+                purchaseOrderData={orders}
+                vendors={vendors}
+                warehouses={warehouses}
+                handleDelete={handleDelete}
+              />
             </MDTypography>
           </div>
         </>
@@ -113,7 +185,7 @@ function PurchaseOrderTable() {
 
   return (
     <DashboardLayout>
-      <DashboardNavbar onSearch={onSearch} />
+      <DashboardNavbar />
       <MDBox pt={6} pb={3}>
         <Grid container spacing={6}>
           <Grid item xs={12}>
@@ -134,6 +206,14 @@ function PurchaseOrderTable() {
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
                   Purchase Order Table
+                  <Button onClick={openFilterModal} variant="contained" color="white">
+                    Filters
+                  </Button>
+                  <FilterModal
+                    open={isFilterModalOpen}
+                    onClose={() => setIsFilterModalOpen(false)}
+                    onFilter={handleFilter}
+                  />
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>

@@ -343,7 +343,7 @@ export default function PurchaseOrderForm() {
               justifyContent: "space-between",
             }}
           >
-            <FormControl sx={{ m: 0, width: "100%" }}>
+            <FormControl sx={{ m: 0, width: "47%" }}>
               <TextField
                 id="order_qty"
                 label="Order Quantity"
@@ -468,7 +468,7 @@ export default function PurchaseOrderForm() {
               onClick={handleSubmit}
               variant="contained"
               color="primary"
-              style={{ color: "white" }}
+              style={{ color: "white", width: "40%", marginTop: 20, alignSelf: "center" }}
             >
               Submit
             </Button>

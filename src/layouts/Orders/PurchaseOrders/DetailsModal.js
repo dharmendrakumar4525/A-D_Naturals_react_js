@@ -18,7 +18,9 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
 import MDTypography from "components/MDTypography";
-import { getVendorNameByID, getWarehouseNameByID } from "../utils";
+import { getVendorNameByID, getWarehouseNameByID, formatDate } from "../utils";
+import { useNavigate } from "react-router-dom";
+import { BorderBottom } from "@mui/icons-material";
 
 const style = {
   position: "absolute",
@@ -39,12 +41,24 @@ export default function DetailsModal({
   purchaseOrderData = null,
   vendors = null,
   warehouses,
+  handleDelete,
   setIsRefetch = () => {},
 }) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  console.log(warehouses);
+  const navigate = useNavigate();
+
+  const deletePO = () => {
+    handleDelete(purchaseOrderData._id);
+  };
+
+  const handleEdit = () => {
+    navigate("/view-orders/purchase-orders/edit-purchase-order", {
+      state: { purchaseOrder: purchaseOrderData },
+    });
+  };
+
   return (
     <div>
       <Button variant="text" style={{ color: "#3791ed" }} onClick={handleOpen}>
@@ -60,10 +74,12 @@ export default function DetailsModal({
         <Box sx={style}>
           {purchaseOrderData && (
             <div>
-              <MDTypography variant="h6" gutterBottom>
-                Purchase Order Details
-              </MDTypography>
-              <Grid container spacing={1}>
+              <Grid container spacing={1} sx={{ borderBottom: "1px solid black" }}>
+                <MDTypography variant="h6" gutterBottom>
+                  Purchase Order Details
+                </MDTypography>
+              </Grid>
+              <Grid container spacing={1} sx={{ marginTop: 2 }}>
                 <Grid item xs={12}>
                   <MDTypography sx={{ fontSize: 13 }}>
                     <strong>PO Number:</strong> {purchaseOrderData.po_no}
@@ -76,28 +92,27 @@ export default function DetailsModal({
                 </Grid>
                 <Grid item xs={12}>
                   <MDTypography sx={{ fontSize: 13 }}>
-                    <strong>Order Quantity:</strong> {purchaseOrderData.order_qty}
+                    <strong>Order Quantity:</strong> {purchaseOrderData.order_qty} unit
                   </MDTypography>
                 </Grid>
                 <Grid item xs={12}>
                   <MDTypography sx={{ fontSize: 13 }}>
-                    <strong>Price:</strong> {purchaseOrderData.price}
+                    <strong>Price:</strong> ₹ {purchaseOrderData.price}
                   </MDTypography>
                 </Grid>
                 <Grid item xs={12}>
                   <MDTypography sx={{ fontSize: 13 }}>
-                    <strong>Resale Quantity:</strong> {purchaseOrderData?.resale?.qty}
+                    <strong>Resale Quantity:</strong> {purchaseOrderData?.resale?.qty} unit
                   </MDTypography>
                 </Grid>
                 <Grid item xs={12}>
                   <MDTypography sx={{ fontSize: 13 }}>
-                    <strong>Resale Price:</strong> {purchaseOrderData.resale?.price}
+                    <strong>Resale Price:</strong> ₹ {purchaseOrderData.resale?.price}
                   </MDTypography>
                 </Grid>
                 <Grid item xs={12}>
                   <MDTypography sx={{ fontSize: 13 }}>
-                    <strong>Created At:</strong>{" "}
-                    {new Date(purchaseOrderData.created_at).toLocaleString()}
+                    <strong>Purchase Date:</strong> {formatDate(purchaseOrderData.created_at)}
                   </MDTypography>
                 </Grid>
                 <Grid item xs={12}>
@@ -109,17 +124,50 @@ export default function DetailsModal({
                       <TableBody>
                         {purchaseOrderData?.warehouses?.map((warehouse, index) => (
                           <TableRow key={index}>
-                            <TableCell component="th" scope="row" sx={{ fontSize: 12 }}>
+                            <TableCell
+                              component="th"
+                              scope="row"
+                              sx={{ fontSize: 12, fontWeight: "medium" }}
+                            >
                               {getWarehouseNameByID(warehouses, warehouse.warehouse)}
                             </TableCell>
-                            <TableCell align="right" sx={{ fontSize: 12 }}>
-                              {warehouse.qty}
+                            <TableCell align="right" sx={{ fontSize: 12, fontWeight: "regular" }}>
+                              {warehouse.qty} unit
                             </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
                   </TableContainer>
+                </Grid>
+                <Grid
+                  item
+                  xs={12}
+                  sx={{ flexDirection: "row", justifyContent: "space-between", gap: 2 }}
+                >
+                  <Button
+                    onClick={deletePO}
+                    variant="contained"
+                    color="primary"
+                    style={{ color: "white", width: "45%", marginTop: 20, alignSelf: "center" }}
+                  >
+                    Delete Order
+                  </Button>
+
+                  <Button
+                    onClick={handleEdit}
+                    variant="contained"
+                    color="primary"
+                    style={{
+                      color: "white",
+                      width: "45%",
+                      marginLeft: 20,
+                      marginTop: 20,
+                      alignSelf: "center",
+                    }}
+                  >
+                    Edit Order
+                  </Button>
                 </Grid>
               </Grid>
             </div>

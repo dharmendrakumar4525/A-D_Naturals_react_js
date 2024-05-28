@@ -69,7 +69,7 @@ function OrderTable() {
                   color="primary"
                   icon="person_add"
                   title="Warehouse Orders"
-                  count={warehouseOrderCount}
+                  count={0}
                   percentage={{
                     color: "success",
                     amount: "",
@@ -87,7 +87,7 @@ function OrderTable() {
                   color="primary"
                   icon="person_add"
                   title="Seller Orders"
-                  count={sellerOrderCount}
+                  count={0}
                   percentage={{
                     color: "success",
                     amount: "",

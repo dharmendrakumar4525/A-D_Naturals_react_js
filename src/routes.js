@@ -59,6 +59,7 @@ import OrderTable from "layouts/Orders";
 import PurchaseOrderTable from "layouts/Orders/PurchaseOrders";
 import SellerOrderTable from "layouts/Orders/SellerOrders";
 import WarehouseOrderTable from "layouts/Orders/WarehouseOrders";
+import EditPurchaseOrder from "layouts/Orders/PurchaseOrders/EditPurchaseOrder";
 
 const routes = [
   {
@@ -289,6 +290,18 @@ const routes = [
     component: (
       <PrivateRoute>
         <SellerOrderTable />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "Edit Purchase Order",
+    key: "edit-purchase-order",
+    route: "/view-orders/purchase-orders/edit-purchase-order",
+    component: (
+      <PrivateRoute>
+        <EditPurchaseOrder />
       </PrivateRoute>
     ),
   },
