@@ -5,7 +5,18 @@ import PropTypes from "prop-types";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-
+import { Button } from "@mui/material";
+import {
+  format,
+  isWithinInterval,
+  startOfQuarter,
+  endOfQuarter,
+  startOfMonth,
+  endOfMonth,
+  parseISO,
+  addMonths,
+  addYears,
+} from "date-fns";
 // Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
@@ -14,67 +25,178 @@ import DataTable from "examples/Tables/DataTable";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { environment } from "environments/environment";
-import { GET_VENDOR_API } from "environments/apiPaths";
+import { GET_PURCHASEORDER_API, GET_WAREHOUSEORDER_API } from "environments/apiPaths";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { getVendorNameByID, formatDate, getWarehouseNameByID } from "../utils";
+import DetailsModal from "./DetailsModal";
+import FilterModal from "./FilterModal";
+import WareHouseModal from "./wareHouseFilterModal";
 
-function WarehouseOrderTable() {
-  const [searchQuery, setSearchQuery] = useState("");
+function WareHouseOrderTable() {
+  const [vendors, setVendors] = useState([]);
+  const [warehouses, setWarehouse] = useState([]);
+  const [warehouseId, setWarehouseId] = useState("");
   const [rowData, setRowData] = useState([]);
   const [originalData, setOriginalData] = useState([]);
   const [isRefetch, setIsRefetch] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isWareHouseModalOpen, setIsWareHouseModalOpen] = useState(false);
+  const [warehouseFilterData, setWarehouseFilterData] = useState([]);
+  const [rejected, setRejected] = useState(0);
+  const [received, setRceived] = useState(0);
+  const openWareHouseFilterModal = () => {
+    setIsWareHouseModalOpen(true);
+  };
 
-  const onSearch = (query) => {
-    setSearchQuery(query);
+  const openFilterModal = () => {
+    setIsFilterModalOpen(true);
+  };
+
+  //----------------------------Delete Function---------------------------------
+
+  const handleDelete = async (warehouseOrderID) => {
+    try {
+      await axios.delete(`${environment.api_path}/${GET_WAREHOUSEORDER_API}/${warehouseOrderID}`);
+      setRowData((prevData) => prevData.filter((purchase) => purchase._id !== warehouseOrderID));
+      setIsFilterModalOpen(false);
+    } catch (error) {
+      console.error("Error deleting WareHouseOrder:", error);
+    }
   };
 
   //----------------------------Filter Function ---------------------------------
 
-  const filterData = () => {
-    console.log(searchQuery, "Here");
-    if (!searchQuery) {
-      setRowData(originalData);
-      return;
+  const handleFilter = (filterType, year, month, quarter, halfYear) => {
+    let filteredData = [];
+
+    const startYear = parseInt(year, 10);
+    const startDate = new Date(startYear, 3, 1); // Start from April of the given year
+    const endDate = new Date(startYear + 1, 2, 31); // End at March of the next year
+
+    switch (filterType) {
+      case "monthly":
+        filteredData = warehouseFilterData.filter((order) => {
+          const orderDate = parseISO(order.created_at);
+          return isWithinInterval(orderDate, {
+            start: startOfMonth(new Date(startYear, month - 1, 1)),
+            end: endOfMonth(new Date(startYear, month - 1, 1)),
+          });
+        });
+        break;
+
+      case "quarterly":
+        filteredData = warehouseFilterData.filter((order) => {
+          const orderDate = parseISO(order.created_at);
+          return isWithinInterval(orderDate, {
+            start: startOfQuarter(addMonths(new Date(startYear, 3, 1), (quarter - 1) * 3)),
+            end: endOfQuarter(addMonths(new Date(startYear, 3, 1), (quarter - 1) * 3)),
+          });
+        });
+        break;
+
+      case "halfyearly":
+        if (halfYear === "1") {
+          filteredData = warehouseFilterData.filter((order) => {
+            const orderDate = parseISO(order.created_at);
+            return isWithinInterval(orderDate, {
+              start: new Date(startYear, 3, 1),
+              end: new Date(startYear, 8, 30),
+            });
+          });
+        } else {
+          filteredData = warehouseFilterData.filter((order) => {
+            const orderDate = parseISO(order.created_at);
+            return isWithinInterval(orderDate, {
+              start: new Date(startYear, 9, 1),
+              end: new Date(startYear + 1, 2, 31),
+            });
+          });
+        }
+        break;
+
+      case "yearly":
+        filteredData = originalData.filter((order) => {
+          const orderDate = parseISO(order.created_at);
+          return isWithinInterval(orderDate, { start: startDate, end: endDate });
+        });
+        break;
+
+      default:
+        filteredData = originalData;
+        break;
     }
 
-    const filteredData = originalData.filter((location) =>
-      location.location_name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    console.log(filteredData, "here");
+    let received = 0;
+    filteredData.forEach((order) => {
+      received += order.received_qty;
+    });
 
+    let rejected = 0;
+    filteredData.forEach((order) => {
+      rejected += order.rejected_qty;
+    });
+
+    setRceived(received);
+    setRejected(rejected);
     setRowData(filteredData);
   };
 
-  useEffect(() => {
-    filterData();
-  }, [searchQuery]);
+  //----------------------------------WareHouse Filter ------------------
+
+  function filterObjectsByWarehouseId(warehouseId) {
+    setWarehouseId(warehouseId);
+    console.log(warehouseId, "here warehouse");
+
+    // Assuming originalData is your array of objects
+    const filteredObjects = originalData.filter((object) => object.warehouse === warehouseId);
+    console.log(filteredObjects);
+    setRowData(filteredObjects);
+    setWarehouseFilterData(filteredObjects);
+    let received = 0;
+    filteredObjects.forEach((order) => {
+      received += order.received_qty;
+    });
+
+    let rejected = 0;
+    filteredObjects.forEach((order) => {
+      rejected += order.rejected_qty;
+    });
+
+    setRceived(received);
+    setRejected(rejected);
+  }
 
   //----------------------------Fetch Function---------------------------------
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const locationResponse = await axios.get(`${environment.api_path}/location`);
-        const locationData = locationResponse.data.data;
+        const warehouseOrderResponse = await axios.get(
+          `${environment.api_path}${GET_WAREHOUSEORDER_API}`
+        );
+        const warehouseOrdersList = warehouseOrderResponse.data.data;
 
-        // const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
-        // const warehouseData = warehouseResponse.data.data;
-        // console.log("warehouseData", warehouseData);
+        console.log(warehouseOrdersList, "Here");
 
-        // const mappedData = locationData.map((location) => {
-        //   const warehouse = warehouseData.find(
-        //     (warehouse) => warehouse[0]._id === location.warehouse[0]
-        //   );
-        //   console.log("warehouse._id", warehouseData[0]._id);
-        //   console.log("location.warehouse", location.warehouse[0]);
-        //   return {
-        //     ...location,
-        //     warehouse: warehouse ? warehouse.warehouse : "Unknown",
-        //   };
-        // });
-        // console.log("mappedData", mappedData);
+        const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
+        const warehouseData = warehouseResponse.data.data;
+        setWarehouse(warehouseData);
+        setRowData(warehouseOrdersList);
+        setOriginalData(warehouseOrdersList);
+        let received = 0;
+        warehouseOrdersList.forEach((order) => {
+          received += order.received_qty;
+        });
 
-        setRowData(locationData);
-        setOriginalData(locationData);
+        let rejected = 0;
+        warehouseOrdersList.forEach((order) => {
+          rejected += order.rejected_qty;
+        });
+
+        setRceived(received);
+        setRejected(rejected);
+        setRowData(warehouseOrdersList);
+        setOriginalData(warehouseOrdersList);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -84,40 +206,45 @@ function WarehouseOrderTable() {
   }, [isRefetch]);
 
   //----------------------------Row Data---------------------------------
-  /*const data = {
+  const data = {
     columns: [
-      { Header: "Name", accessor: "name", width: "45%", align: "left" },
-      { Header: "Action", accessor: "action", align: "center" },
+      { Header: "PO No.", accessor: "PONo", align: "center", width: "15%" },
+      { Header: "WareHouse", accessor: "WareHouse", align: "center" },
+      { Header: "Received Quantity", accessor: "ReceivedQuantity", align: "center" },
+      { Header: "Received Date", accessor: "date", align: "center" },
+      { Header: "action", accessor: "action", align: "center" },
     ],
-    rows: rowData.map((location) => ({
-      name: <Author name={location.location_name} />,
+    rows: rowData.map((orders) => ({
+      PONo: <Author name={orders.po_no} />,
+      WareHouse: <Author name={getWarehouseNameByID(warehouses, orders.warehouse)} />,
+      ReceivedQuantity: <Author name={orders.received_qty} />,
+      date: <Author name={formatDate(orders.created_at)} />,
+
       action: (
         <>
           <div style={{ display: "flex", alignItems: "center" }}>
-            <MDTypography
-              component="a"
-              href="#"
-              variant="caption"
-              color="text"
-              fontWeight="medium"
-              onClick={() => handleDelete(location._id)}
-              style={{ marginRight: "8px" }}
-            >
-              <DeleteIcon />
-            </MDTypography>
-            <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-              DetailsModal
+            <MDTypography component="a" href="#" variant="caption" color="blue" fontWeight="medium">
+              {warehouseId === "" ? (
+                "view"
+              ) : (
+                <DetailsModal
+                  purchaseOrderData={orders}
+                  vendors={vendors}
+                  warehouses={warehouses}
+                  handleDelete={handleDelete}
+                />
+              )}
             </MDTypography>
           </div>
         </>
       ),
     })),
-  }; */
+  };
   //----------------------------Main Component---------------------------------
 
   return (
     <DashboardLayout>
-      <DashboardNavbar onSearch={onSearch} />
+      <DashboardNavbar />
       <MDBox pt={6} pb={3}>
         <Grid container spacing={6}>
           <Grid item xs={12}>
@@ -137,17 +264,62 @@ function WarehouseOrderTable() {
                   color="white"
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
-                  Purchase Order Table
+                  <MDTypography
+                    color="white"
+                    style={{
+                      fontSize: 13,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    Total Received: {received}
+                  </MDTypography>
+                  <MDTypography
+                    color="white"
+                    style={{
+                      display: "flex",
+                      fontSize: 13,
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    Total Damaged: {rejected}
+                  </MDTypography>
+                  <Button onClick={openFilterModal} variant="contained" color="white">
+                    Filters
+                  </Button>
+                  <FilterModal
+                    open={isFilterModalOpen}
+                    onClose={() => setIsFilterModalOpen(false)}
+                    onFilter={handleFilter}
+                  />
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                {/* <DataTable
+                <MDTypography sx={{ fontSize: 12, marginBottom: 3 }}>
+                  <Button
+                    onClick={openWareHouseFilterModal}
+                    variant="contained"
+                    sx={{ marginLeft: 2, marginRight: 2 }}
+                    color="dark"
+                  >
+                    Select WareHouse
+                  </Button>
+                  Select the WareHouse*
+                </MDTypography>
+                <WareHouseModal
+                  open={isWareHouseModalOpen}
+                  onClose={() => setIsWareHouseModalOpen(false)}
+                  filterObjectsByWarehouseId={filterObjectsByWarehouseId}
+                />
+                <DataTable
                   table={{ columns: data.columns, rows: data.rows }}
                   isSorted={false}
                   entriesPerPage={false}
                   showTotalEntries={false}
                   noEndBorder
-  />*/}
+                />
               </MDBox>
             </Card>
           </Grid>
@@ -158,13 +330,12 @@ function WarehouseOrderTable() {
   );
 }
 
-export default WarehouseOrderTable;
+export default WareHouseOrderTable;
 
-{
-  /*const Author = ({ name }) => (
+const Author = ({ name }) => (
   <MDBox display="flex" alignItems="center" lineHeight={1}>
     <MDBox ml={2} lineHeight={1}>
-      <MDTypography display="block" variant="button" fontWeight="medium">
+      <MDTypography display="block" variant="button" sx={{ fontWeight: "regular", fontSize: 12 }}>
         {name}
       </MDTypography>
     </MDBox>
@@ -173,5 +344,4 @@ export default WarehouseOrderTable;
 
 Author.propTypes = {
   name: PropTypes.string.isRequired,
-}; */
-}
+};

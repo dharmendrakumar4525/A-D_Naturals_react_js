@@ -252,6 +252,7 @@ export default function PurchaseOrderForm() {
     const updatedWarehouseArray = selectedWarehouses.map((warehouseId) => ({
       warehouse: warehouseId._id,
       qty: 0,
+      status: "pending",
     }));
     setWarehouseArray(updatedWarehouseArray);
   };

@@ -13,17 +13,6 @@ export const getVendorNameByID = (vendors, id) => {
   return vendor ? vendor.vendor_name : null;
 };
 
-export const getWarehouseNameByID = (warehouses, id) => {
-  console.log(warehouses, "warehouse");
-  const warehouse = warehouses.find((warehouse) => warehouse._id === id);
-  return warehouse ? warehouse.warehouse_name : null;
-};
-
-export const getSellerNameByID = (sellers, id) => {
-  const seller = sellers.find((seller) => seller._id === id);
-  return seller ? seller.name : null;
-};
-
 export function formatDate(isoDate) {
   const date = new Date(isoDate);
   const day = String(date.getDate()).padStart(2, "0");
@@ -32,3 +21,8 @@ export function formatDate(isoDate) {
 
   return `${day}-${month}-${year}`;
 }
+
+export const getWarehouseNameByID = (warehouses, id) => {
+  const warehouse = warehouses.find((warehouse) => warehouse._id === id);
+  return warehouse ? warehouse.warehouse_name : null;
+};

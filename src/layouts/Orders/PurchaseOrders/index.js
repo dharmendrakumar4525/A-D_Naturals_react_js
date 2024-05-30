@@ -37,6 +37,8 @@ function PurchaseOrderTable() {
   const [rowData, setRowData] = useState([]);
   const [originalData, setOriginalData] = useState([]);
   const [isRefetch, setIsRefetch] = useState(false);
+  const [cost, setCost] = useState(0);
+  const [purchase, setPurchase] = useState([0]);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   const openFilterModal = () => {
@@ -49,6 +51,7 @@ function PurchaseOrderTable() {
     try {
       await axios.delete(`${environment.api_path}/${GET_PURCHASEORDER_API}/${purchaseOrderID}`);
       setRowData((prevData) => prevData.filter((purchase) => purchase._id !== purchaseOrderID));
+      setIsFilterModalOpen(false);
     } catch (error) {
       console.error("Error deleting PurchaseOrder:", error);
     }
@@ -140,6 +143,23 @@ function PurchaseOrderTable() {
         console.log(warehouseData);
         setWarehouse(warehouseData);
 
+        let totalOrderQuantity = 0;
+        let totalPrice = 0;
+
+        // Iterate over the warehouses array to sum up the quantities and calculate the total price
+        PurchaseOrdersList.forEach((order) => {
+          totalOrderQuantity += order.order_qty;
+        });
+
+        PurchaseOrdersList.forEach((order) => {
+          totalPrice += order.price * order.order_qty;
+        });
+
+        setPurchase(totalOrderQuantity);
+
+        // Calculate the total price
+
+        setCost(totalPrice);
         setRowData(PurchaseOrdersList);
         setOriginalData(PurchaseOrdersList);
       } catch (error) {
@@ -205,7 +225,28 @@ function PurchaseOrderTable() {
                   color="white"
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
-                  Purchase Order Table
+                  <MDTypography
+                    color="white"
+                    style={{
+                      fontSize: 13,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    Total Purchase: {purchase}
+                  </MDTypography>
+                  <MDTypography
+                    color="white"
+                    style={{
+                      display: "flex",
+                      fontSize: 13,
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    Total Cost: {cost}
+                  </MDTypography>
                   <Button onClick={openFilterModal} variant="contained" color="white">
                     Filters
                   </Button>

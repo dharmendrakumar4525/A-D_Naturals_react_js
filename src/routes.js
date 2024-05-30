@@ -60,6 +60,8 @@ import PurchaseOrderTable from "layouts/Orders/PurchaseOrders";
 import SellerOrderTable from "layouts/Orders/SellerOrders";
 import WarehouseOrderTable from "layouts/Orders/WarehouseOrders";
 import EditPurchaseOrder from "layouts/Orders/PurchaseOrders/EditPurchaseOrder";
+import WarehouseOrderForm from "layouts/Inventory/WarehouseOrder/WarehouseOrderForm";
+import EditWareHouseOrder from "layouts/Orders/WarehouseOrders/EditWareHouseOrder";
 
 const routes = [
   {
@@ -235,7 +237,7 @@ const routes = [
     name: "SellerOrder",
     key: "sellerOrder",
     icon: <Icon fontSize="small">receipt_long</Icon>,
-    route: "/master/seller-order",
+    route: "/inventory/seller-order",
     component: (
       <PrivateRoute>
         <SellerOrder />
@@ -302,6 +304,29 @@ const routes = [
     component: (
       <PrivateRoute>
         <EditPurchaseOrder />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "Create Warehouse Order",
+    key: "create-warehouse-order",
+    route: "/inventory/warehouse-order/create-warehouse-order",
+    component: (
+      <PrivateRoute>
+        <WarehouseOrderForm />
+      </PrivateRoute>
+    ),
+  },
+  {
+    type: "noCollapse",
+    name: "Edit Warehouse Order",
+    key: "edit-warehouse-order",
+    route: "/view-orders/warehouse-orders/edit-warehouse-order",
+    component: (
+      <PrivateRoute>
+        <EditWareHouseOrder />
       </PrivateRoute>
     ),
   },

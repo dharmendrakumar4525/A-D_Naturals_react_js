@@ -39,33 +39,22 @@ const style = {
 
 export default function DetailsModal({
   purchaseOrderData = null,
-  vendors = null,
   warehouses,
   handleDelete,
   setIsRefetch = () => {},
 }) {
-  const [isEdit, setIsEdit] = useState(true);
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const [ieditable, setIeditable] = useState(true);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const iseditable = !purchaseOrderData.warehouses.every(
-      (warehouse) => warehouse.status === "completed"
-    );
-    setIeditable(iseditable);
-    console.log(iseditable);
-  }, [purchaseOrderData.warehouses]);
 
   const deletePO = () => {
     handleDelete(purchaseOrderData._id);
   };
 
   const handleEdit = () => {
-    navigate("/view-orders/purchase-orders/edit-purchase-order", {
-      state: { purchaseOrder: purchaseOrderData },
+    navigate("/view-orders/warehouse-orders/edit-warehouse-order", {
+      state: { warehouseOrder: purchaseOrderData },
     });
   };
 
@@ -97,59 +86,26 @@ export default function DetailsModal({
                 </Grid>
                 <Grid item xs={12}>
                   <MDTypography sx={{ fontSize: 13 }}>
-                    <strong>Vendor:</strong> {getVendorNameByID(vendors, purchaseOrderData.vendor)}
+                    <strong>Warehouse:</strong>{" "}
+                    {getWarehouseNameByID(warehouses, purchaseOrderData.warehouse)}
                   </MDTypography>
                 </Grid>
                 <Grid item xs={12}>
                   <MDTypography sx={{ fontSize: 13 }}>
-                    <strong>Order Quantity:</strong> {purchaseOrderData.order_qty} unit
+                    <strong>Received Quantity:</strong> {purchaseOrderData.received_qty} unit
                   </MDTypography>
                 </Grid>
                 <Grid item xs={12}>
                   <MDTypography sx={{ fontSize: 13 }}>
-                    <strong>Price:</strong> ₹ {purchaseOrderData.price}
+                    <strong>Rejected Quantity:</strong> {purchaseOrderData.rejected_qty} unit
                   </MDTypography>
                 </Grid>
                 <Grid item xs={12}>
                   <MDTypography sx={{ fontSize: 13 }}>
-                    <strong>Resale Quantity:</strong> {purchaseOrderData?.resale?.qty} unit
+                    <strong>Received Date:</strong> {formatDate(purchaseOrderData.created_at)}
                   </MDTypography>
                 </Grid>
-                <Grid item xs={12}>
-                  <MDTypography sx={{ fontSize: 13 }}>
-                    <strong>Resale Price:</strong> ₹ {purchaseOrderData.resale?.price}
-                  </MDTypography>
-                </Grid>
-                <Grid item xs={12}>
-                  <MDTypography sx={{ fontSize: 13 }}>
-                    <strong>Purchase Date:</strong> {formatDate(purchaseOrderData.created_at)}
-                  </MDTypography>
-                </Grid>
-                <Grid item xs={12}>
-                  <MDTypography sx={{ fontSize: 13 }}>
-                    <strong>Warehouses Details:</strong>
-                  </MDTypography>
-                  <TableContainer component={Paper} sx={{ width: "60%" }}>
-                    <Table size="small" aria-label="warehouse table">
-                      <TableBody>
-                        {purchaseOrderData?.warehouses?.map((warehouse, index) => (
-                          <TableRow key={index}>
-                            <TableCell
-                              component="th"
-                              scope="row"
-                              sx={{ fontSize: 12, fontWeight: "medium" }}
-                            >
-                              {getWarehouseNameByID(warehouses, warehouse.warehouse)}
-                            </TableCell>
-                            <TableCell align="right" sx={{ fontSize: 12, fontWeight: "regular" }}>
-                              {warehouse.qty} unit
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </Grid>
+
                 <Grid
                   item
                   xs={12}
@@ -175,7 +131,6 @@ export default function DetailsModal({
                       marginTop: 20,
                       alignSelf: "center",
                     }}
-                    disabled={!ieditable}
                   >
                     Edit Order
                   </Button>

@@ -7,7 +7,7 @@ import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatist
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { GET_PURCHASEORDER_API } from "environments/apiPaths";
+import { GET_PURCHASEORDER_API, GET_WAREHOUSEORDER_API } from "environments/apiPaths";
 import { environment } from "environments/environment";
 
 function OrderTable() {
@@ -22,15 +22,17 @@ function OrderTable() {
         const purchaseOrderResponse = await axios.get(
           `${environment.api_path}/${GET_PURCHASEORDER_API}`
         );
-        //const warehouseOrderResponse = await axios.get(`${environment.api_path}/warehouse`);
+        const warehouseOrderResponse = await axios.get(
+          `${environment.api_path}/${GET_WAREHOUSEORDER_API}`
+        );
 
         //const sellerData = sellerOrderResponse.data.length;
         const purchaseData = purchaseOrderResponse.data.data.length;
-        //const warehouseData = warehouseOrderResponse.data.length;
+        const warehouseData = warehouseOrderResponse.data.data.length;
 
         //setSellerOrderCount(sellerData);
         setPurchaseOrderCount(purchaseData);
-        //setWarehouseOrderCount(warehouseData);
+        setWarehouseOrderCount(warehouseData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -64,12 +66,12 @@ function OrderTable() {
           </Grid>
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={1.5}>
-              <Link to="/view-orders/seller-orders">
+              <Link to="/view-orders/warehouse-orders">
                 <ComplexStatisticsCard
                   color="primary"
                   icon="person_add"
                   title="Warehouse Orders"
-                  count={0}
+                  count={warehouseOrderCount}
                   percentage={{
                     color: "success",
                     amount: "",
