@@ -51,7 +51,7 @@ import VendorsTable from "layouts/Master/vendors";
 import WarehouseTable from "layouts/Master/warehouse";
 import LocationsTable from "layouts/Master/locations";
 import WarehouseOrder from "layouts/Inventory/WarehouseOrder";
-import SellerOrder from "layouts/Inventory/SellerOrder";
+import PendingSellerOrder from "layouts/Inventory/SellerOrder";
 import PurchaseOrder from "layouts/Inventory/PurchaseOrder";
 import { LoginRoute } from "loginRedirect";
 import InventoryTable from "layouts/Inventory";
@@ -62,6 +62,7 @@ import WarehouseOrderTable from "layouts/Orders/WarehouseOrders";
 import EditPurchaseOrder from "layouts/Orders/PurchaseOrders/EditPurchaseOrder";
 import WarehouseOrderForm from "layouts/Inventory/WarehouseOrder/WarehouseOrderForm";
 import EditWareHouseOrder from "layouts/Orders/WarehouseOrders/EditWareHouseOrder";
+import SellerOrderForm from "layouts/Inventory/SellerOrder/CreateSellerOrderForm";
 
 const routes = [
   {
@@ -234,13 +235,13 @@ const routes = [
 
   {
     type: "noCollapse",
-    name: "SellerOrder",
-    key: "sellerOrder",
+    name: "Pending SellerOrder",
+    key: "PendingsellerOrder",
     icon: <Icon fontSize="small">receipt_long</Icon>,
-    route: "/inventory/seller-order",
+    route: "/inventory/pending-seller-order",
     component: (
       <PrivateRoute>
-        <SellerOrder />
+        <PendingSellerOrder />
       </PrivateRoute>
     ),
   },
@@ -327,6 +328,18 @@ const routes = [
     component: (
       <PrivateRoute>
         <EditWareHouseOrder />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "Create Seller Order",
+    key: "create-Seller-order",
+    route: "/inventory/pending-seller-order/create-seller-order",
+    component: (
+      <PrivateRoute>
+        <SellerOrderForm />
       </PrivateRoute>
     ),
   },

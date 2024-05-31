@@ -44,7 +44,7 @@ function InventoryTable() {
           </Grid>
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={31.5}>
-              <Link to="/inventory/seller-order">
+              <Link to="/inventory/pending-seller-order">
                 <ComplexStatisticsCard
                   icon="leaderboard"
                   title="Seller Order"

@@ -26,3 +26,8 @@ export const getWarehouseNameByID = (warehouses, id) => {
   const warehouse = warehouses.find((warehouse) => warehouse._id === id);
   return warehouse ? warehouse.warehouse_name : null;
 };
+
+export const getSellerNameByID = (sellers, id) => {
+  const seller = sellers.find((seller) => seller._id === id);
+  return seller ? seller.seller_name : null;
+};

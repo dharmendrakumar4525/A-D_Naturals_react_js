@@ -9,3 +9,4 @@ export const GET_LOCATION_API = "/location";
 export const GET_VENDOR_API = "/vendor";
 export const GET_PURCHASEORDER_API = "/purchase_order";
 export const GET_WAREHOUSEORDER_API = "/warehouse_order";
+export const GET_SELLERORDER_API = "/seller_order";
