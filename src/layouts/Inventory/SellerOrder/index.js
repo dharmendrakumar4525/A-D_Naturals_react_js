@@ -65,9 +65,7 @@ function PendingSellerOrder() {
         setWarehouseArray(warehouseList);
 
         //Filter PurchaseOrdersList based on the status of warehouse objects
-        const SellerOrderList = SellerOrderResponseList.filter(
-          (item) => item.consumed_qty === 0 && item.rejected_qty === 0
-        );
+        const SellerOrderList = SellerOrderResponseList.filter((item) => item.status === "pending");
 
         console.log(SellerOrderList);
         setRowData(SellerOrderList);
@@ -172,9 +170,10 @@ function PendingSellerOrder() {
                 <DataTable
                   table={{ columns: data.columns, rows: data.rows }}
                   isSorted={false}
-                  entriesPerPage={false}
-                  showTotalEntries={false}
+                  entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                  showTotalEntries={true}
                   noEndBorder
+                  pagination={{ variant: "contained", color: "info" }}
                 />
               </MDBox>
             </Card>

@@ -7,7 +7,11 @@ import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatist
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { GET_PURCHASEORDER_API, GET_WAREHOUSEORDER_API } from "environments/apiPaths";
+import {
+  GET_PURCHASEORDER_API,
+  GET_WAREHOUSEORDER_API,
+  GET_SELLERORDER_API,
+} from "environments/apiPaths";
 import { environment } from "environments/environment";
 
 function OrderTable() {
@@ -26,11 +30,15 @@ function OrderTable() {
           `${environment.api_path}/${GET_WAREHOUSEORDER_API}`
         );
 
+        const sellerOrderResponse = await axios.get(
+          `${environment.api_path}${GET_SELLERORDER_API}`
+        );
+
         //const sellerData = sellerOrderResponse.data.length;
         const purchaseData = purchaseOrderResponse.data.data.length;
         const warehouseData = warehouseOrderResponse.data.data.length;
-
-        //setSellerOrderCount(sellerData);
+        const SellerData = sellerOrderResponse.data.data.length;
+        setSellerOrderCount(SellerData);
         setPurchaseOrderCount(purchaseData);
         setWarehouseOrderCount(warehouseData);
       } catch (error) {
@@ -89,7 +97,7 @@ function OrderTable() {
                   color="primary"
                   icon="person_add"
                   title="Seller Orders"
-                  count={0}
+                  count={sellerOrderCount}
                   percentage={{
                     color: "success",
                     amount: "",

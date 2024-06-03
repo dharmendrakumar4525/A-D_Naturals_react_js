@@ -7,16 +7,11 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import { FormControl, FormHelperText } from "@mui/material";
-import Select from "@mui/material/Select";
+import { FormControl } from "@mui/material";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import { environment } from "environments/environment";
 import { GET_SELLERORDER_API } from "environments/apiPaths";
-
-import EditIcon from "@mui/icons-material/Edit";
 
 const style = {
   position: "absolute",
@@ -33,10 +28,12 @@ const style = {
   flexDirection: "column",
 };
 
-export default function PendingSalesDataModal({ sellerData = null, setIsRefetch = () => {} }) {
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+export default function PendingSalesDataModal({
+  sellerData = null,
+  handlePendingClose,
+  pendingSalesModal,
+  setIsRefetch = () => {},
+}) {
   const [formData, setFormData] = useState({
     seller_id: "",
     received_qty: "",
@@ -53,14 +50,17 @@ export default function PendingSalesDataModal({ sellerData = null, setIsRefetch 
         _id: sellerData._id,
         seller_id: sellerData.seller_id,
         received_qty: sellerData.received_qty,
-        consumed_qty: sellerData.rejected_qty,
+        consumed_qty: sellerData.consumed_qty, // Fixed the key here
         rejected_qty: sellerData.rejected_qty,
+        status: sellerData.status, // Fixed typo here
       };
 
       setFormData(formData);
     };
 
-    fetchData();
+    if (sellerData) {
+      fetchData();
+    }
   }, [sellerData]);
 
   const handleError = (errorMessage) => {
@@ -74,7 +74,7 @@ export default function PendingSalesDataModal({ sellerData = null, setIsRefetch 
       received_qty: formData.received_qty,
       consumed_qty: parseInt(formData.consumed_qty),
       rejected_qty: parseInt(formData.rejected_qty),
-      status: "completed",
+      status: formData.status,
     };
     console.log(newFormData);
     try {
@@ -88,12 +88,11 @@ export default function PendingSalesDataModal({ sellerData = null, setIsRefetch 
         received_qty: "",
         consumed_qty: "",
         rejected_qty: "",
-        status: "pending",
       });
 
       window.location.reload();
       setIsRefetch(true);
-      handleClose();
+      handlePendingClose();
     } catch (error) {
       console.error("Error submitting form:", error);
       if (error.response && error.response.data && error.response.data.message) {
@@ -111,12 +110,9 @@ export default function PendingSalesDataModal({ sellerData = null, setIsRefetch 
 
   return (
     <div>
-      <Button variant="text" style={{ color: "#2f89ec" }} onClick={handleOpen}>
-        +Add Sales Record
-      </Button>
       <Modal
-        open={open}
-        onClose={handleClose}
+        open={pendingSalesModal} // Corrected here
+        onClose={handlePendingClose} // Corrected here
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
@@ -135,14 +131,11 @@ export default function PendingSalesDataModal({ sellerData = null, setIsRefetch 
           </FormControl>
           <FormControl>
             <TextField
-              id="receivedQuantity"
+              id="received_qty" // Corrected here
               label="Received Quantity"
               variant="outlined"
               value={formData.received_qty}
               onChange={handleInputChange}
-              InputProps={{
-                readOnly: true,
-              }}
             />
           </FormControl>
           <FormControl>
@@ -161,7 +154,7 @@ export default function PendingSalesDataModal({ sellerData = null, setIsRefetch 
               label="Rejected Quantity"
               variant="outlined"
               helperText="Enter Rejected Quantity"
-              value={formData.location_name}
+              value={formData.rejected_qty} // Corrected here
               onChange={handleInputChange}
             />
           </FormControl>

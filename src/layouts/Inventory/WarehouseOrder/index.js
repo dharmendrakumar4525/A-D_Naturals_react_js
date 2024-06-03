@@ -196,9 +196,10 @@ function WarehouseOrder() {
                 <DataTable
                   table={{ columns: data.columns, rows: data.rows }}
                   isSorted={false}
-                  entriesPerPage={false}
-                  showTotalEntries={false}
+                  entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                  showTotalEntries={true}
                   noEndBorder
+                  pagination={{ variant: "contained", color: "info" }}
                 />
               </MDBox>
             </Card>

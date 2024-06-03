@@ -257,6 +257,7 @@ export default function SellerOrderForm() {
       received_qty: 0,
       consumed_qty: 0,
       rejected_qty: 0,
+      status: "pending",
     }));
     setSellerArray(updatedSellerArray);
   };
@@ -267,6 +268,7 @@ export default function SellerOrderForm() {
       received_qty: 0,
       consumed_qty: 0,
       rejected_qty: 0,
+      status: "pending",
     }));
     setSellerArray(updatedSellerArray);
     console.log(sellerArray);
