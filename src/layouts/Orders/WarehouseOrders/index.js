@@ -181,21 +181,35 @@ function WareHouseOrderTable() {
         const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
         const warehouseData = warehouseResponse.data.data;
         setWarehouse(warehouseData);
-        setRowData(warehouseOrdersList);
-        setOriginalData(warehouseOrdersList);
+
+        const currentDate = new Date();
+        console.log(currentDate);
+
+        const filteredByCurrentMonth = warehouseOrdersList.filter((order) => {
+          const orderDate = new Date(order.created_at);
+          console.log(orderDate);
+          return (
+            orderDate.getMonth() === currentDate.getMonth() &&
+            orderDate.getFullYear() === currentDate.getFullYear()
+          );
+        });
         let received = 0;
-        warehouseOrdersList.forEach((order) => {
+        filteredByCurrentMonth.forEach((order) => {
           received += order.received_qty;
         });
 
         let rejected = 0;
-        warehouseOrdersList.forEach((order) => {
+        filteredByCurrentMonth.forEach((order) => {
           rejected += order.rejected_qty;
         });
 
         setRceived(received);
         setRejected(rejected);
-        setRowData(warehouseOrdersList);
+
+        //console.log(filteredByCurrentMonth);
+        console.log(filteredByCurrentMonth);
+        setRowData(filteredByCurrentMonth);
+
         setOriginalData(warehouseOrdersList);
       } catch (error) {
         console.error("Error fetching data:", error);

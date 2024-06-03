@@ -119,6 +119,21 @@ function PurchaseOrderTable() {
         break;
     }
 
+    let totalOrderQuantity = 0;
+    let totalPrice = 0;
+
+    // Iterate over the warehouses array to sum up the quantities and calculate the total price
+    filteredData.forEach((order) => {
+      totalOrderQuantity += order.order_qty;
+    });
+
+    filteredData.forEach((order) => {
+      totalPrice += order.price * order.order_qty;
+    });
+
+    setPurchase(totalOrderQuantity);
+    setCost(totalPrice);
+
     setRowData(filteredData);
   };
 
@@ -143,24 +158,37 @@ function PurchaseOrderTable() {
         console.log(warehouseData);
         setWarehouse(warehouseData);
 
+        const currentDate = new Date();
+        console.log(currentDate);
+
+        const filteredByCurrentMonth = PurchaseOrdersList.filter((order) => {
+          const orderDate = new Date(order.created_at);
+          console.log(orderDate);
+          return (
+            orderDate.getMonth() === currentDate.getMonth() &&
+            orderDate.getFullYear() === currentDate.getFullYear()
+          );
+        });
+
         let totalOrderQuantity = 0;
         let totalPrice = 0;
 
         // Iterate over the warehouses array to sum up the quantities and calculate the total price
-        PurchaseOrdersList.forEach((order) => {
+        filteredByCurrentMonth.forEach((order) => {
           totalOrderQuantity += order.order_qty;
         });
 
-        PurchaseOrdersList.forEach((order) => {
+        filteredByCurrentMonth.forEach((order) => {
           totalPrice += order.price * order.order_qty;
         });
 
         setPurchase(totalOrderQuantity);
-
-        // Calculate the total price
-
         setCost(totalPrice);
-        setRowData(PurchaseOrdersList);
+
+        //console.log(filteredByCurrentMonth);
+        console.log(filteredByCurrentMonth);
+        setRowData(filteredByCurrentMonth);
+
         setOriginalData(PurchaseOrdersList);
       } catch (error) {
         console.error("Error fetching data:", error);

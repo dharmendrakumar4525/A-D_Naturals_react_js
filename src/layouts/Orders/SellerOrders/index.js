@@ -71,7 +71,7 @@ function SellerOrderTable() {
 
   const handleDelete = async (sellerOrderID) => {
     try {
-      await axios.delete(`${environment.api_path}/${GET_WAREHOUSEORDER_API}/${sellerOrderID}`);
+      await axios.delete(`${environment.api_path}/${GET_SELLERORDER_API}/${sellerOrderID}`);
       setRowData((prevData) => prevData.filter((purchase) => purchase._id !== sellerOrderID));
       setIsFilterModalOpen(false);
     } catch (error) {
@@ -237,18 +237,18 @@ function SellerOrderTable() {
         const currentDate = new Date();
         console.log(currentDate);
 
-        /*const filteredByCurrentMonth = sellerOrderList.filter((order) => {
+        const filteredByCurrentMonth = sellerOrderList.filter((order) => {
           const orderDate = new Date(order.created_at);
           console.log(orderDate);
           return (
             orderDate.getMonth() === currentDate.getMonth() &&
             orderDate.getFullYear() === currentDate.getFullYear()
           );
-        }); */
+        });
 
         //console.log(filteredByCurrentMonth);
-
-        setRowData(sellerOrderList);
+        console.log(filteredByCurrentMonth);
+        setRowData(filteredByCurrentMonth);
         setOriginalData(sellerOrderList);
         //calculateTotals(filteredByCurrentMonth);
       } catch (error) {
