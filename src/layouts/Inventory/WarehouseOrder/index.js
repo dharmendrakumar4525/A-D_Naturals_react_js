@@ -31,6 +31,7 @@ import { GET_PURCHASEORDER_API } from "environments/apiPaths";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getVendorNameByID, formatDate } from "../utils";
 import WareHouseModal from "./WareHouseModal";
+import Loader from "../../../assets/images/Loader.gif";
 import { useNavigate } from "react-router-dom";
 
 function WarehouseOrder() {
@@ -41,6 +42,7 @@ function WarehouseOrder() {
   const [isRefetch, setIsRefetch] = useState(false);
   const [isWareHouseModalOpen, setIsWareHouseModalOpen] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [submitError, setSubmitError] = useState("");
   const navigate = useNavigate();
 
@@ -65,6 +67,7 @@ function WarehouseOrder() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const PurchaseOrderResponse = await axios.get(
           `${environment.api_path}${GET_PURCHASEORDER_API}`
@@ -87,6 +90,7 @@ function WarehouseOrder() {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+      setLoading(false);
     };
 
     fetchData();
@@ -193,14 +197,21 @@ function WarehouseOrder() {
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                <DataTable
-                  table={{ columns: data.columns, rows: data.rows }}
-                  isSorted={false}
-                  entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
-                  showTotalEntries={true}
-                  noEndBorder
-                  pagination={{ variant: "contained", color: "info" }}
-                />
+                {loading ? (
+                  <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                    <img src={Loader} alt="loading..." />
+                    <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                  </MDBox>
+                ) : (
+                  <DataTable
+                    table={{ columns: data.columns, rows: data.rows }}
+                    isSorted={false}
+                    entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                    showTotalEntries={true}
+                    noEndBorder
+                    pagination={{ variant: "contained", color: "info" }}
+                  />
+                )}
               </MDBox>
             </Card>
 

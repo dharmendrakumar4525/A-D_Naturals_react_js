@@ -63,6 +63,7 @@ import EditPurchaseOrder from "layouts/Orders/PurchaseOrders/EditPurchaseOrder";
 import WarehouseOrderForm from "layouts/Inventory/WarehouseOrder/WarehouseOrderForm";
 import EditWareHouseOrder from "layouts/Orders/WarehouseOrders/EditWareHouseOrder";
 import SellerOrderForm from "layouts/Inventory/SellerOrder/CreateSellerOrderForm";
+import ExpenseTable from "layouts/Master/expenses";
 
 const routes = [
   {
@@ -138,6 +139,19 @@ const routes = [
     component: (
       <PrivateRoute>
         <SellersTable />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "Expense",
+    key: "expenses",
+    icon: <Icon fontSize="small">table_view</Icon>,
+    route: "/master/expenses",
+    component: (
+      <PrivateRoute>
+        <ExpenseTable />
       </PrivateRoute>
     ),
   },

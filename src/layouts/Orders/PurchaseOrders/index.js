@@ -30,6 +30,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { getVendorNameByID, formatDate } from "../utils";
 import DetailsModal from "./DetailsModal";
 import FilterModal from "./FilterModal";
+import Loader from "../../../assets/images/Loader.gif";
 
 function PurchaseOrderTable() {
   const [vendors, setVendors] = useState([]);
@@ -40,6 +41,7 @@ function PurchaseOrderTable() {
   const [cost, setCost] = useState(0);
   const [purchase, setPurchase] = useState([0]);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const openFilterModal = () => {
     setIsFilterModalOpen(true);
@@ -140,6 +142,7 @@ function PurchaseOrderTable() {
   //----------------------------Fetch Function---------------------------------
 
   useEffect(() => {
+    setLoading(true);
     const fetchData = async () => {
       try {
         const PurchaseOrderResponse = await axios.get(
@@ -193,6 +196,7 @@ function PurchaseOrderTable() {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+      setLoading(false);
     };
 
     fetchData();
@@ -286,14 +290,21 @@ function PurchaseOrderTable() {
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                <DataTable
-                  table={{ columns: data.columns, rows: data.rows }}
-                  isSorted={false}
-                  entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
-                  showTotalEntries={true}
-                  noEndBorder
-                  pagination={{ variant: "contained", color: "info" }}
-                />
+                {loading ? (
+                  <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                    <img src={Loader} alt="loading..." />
+                    <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                  </MDBox>
+                ) : (
+                  <DataTable
+                    table={{ columns: data.columns, rows: data.rows }}
+                    isSorted={false}
+                    entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                    showTotalEntries={true}
+                    noEndBorder
+                    pagination={{ variant: "contained", color: "info" }}
+                  />
+                )}
               </MDBox>
             </Card>
           </Grid>

@@ -16,6 +16,7 @@ import axios from "axios";
 import { environment } from "environments/environment";
 import { GET_VENDOR_API } from "environments/apiPaths";
 import DeleteIcon from "@mui/icons-material/Delete";
+import Loader from "../../../assets/images/Loader.gif";
 
 import LocationsTableModal from "layouts/Master/locations/locationsTableModal";
 
@@ -24,6 +25,7 @@ function LocationsTable() {
   const [rowData, setRowData] = useState([]);
   const [originalData, setOriginalData] = useState([]);
   const [isRefetch, setIsRefetch] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const onSearch = (query) => {
     setSearchQuery(query);
@@ -65,6 +67,7 @@ function LocationsTable() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const locationResponse = await axios.get(`${environment.api_path}/location`);
         const locationData = locationResponse.data.data;
@@ -91,6 +94,7 @@ function LocationsTable() {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+      setLoading(false);
     };
 
     fetchData();
@@ -155,14 +159,21 @@ function LocationsTable() {
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                <DataTable
-                  table={{ columns: data.columns, rows: data.rows }}
-                  isSorted={false}
-                  entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
-                  showTotalEntries={true}
-                  noEndBorder
-                  pagination={{ variant: "contained", color: "info" }}
-                />
+                {loading ? (
+                  <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                    <img src={Loader} alt="loading..." />
+                    <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                  </MDBox>
+                ) : (
+                  <DataTable
+                    table={{ columns: data.columns, rows: data.rows }}
+                    isSorted={false}
+                    entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                    showTotalEntries={true}
+                    noEndBorder
+                    pagination={{ variant: "contained", color: "info" }}
+                  />
+                )}
               </MDBox>
             </Card>
           </Grid>

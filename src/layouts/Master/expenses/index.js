@@ -2,12 +2,9 @@
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import PropTypes from "prop-types";
-
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-
-import VendorTableModal from "layouts/Master/vendors/vendorsTableModal";
 
 // Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -17,11 +14,13 @@ import DataTable from "examples/Tables/DataTable";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { environment } from "environments/environment";
-import { GET_VENDOR_API } from "environments/apiPaths";
+import { GET_EXPENSE_API } from "environments/apiPaths";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ExpenseTableModal from "./ExpenseTableModal";
+import GhostLoader from "../../../assets/images/GhostLoader.gif";
 import Loader from "../../../assets/images/Loader.gif";
 
-function VendorsTable() {
+function ExpenseTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [rowData, setRowData] = useState([]);
   const [originalData, setOriginalData] = useState([]);
@@ -34,10 +33,10 @@ function VendorsTable() {
 
   //----------------------------Delete Function---------------------------------
 
-  const handleDelete = async (vendorId) => {
+  const handleDelete = async (expenseId) => {
     try {
-      await axios.delete(`${environment.api_path}/${GET_VENDOR_API}/${vendorId}`);
-      setRowData((prevData) => prevData.filter((vendor) => vendor._id !== vendorId));
+      await axios.delete(`${environment.api_path}/${GET_EXPENSE_API}/${expenseId}`);
+      setRowData((prevData) => prevData.filter((expense) => expense._id !== expenseId));
     } catch (error) {
       console.error("Error deleting seller:", error);
     }
@@ -52,8 +51,8 @@ function VendorsTable() {
       return;
     }
 
-    const filteredData = originalData.filter((vendor) =>
-      vendor.vendor_name.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredData = originalData.filter((expense) =>
+      expense.expense_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
     console.log(filteredData, "here");
 
@@ -70,14 +69,15 @@ function VendorsTable() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const vendorResponse = await axios.get(`${environment.api_path}/${GET_VENDOR_API}`);
-        const vendorData = vendorResponse.data.data;
+        const expenseResponse = await axios.get(`${environment.api_path}/${GET_EXPENSE_API}`);
+        const expenseResponseData = expenseResponse.data.data;
 
-        setRowData(vendorData);
-        setOriginalData(vendorData);
+        setRowData(expenseResponseData);
+        setOriginalData(expenseResponseData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+
       setLoading(false);
     };
 
@@ -88,12 +88,10 @@ function VendorsTable() {
   const data = {
     columns: [
       { Header: "Name", accessor: "name", width: "45%", align: "left" },
-      { Header: "Contact Person", accessor: "contact_person", align: "left" },
       { Header: "Action", accessor: "action", align: "center" },
     ],
-    rows: rowData.map((vendor) => ({
-      name: <Author name={vendor.vendor_name} email={vendor.email} />,
-      contact_person: <Job contactPerson={vendor.contact_person} />,
+    rows: rowData.map((expense) => ({
+      name: <Author name={expense.expense_name} />,
       action: (
         <>
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -103,13 +101,13 @@ function VendorsTable() {
               variant="caption"
               color="text"
               fontWeight="medium"
-              onClick={() => handleDelete(vendor._id)}
+              onClick={() => handleDelete(expense._id)}
               style={{ marginRight: "8px" }}
             >
               <DeleteIcon />
             </MDTypography>
             <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-              <VendorTableModal vendorId={vendor._id} setIsRefetch={setIsRefetch} />
+              <ExpenseTableModal expenseId={expense._id} setIsRefetch={setIsRefetch} />
             </MDTypography>
           </div>
         </>
@@ -121,6 +119,7 @@ function VendorsTable() {
   return (
     <DashboardLayout>
       <DashboardNavbar onSearch={onSearch} />
+
       <MDBox pt={6} pb={3}>
         <Grid container spacing={6}>
           <Grid item xs={12}>
@@ -140,8 +139,8 @@ function VendorsTable() {
                   color="white"
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
-                  Vendors Table
-                  <VendorTableModal />
+                  Expenses Table
+                  <ExpenseTableModal />
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
@@ -170,33 +169,18 @@ function VendorsTable() {
   );
 }
 
-export default VendorsTable;
+export default ExpenseTable;
 
-//---------------------------- Child Component---------------------------------
-const Author = ({ name, email }) => (
+const Author = ({ name }) => (
   <MDBox display="flex" alignItems="center" lineHeight={1}>
     <MDBox ml={2} lineHeight={1}>
       <MDTypography display="block" variant="button" fontWeight="medium">
         {name}
       </MDTypography>
-      <MDTypography variant="caption">{email}</MDTypography>
     </MDBox>
-  </MDBox>
-);
-
-const Job = ({ contactPerson }) => (
-  <MDBox lineHeight={1} textAlign="left">
-    <MDTypography display="block" variant="caption" color="text" fontWeight="medium">
-      {contactPerson}
-    </MDTypography>
   </MDBox>
 );
 
 Author.propTypes = {
   name: PropTypes.string.isRequired,
-  email: PropTypes.string.isRequired,
-};
-
-Job.propTypes = {
-  contactPerson: PropTypes.string.isRequired,
 };

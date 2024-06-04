@@ -29,6 +29,7 @@ import WareHouseModal from "./WareHouseModal";
 import SellerModal from "./sellerModal";
 import { GET_SELLERORDER_API, GET_WAREHOUSEORDER_API, GET_SELLER_API } from "environments/apiPaths";
 import { getVendorNameByID, formatDate, getWarehouseNameByID } from "../utils";
+import Loader from "../../../assets/images/Loader.gif";
 
 function SellerOrderTable() {
   const [warehouses, setWarehouse] = useState([]);
@@ -44,6 +45,7 @@ function SellerOrderTable() {
   const [rejected, setRejected] = useState(0);
   const [received, setReceived] = useState(0);
   const [sold, setSold] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   // Track applied filters
   const [appliedFilters, setAppliedFilters] = useState({
@@ -217,6 +219,7 @@ function SellerOrderTable() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const sellerOrderResponse = await axios.get(
           `${environment.api_path}${GET_SELLERORDER_API}`
@@ -254,6 +257,7 @@ function SellerOrderTable() {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+      setLoading(false);
     };
 
     fetchData();
@@ -433,14 +437,21 @@ function SellerOrderTable() {
                   onClose={() => setIsSellerModalOpen(false)}
                   filterObjectsBySellerId={filterObjectsBySellerId}
                 />
-                <DataTable
-                  table={{ columns: data.columns, rows: data.rows }}
-                  isSorted={false}
-                  entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
-                  showTotalEntries={true}
-                  noEndBorder
-                  pagination={{ variant: "contained", color: "info" }}
-                />
+                {loading ? (
+                  <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                    <img src={Loader} alt="loading..." />
+                    <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                  </MDBox>
+                ) : (
+                  <DataTable
+                    table={{ columns: data.columns, rows: data.rows }}
+                    isSorted={false}
+                    entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                    showTotalEntries={true}
+                    noEndBorder
+                    pagination={{ variant: "contained", color: "info" }}
+                  />
+                )}
               </MDBox>
             </Card>
           </Grid>
