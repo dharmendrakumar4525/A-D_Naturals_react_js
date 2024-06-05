@@ -14,7 +14,6 @@ export const getVendorNameByID = (vendors, id) => {
 };
 
 export const getWarehouseNameByID = (warehouses, id) => {
-  console.log(warehouses, "warehouse");
   const warehouse = warehouses.find((warehouse) => warehouse._id === id);
   return warehouse ? warehouse.warehouse_name : null;
 };
@@ -24,6 +23,11 @@ export const getSellerNameByID = (sellers, id) => {
   return seller ? seller.name : null;
 };
 
+export const getExpenseNameByID = (expenses, id) => {
+  const expense = expenses.find((expense) => expense._id === id);
+  return expense ? expense.expense_name : null;
+};
+
 export function formatDate(isoDate) {
   const date = new Date(isoDate);
   const day = String(date.getDate()).padStart(2, "0");
@@ -31,4 +35,25 @@ export function formatDate(isoDate) {
   const year = date.getFullYear();
 
   return `${day}-${month}-${year}`;
+}
+
+export function getMonthName(date) {
+  console.log(date);
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  let newDate = new Date(date);
+  return monthNames[newDate.getMonth()];
 }

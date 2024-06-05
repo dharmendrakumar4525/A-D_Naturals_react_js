@@ -64,6 +64,9 @@ import WarehouseOrderForm from "layouts/Inventory/WarehouseOrder/WarehouseOrderF
 import EditWareHouseOrder from "layouts/Orders/WarehouseOrders/EditWareHouseOrder";
 import SellerOrderForm from "layouts/Inventory/SellerOrder/CreateSellerOrderForm";
 import ExpenseTable from "layouts/Master/expenses";
+import WareHouseExpenseTable from "layouts/WarehouseExpenses";
+import EditExpense from "layouts/WarehouseExpenses/EditExpenses";
+import AddExpense from "layouts/WarehouseExpenses/AddExpenses";
 
 const routes = [
   {
@@ -354,6 +357,43 @@ const routes = [
     component: (
       <PrivateRoute>
         <SellerOrderForm />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "collapse",
+    name: "Warehouse Expenses",
+    key: "Warehouse_Expenses",
+    icon: <Icon fontSize="small">table_view</Icon>,
+    route: "/Warehouse-Expenses",
+    component: (
+      <PrivateRoute>
+        <WareHouseExpenseTable />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "Edit WareHouse Expense",
+    key: "edit-wareHouse-expense",
+    route: "/Warehouse-Expenses/edit-wareHouse-expense",
+    component: (
+      <PrivateRoute>
+        <EditExpense />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "Add WareHouse Expense",
+    key: "add-wareHouse-expense",
+    route: "/Warehouse-Expenses/add-wareHouse-expense",
+    component: (
+      <PrivateRoute>
+        <AddExpense />
       </PrivateRoute>
     ),
   },

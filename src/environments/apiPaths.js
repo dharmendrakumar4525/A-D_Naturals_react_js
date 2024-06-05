@@ -11,3 +11,4 @@ export const GET_PURCHASEORDER_API = "/purchase_order";
 export const GET_WAREHOUSEORDER_API = "/warehouse_order";
 export const GET_SELLERORDER_API = "/seller_order";
 export const GET_EXPENSE_API = "/expense";
+export const GET_WAREHOUSE_EXPENSE_API = "/warehouse_expense";

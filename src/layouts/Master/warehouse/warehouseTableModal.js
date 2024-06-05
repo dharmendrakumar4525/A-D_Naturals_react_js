@@ -14,7 +14,7 @@ import Select from "@mui/material/Select";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import { environment } from "environments/environment";
-import { GET_WAREHOUSE_API, GET_LOCATION_API } from "environments/apiPaths";
+import { GET_WAREHOUSE_API, GET_LOCATION_API, GET_USERS_API } from "environments/apiPaths";
 
 import EditIcon from "@mui/icons-material/Edit";
 
@@ -73,6 +73,8 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
   const [open, setOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [availableLoacations, setAvailableLoacations] = useState([]);
+  const [selectedUser, setSelectedUser] = useState("");
+  const [availableUser, setAvailableUsers] = useState("");
   const [formData, setFormData] = useState({
     warehouse_name: "",
     location_name: "",
@@ -100,10 +102,17 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
 
         const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
+        const userResponse = await axios.get(`${environment.api_path}/${GET_USERS_API}`);
+        const userData = userResponse.data;
+        console.log(userData);
+
+        setAvailableUsers(userData);
 
         const warehouse = warehouseData.find((warehouse) => warehouse._id === warehouseId);
         console.log(warehouse);
         setSelectedLocation(warehouse ? warehouse.location : "");
+        setSelectedUser(warehouse ? warehouse.manager : "");
+
         setFormData({
           warehouse_name: warehouse ? warehouse.warehouse_name : "",
           location_name: warehouse ? warehouse.location_name : "",
@@ -136,8 +145,15 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
 
         const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
+        const userResponse = await axios.get(`${environment.api_path}/${GET_USERS_API}`);
+        const userData = userResponse.data;
+        console.log(userData);
+
+        setAvailableUsers(userData);
 
         const warehouse = warehouseData.find((warehouse) => warehouse._id === warehouseId);
+        setSelectedUser(warehouse ? warehouse.manager : "");
+
         console.log(warehouse);
         setSelectedLocation(warehouse ? warehouse.location : "");
         setFormData({
@@ -154,6 +170,10 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
 
   const handleChangeLoacations = (event) => {
     setSelectedLocation(event.target.value);
+  };
+
+  const handleChangeUser = (event) => {
+    setSelectedUser(event.target.value);
   };
 
   const handleError = (errorMessage) => {
@@ -210,6 +230,7 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
           warehouse_name: formData.warehouse_name || "",
           location: selectedLocation,
           address: formData.address,
+          manager: selectedUser,
         };
         console.log(NewformData);
         await axios.put(`${environment.api_path}/warehouse/${warehouseId}`, NewformData);
@@ -218,6 +239,7 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
           warehouse_name: formData.warehouse_name || "",
           location: selectedLocation,
           address: formData.address,
+          manager: selectedUser,
         };
 
         await axios.post(`${environment.api_path}/warehouse`, NewformData);
@@ -298,11 +320,22 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
             />
           </FormControl>
           <FormControl>
+            <SelectRole
+              availableItems={availableUser}
+              handleChange={handleChangeUser}
+              selectedItem={selectedUser}
+              fieldName={"Manager"}
+              helperText={"Select Warehouse Manager"}
+              labelKey={"name"}
+              error={locationError}
+            />
+          </FormControl>
+          <FormControl>
             <TextField
               id="street_address"
               label="Warehouse Address"
               variant="outlined"
-              value={formData?.address?.street_address}
+              value={formData.address?.street_address}
               onChange={handleInputChange}
             />
             <FormHelperText style={{ color: addressError ? "red" : "inherit" }}>
@@ -314,7 +347,7 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
               id="zip_code"
               label="ZIP Code"
               variant="outlined"
-              value={formData?.address?.zip_code}
+              value={formData.address?.zip_code}
               onChange={handleInputChange}
             />
             <FormHelperText style={{ color: zipError ? "red" : "inherit" }}>
