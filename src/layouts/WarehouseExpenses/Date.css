@@ -1,0 +1,27 @@
+/* Style the input */
+.custom-date-picker {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  /* Style the calendar */
+  .custom-calendar {
+    background-color: #f0f0f0;
+    border-radius: 10px;
+  }
+  
+  /* Style the selected date */
+  .react-datepicker__day--selected {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  /* Style the day hovered */
+  .react-datepicker__day:hover {
+    background-color: #87CEFA;
+    color: white;
+  }
+  

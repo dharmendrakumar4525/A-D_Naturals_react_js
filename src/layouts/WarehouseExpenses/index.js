@@ -188,7 +188,7 @@ const WareHouseExpenseTable = () => {
           `${environment.api_path}${GET_WAREHOUSE_EXPENSE_API}`
         );
         const warehouseExpenseList = warehouseExpenseResponse.data.data;
-
+        console.log(warehouseExpenseList);
         const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
         const warehouseData = warehouseResponse.data.data;
         setWarehouse(warehouseData);

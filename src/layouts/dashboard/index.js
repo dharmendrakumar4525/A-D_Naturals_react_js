@@ -1,42 +1,63 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
-// @mui material components
+// Your Dashboard component
 import Grid from "@mui/material/Grid";
-
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
-
-// Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import ReportsBarChart from "examples/Charts/BarCharts/ReportsBarChart";
-import ReportsLineChart from "examples/Charts/LineCharts/ReportsLineChart";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
-
-// Data
-import reportsBarChartData from "layouts/dashboard/data/reportsBarChartData";
-import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
-
-// Dashboard components
-import Projects from "layouts/dashboard/components/Projects";
-import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
+import { PurchaseChartData, WareHouseChartData, SellerChartData } from "./data/reportsBarChartData";
+import {
+  fetchTotalPurchase,
+  fetchTotalWareHouseInventory,
+  fetchTotalExpense,
+} from "./dataFunctions";
+import { useState, useEffect } from "react";
 
 function Dashboard() {
-  const { sales, tasks } = reportsLineChartData;
+  const [purchaseOrder, setPurchaseOrder] = useState(0);
+  const [warehouseOrder, setWarehouseOrder] = useState(0);
+  const [sellerOrder, setSellerOrder] = useState(0);
+  const [purchaseChart, setPurchaseChart] = useState({});
+  const [warehouseChart, setWareHouseChart] = useState({});
+  const [sellerChart, setSellerChart] = useState({});
+  const [revenue, setRevenue] = useState(0);
+  const [profit, setProfit] = useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const purchase = await fetchTotalPurchase();
+      const warehouse = await fetchTotalWareHouseInventory();
+      const expense = await fetchTotalExpense();
+      console.log(expense, "purchase");
+      setPurchaseOrder(purchase.totalOrderQuantity);
+      setWarehouseOrder(warehouse.totalInventory);
+      setSellerOrder(warehouse.TotalConsumed);
+      let totalRevenue = warehouse.TotalConsumed * 50;
+      let Profit =
+        ((warehouse.TotalConsumed * 100 - purchase.totalPrice - expense.totalExpense) * 100) /
+        purchase.totalPrice;
+      setRevenue(totalRevenue);
+      setProfit(parseFloat(Profit.toFixed(2)));
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchChartData = async () => {
+      let purchaseChart = await PurchaseChartData();
+      setPurchaseChart(purchaseChart);
+
+      let warehouseChart = await WareHouseChartData();
+      setWareHouseChart(warehouseChart);
+
+      let sellerChart = await SellerChartData();
+      setSellerChart(sellerChart);
+    };
+
+    fetchChartData();
+  }, []);
 
   return (
     <DashboardLayout>
@@ -48,12 +69,10 @@ function Dashboard() {
               <ComplexStatisticsCard
                 color="dark"
                 icon="weekend"
-                title="Bookings"
-                count={281}
+                title="Total Purchase"
+                count={purchaseOrder}
                 percentage={{
-                  color: "success",
-                  amount: "+55%",
-                  label: "than lask week",
+                  label: "Updated Today",
                 }}
               />
             </MDBox>
@@ -62,12 +81,10 @@ function Dashboard() {
             <MDBox mb={1.5}>
               <ComplexStatisticsCard
                 icon="leaderboard"
-                title="Today's Users"
-                count="2,300"
+                title="Store Inventory"
+                count={warehouseOrder}
                 percentage={{
-                  color: "success",
-                  amount: "+3%",
-                  label: "than last month",
+                  label: "Updated Today",
                 }}
               />
             </MDBox>
@@ -77,12 +94,10 @@ function Dashboard() {
               <ComplexStatisticsCard
                 color="success"
                 icon="store"
-                title="Revenue"
-                count="34k"
+                title="Total Sales"
+                count={sellerOrder}
                 percentage={{
-                  color: "success",
-                  amount: "+1%",
-                  label: "than yesterday",
+                  label: "Updated Today",
                 }}
               />
             </MDBox>
@@ -92,12 +107,12 @@ function Dashboard() {
               <ComplexStatisticsCard
                 color="primary"
                 icon="person_add"
-                title="Followers"
-                count="+91"
+                title="Revenue"
+                count={revenue}
                 percentage={{
                   color: "success",
-                  amount: "",
-                  label: "Just updated",
+                  amount: `${profit}%`,
+                  label: "Profit",
                 }}
               />
             </MDBox>
@@ -109,48 +124,34 @@ function Dashboard() {
               <MDBox mb={3}>
                 <ReportsBarChart
                   color="info"
-                  title="website views"
-                  description="Last Campaign Performance"
-                  date="campaign sent 2 days ago"
-                  chart={reportsBarChartData}
+                  title="Vendor Purchase"
+                  description="Daily Purchases of Week"
+                  date="Updated Today"
+                  chart={purchaseChart}
                 />
               </MDBox>
             </Grid>
             <Grid item xs={12} md={6} lg={4}>
               <MDBox mb={3}>
-                <ReportsLineChart
-                  color="success"
-                  title="daily sales"
-                  description={
-                    <>
-                      (<strong>+15%</strong>) increase in today sales.
-                    </>
-                  }
-                  date="updated 4 min ago"
-                  chart={sales}
+                <ReportsBarChart
+                  color="info"
+                  title="Warehouse Inventory"
+                  description="Daily Warehouse Inventory"
+                  date="Updated Today"
+                  chart={warehouseChart}
                 />
               </MDBox>
             </Grid>
             <Grid item xs={12} md={6} lg={4}>
               <MDBox mb={3}>
-                <ReportsLineChart
-                  color="dark"
-                  title="completed tasks"
-                  description="Last Campaign Performance"
-                  date="just updated"
-                  chart={tasks}
+                <ReportsBarChart
+                  color="info"
+                  title="Total Sales"
+                  description="Daily Sales per Week"
+                  date="Updated Today"
+                  chart={sellerChart}
                 />
               </MDBox>
-            </Grid>
-          </Grid>
-        </MDBox>
-        <MDBox>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={8}>
-              <Projects />
-            </Grid>
-            <Grid item xs={12} md={6} lg={4}>
-              <OrdersOverview />
             </Grid>
           </Grid>
         </MDBox>
