@@ -41,6 +41,7 @@ import {
   GET_WAREHOUSEORDER_API,
 } from "environments/apiPaths";
 
+//------------------------Style for main Component's Container ----------------
 const style = {
   position: "relative",
   width: "95%",
@@ -53,6 +54,8 @@ const style = {
   gap: "1rem",
   flexDirection: "column",
 };
+
+//--------------------------Select WareHouse Components-----------------------
 
 export function SelectWarehouse({
   availableItems,
@@ -94,6 +97,8 @@ export function SelectWarehouse({
   );
 }
 
+//--------------------------Select Vendor Components-----------------------
+
 export function SelectVendor({
   availableItems,
   handleChange,
@@ -124,6 +129,8 @@ export function SelectVendor({
   );
 }
 
+//---------------------Main Component-----------------------------------
+
 export default function EditPurchaseOrder() {
   const location = useLocation();
   const purchaseOrder = location.state?.purchaseOrder;
@@ -149,6 +156,8 @@ export default function EditPurchaseOrder() {
 
   const navigate = useNavigate();
 
+  //-----------------------Fetch Data ----------------------------------
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -170,6 +179,8 @@ export default function EditPurchaseOrder() {
 
     fetchData();
   }, []);
+
+  //---------------------------Assign Data values to the states-------
 
   useEffect(() => {
     if (purchaseOrder && availableWarehouses.length > 0) {
@@ -199,6 +210,8 @@ export default function EditPurchaseOrder() {
       setWarehouseArray(updatedWarehouseArray);
     }
   }, [purchaseOrder, availableWarehouses]);
+
+  //----------------------Submit The Data to API-----------------------
 
   const handleSubmit = async () => {
     const totalQuantity = warehouseArray.reduce((sum, item) => sum + item.qty, 0);
@@ -256,10 +269,13 @@ export default function EditPurchaseOrder() {
     }
   };
 
+  //--------------------------Handle Error Display---------------------------
   const handleError = (errorMessage) => {
     setSubmitError(errorMessage);
     setOpenSnackbar(true);
   };
+
+  //---------------------------Handle WareHouse Selection -------------------
 
   const handleWareHouse = (event) => {
     const {
@@ -277,6 +293,8 @@ export default function EditPurchaseOrder() {
     setWarehouseArray(updatedWarehouseArray);
   };
 
+  //---------------------Handle changed Vendor -----------------------
+
   const handleChangeVendor = (event) => {
     const {
       target: { value },
@@ -284,6 +302,7 @@ export default function EditPurchaseOrder() {
     setSelectedVendor(value);
   };
 
+  //------------------------ Handle form Entry------------------------
   const handleFormDataChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -291,6 +310,8 @@ export default function EditPurchaseOrder() {
       [name]: value,
     }));
   };
+
+  //-----------------Handle Resale Data Value ---------------------------
 
   const handleResaleChange = (e) => {
     const { name, value } = e.target;
@@ -303,6 +324,8 @@ export default function EditPurchaseOrder() {
     }));
   };
 
+  //----------------Handle Quantity Channge for Warehouse Units ---------------------
+
   const handleQuantityChange = (event, warehouseId) => {
     const newQuantity = parseInt(event.target.value, 10);
     const updatedWarehouseArray = warehouseArray.map((warehouse) =>
@@ -312,6 +335,8 @@ export default function EditPurchaseOrder() {
 
     console.log(updatedWarehouseArray, "warehouse");
   };
+
+  //-------------------------Main Function ------------------------------
 
   return (
     <DashboardLayout>
@@ -473,6 +498,8 @@ export default function EditPurchaseOrder() {
     </DashboardLayout>
   );
 }
+
+//------------------------WareHouse Price Table Function-------------------------
 
 function WarehousePriceTable({ warehouseArray, handleQuantityChange, availableWarehouses }) {
   const getWarehouseName = (warehouseId) => {

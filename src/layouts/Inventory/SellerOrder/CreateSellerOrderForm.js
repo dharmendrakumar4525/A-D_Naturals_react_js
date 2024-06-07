@@ -1,3 +1,6 @@
+/* eslint-disable react/prop-types */
+/* eslint-disable react/function-component-definition */
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Box from "@mui/material/Box";
@@ -46,10 +49,11 @@ import EditIcon from "@mui/icons-material/Edit";
 import { GET_SELLER_API } from "environments/apiPaths";
 import { getSellerNameByID } from "../utils";
 
+//------------------------Style for main Component's Container ----------------
 const style = {
   position: "relative",
-  width: "95%", // Ensure it fits within the parent
-  maxWidth: "95%", // Ensure it fits within the parent
+  width: "95%",
+  maxWidth: "95%",
   bgcolor: "background.paper",
   left: "5%",
   boxShadow: 24,
@@ -58,6 +62,8 @@ const style = {
   gap: "1rem",
   flexDirection: "column",
 };
+
+//--------------------------Select Seller Components-----------------------
 
 export function SelectSeller({
   availableItems,
@@ -101,6 +107,8 @@ export function SelectSeller({
     </FormControl>
   );
 }
+//--------------------------Select Warehouse Components-----------------------
+
 export function SelectWarehouse({
   availableItems,
   handleChange,
@@ -134,6 +142,8 @@ export function SelectWarehouse({
   );
 }
 
+//---------------------Main Component-----------------------------------
+
 export default function SellerOrderForm() {
   const [selectedWarehouse, setSelectedHouses] = useState("");
   const [selectedSeller, setSelectedSeller] = useState([]);
@@ -162,6 +172,8 @@ export default function SellerOrderForm() {
   const [submitError, setSubmitError] = useState("");
 
   const navigate = useNavigate();
+
+  //-----------------------Fetch Data ----------------------------------
 
   useEffect(() => {
     const fetchData = async () => {
@@ -193,6 +205,8 @@ export default function SellerOrderForm() {
     fetchData();
   }, []);
 
+  //----------------------Submit The Data to API-----------------------
+
   const handleSubmit = async (seller) => {
     console.log(seller, "seller");
 
@@ -218,6 +232,8 @@ export default function SellerOrderForm() {
     }
   };
 
+  //-----------------------------Handle UpdateFunction------------------
+
   const handleUpdate = () => {
     if (submittedSellers.length === 0) {
       setInventory(0);
@@ -235,25 +251,24 @@ export default function SellerOrderForm() {
     }
   };
 
+  //--------------------------Handle Error Display---------------------------
   const handleError = (errorMessage) => {
     setSubmitError(errorMessage);
     setOpenSnackbar(true);
   };
+
+  //---------------------------Handle WareHouse Selection -------------------
 
   const handleSeller = (event) => {
     const {
       target: { value },
     } = event;
 
-    // Parse the selected value
-    const selectedSellers = typeof value === "string" ? value.split(",") : value;
+    const selectedSeller = typeof value === "string" ? value.split(",") : value;
+    setSelectedSeller(selectedSeller);
 
-    // Update the selected warehouses state
-    setSelectedSeller(selectedSellers);
-
-    // Update the warehouseArray state based on selection
-    const updatedSellerArray = selectedSeller.map((sellerId) => ({
-      seller_id: sellerId._id,
+    const updatedSellerArray = selectedSeller.map((seller) => ({
+      seller_id: seller._id,
       received_qty: 0,
       consumed_qty: 0,
       rejected_qty: 0,
@@ -262,17 +277,7 @@ export default function SellerOrderForm() {
     setSellerArray(updatedSellerArray);
   };
 
-  useEffect(() => {
-    const updatedSellerArray = selectedSeller.map((sellerId) => ({
-      seller_id: sellerId._id,
-      received_qty: 0,
-      consumed_qty: 0,
-      rejected_qty: 0,
-      status: "pending",
-    }));
-    setSellerArray(updatedSellerArray);
-    console.log(sellerArray);
-  }, [selectedSeller]);
+  //---------------------Handle changed Vendor -----------------------
 
   const handleChangeWarehouse = (event) => {
     const selectedWarehouseId = event.target.value;
@@ -327,56 +332,20 @@ export default function SellerOrderForm() {
     }
   };
 
-  const handleQuantityChange = (event, sellerId) => {
+  //----------------Handle Quantity Channge for Seller Units ---------------------
+
+  const handleQuantityChange = (event, warehouseId) => {
     const newQuantity = parseInt(event.target.value, 10);
     const updatedSellerArray = sellerArray.map((seller) =>
-      seller.seller_id === sellerId ? { ...seller, received_qty: newQuantity } : seller
+      seller.seller_id === warehouseId ? { ...seller, received_qty: newQuantity } : seller
     );
     setSellerArray(updatedSellerArray);
 
     console.log(updatedSellerArray, "warehouse");
   };
 
-  function WarehousePriceTable({ sellerArray, handleQuantityChange }) {
-    return (
-      <TableContainer component={Paper} sx={{ width: "90%" }}>
-        <Table>
-          <TableBody>
-            {sellerArray.map((seller) => (
-              <TableRow key={seller._id}>
-                <TableCell>{getSellerNameByID(availableSellers, seller.seller_id)}</TableCell>
-                <TableCell>
-                  <TextField
-                    fullWidth
-                    type="number"
-                    value={seller.received_qty}
-                    onChange={(event) => handleQuantityChange(event, seller.seller_id)}
-                  />
-                  <FormHelperText>Enter the Receiving Quantity</FormHelperText>
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    style={{ color: "white" }}
-                    onClick={() => handleSubmit(seller)}
-                    disabled={submittedSellers.includes(seller.seller_id)}
-                  >
-                    Add Seller Order
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    );
-  }
+  //-------------------------Main Function ------------------------------
 
-  WarehousePriceTable.propTypes = {
-    sellerArray: PropTypes.PropTypes.array.isRequired,
-    handleQuantityChange: PropTypes.func.isRequired,
-  };
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -399,101 +368,80 @@ export default function SellerOrderForm() {
                   color="white"
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
-                  Create WareHouse Order
+                  Create Seller Order
                 </MDTypography>
               </MDBox>
-
               <MDBox pt={6} pb={3}>
-                <Grid container spacing={6}>
-                  <Box sx={style}>
-                    <Box
+                <Box sx={style}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      <SelectWarehouse
+                        availableItems={availableWarehouses}
+                        handleChange={handleChangeWarehouse}
+                        selectedItem={selectedWarehouse}
+                        fieldName="Warehouse"
+                        helperText="Select Warehouse"
+                        labelKey="warehouse_name"
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        id="warehouse_Stock"
+                        label="Warehouse Inventory"
+                        variant="outlined"
+                        value={inventory}
+                        type="number"
+                        InputProps={{
+                          readOnly: true,
+                        }}
+                      />
+                      <FormHelperText style={{ color: "inherit" }}>
+                        First Select Warehouse
+                      </FormHelperText>
+                    </Grid>
+                  </Grid>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      <SelectSeller
+                        availableItems={availableSellers}
+                        handleChange={handleSeller}
+                        selectedItem={selectedSeller}
+                        fieldName="Seller"
+                        helperText="Select Sellers"
+                        labelKey="Sellers"
+                        inventoryCheck={inventoryCheck}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      {selectedSeller.length !== 0 && (
+                        <WarehousePriceTable
+                          sellerArray={sellerArray}
+                          handleQuantityChange={handleQuantityChange}
+                          availableSellers={availableSellers}
+                          submittedSellers={submittedSellers}
+                          handleSubmit={handleSubmit}
+                        />
+                      )}
+                    </Grid>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      color="primary"
+                      onClick={handleUpdate}
                       sx={{
-                        flexDirection: "row",
-                        display: "flex",
-                        width: "80%",
-                        justifyContent: "space-between",
+                        padding: "0.75rem",
+                        fontSize: "0.875rem",
+                        backgroundColor: "#3f51b5",
+                        "&:hover": {
+                          backgroundColor: "#303f9f",
+                        },
                       }}
                     >
-                      <FormControl sx={{ m: 0, width: "47%" }}>
-                        <SelectWarehouse
-                          availableItems={availableWarehouses}
-                          handleChange={handleChangeWarehouse}
-                          selectedItem={selectedWarehouse}
-                          fieldName={"Warehouse"}
-                          helperText={"Select Warehouse"}
-                          labelKey={"warehouse_name"}
-                        />
-                      </FormControl>
-                      <FormControl sx={{ m: 0, width: "47%" }}>
-                        <TextField
-                          id="warehouse_Stock"
-                          label="Warehouse Inventory"
-                          variant="outlined"
-                          value={inventory}
-                          type="number"
-                          InputProps={{
-                            readOnly: true,
-                          }}
-                        />
-                        <FormHelperText style={{ color: "inherit" }}>
-                          {"First Select Warehouse"}
-                        </FormHelperText>
-                      </FormControl>
-                    </Box>
-                    <Box
-                      sx={{
-                        flexDirection: "row",
-                        width: "70%",
-                        display: "flex",
-                        marginTop: 1,
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <FormControl sx={{ width: "47%" }}>
-                        <SelectSeller
-                          availableItems={availableSellers}
-                          handleChange={handleSeller}
-                          selectedItem={selectedSeller}
-                          fieldName={"Seller"}
-                          helperText={"Select Sellers"}
-                          labelKey={"Sellers"}
-                          inventoryCheck={inventoryCheck}
-                        />
-                      </FormControl>
-                    </Box>
-
-                    <Box
-                      sx={{
-                        flexDirection: "row",
-                        width: "90%",
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <FormControl sx={{ width: "80%" }}>
-                        {selectedSeller.length !== 0 ? (
-                          <WarehousePriceTable
-                            sellerArray={sellerArray}
-                            handleQuantityChange={handleQuantityChange}
-                          />
-                        ) : (
-                          ""
-                        )}
-                      </FormControl>
-                    </Box>
-
-                    <FormControl>
-                      <Button
-                        onClick={handleUpdate}
-                        variant="contained"
-                        color="primary"
-                        style={{ color: "white", width: "40%", marginTop: 20, alignSelf: "center" }}
-                      >
-                        Done
-                      </Button>
-                    </FormControl>
-                  </Box>
-
+                      Update Seller Order
+                    </Button>
+                  </Grid>
                   <Snackbar
                     open={openSnackbar}
                     autoHideDuration={6000}
@@ -503,12 +451,14 @@ export default function SellerOrderForm() {
                       elevation={6}
                       variant="filled"
                       onClose={() => setOpenSnackbar(false)}
-                      severity="error"
+                      severity={
+                        submitError === "Purchase Order Created Successfully" ? "success" : "error"
+                      }
                     >
                       {submitError}
                     </MuiAlert>
                   </Snackbar>
-                </Grid>
+                </Box>
               </MDBox>
             </Card>
           </Grid>
@@ -519,37 +469,51 @@ export default function SellerOrderForm() {
   );
 }
 
-SelectSeller.propTypes = {
-  availableItems: PropTypes.arrayOf(
-    PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      seller_name: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  handleChange: PropTypes.func.isRequired,
-  selectedItem: PropTypes.arrayOf(
-    PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      seller_name: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  fieldName: PropTypes.string,
-  helperText: PropTypes.string,
-  labelKey: PropTypes.string,
-  error: PropTypes.bool,
-  inventoryCheck: PropTypes.bool,
-};
+//------------------------WareHouse Price Table Function-------------------------
 
-SelectWarehouse.propTypes = {
-  availableItems: PropTypes.arrayOf(
-    PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      [PropTypes.string]: PropTypes.string, // Dynamic key
-    })
-  ).isRequired,
-  handleChange: PropTypes.func.isRequired,
-  selectedItem: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  fieldName: PropTypes.string.isRequired,
-  helperText: PropTypes.string,
-  labelKey: PropTypes.string.isRequired,
-};
+function WarehousePriceTable({
+  sellerArray,
+  handleQuantityChange,
+  availableSellers,
+  submittedSellers,
+  handleSubmit,
+}) {
+  const getSellerName = (sellerId) => {
+    const seller = availableSellers.find((w) => w._id === sellerId);
+    return seller ? seller.seller_name : "";
+  };
+
+  return (
+    <TableContainer component={Paper} sx={{ width: "90%" }}>
+      <Table>
+        <TableBody>
+          {sellerArray.map((seller) => (
+            <TableRow key={seller.seller_id}>
+              <TableCell sx={{ fontSize: 14 }}>{getSellerName(seller.seller_id)}</TableCell>
+              <TableCell>
+                <TextField
+                  fullWidth
+                  label="Qty"
+                  type="number"
+                  value={seller.received_qty}
+                  onChange={(event) => handleQuantityChange(event, seller.seller_id)}
+                />
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  style={{ color: "white" }}
+                  onClick={() => handleSubmit(seller)}
+                  disabled={submittedSellers.includes(seller.seller_id)}
+                >
+                  Add Seller Order
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}

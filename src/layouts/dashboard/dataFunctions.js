@@ -28,9 +28,12 @@ export const fetchTotalPurchase = async () => {
     filteredByCurrentYear.forEach((order) => {
       totalOrderQuantity += order.order_qty;
       totalPrice += order.price * order.order_qty;
-      totalResale += order.resale.qty;
+      totalResale += parseInt(order.resale.qty);
       TotalResaleValue += order.resale.qty * order.resale.price;
     });
+
+    console.log(totalOrderQuantity, "total purchase");
+    console.log(totalResale, "total resale");
 
     totalOrderQuantity -= totalResale;
     totalPrice -= TotalResaleValue;

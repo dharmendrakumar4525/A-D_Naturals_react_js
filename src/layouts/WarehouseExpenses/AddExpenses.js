@@ -239,6 +239,7 @@ export default function AddExpense() {
     } = event;
     setSelectedWareHouses(value);
   };
+
   const handleQuantityChange = (event, category) => {
     const newAmount = parseInt(event.target.value, 10);
     const updatedExpenseArray = expenseArray.map((expense) =>
