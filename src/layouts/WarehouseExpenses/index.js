@@ -55,6 +55,7 @@ const WareHouseExpenseTable = () => {
   const [permission, setPermission] = useState({});
   const [submitError, setSubmitError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [user, setUser] = useState("");
 
   const openWareHouseFilterModal = () => {
     setIsWareHouseModalOpen(true);
@@ -222,8 +223,29 @@ const WareHouseExpenseTable = () => {
         const expenseData = ExpenseResponse.data.data;
         setExpenses(expenseData);
 
+        const roleResponse = await axios.get(`${environment.api_path}/roles`);
+        const roleData = roleResponse.data;
+
+        const userData = getLocalStorageData("A&D_User");
+        console.log(userData);
+
+        const role = roleData.filter((role) => role._id === userData.role);
+
+        setUser(role[0].role);
+
+        var filteredObjects = warehouseExpenseList;
+        if (role[0].role === "Warehouse Manager") {
+          const matchingWarehouses = warehouseData.filter(
+            (warehouse) => warehouse.manager === userData._id
+          );
+          setWarehouseId(matchingWarehouses[0]._id);
+          filteredObjects = filteredObjects.filter(
+            (object) => object.warehouse === matchingWarehouses[0]._id
+          );
+        }
+
         const currentDate = new Date();
-        const filteredByCurrentMonth = warehouseExpenseList.filter((order) => {
+        const filteredByCurrentMonth = filteredObjects.filter((order) => {
           const orderDate = new Date(order.date);
           return (
             orderDate.getMonth() === currentDate.getMonth() &&
@@ -244,7 +266,7 @@ const WareHouseExpenseTable = () => {
         const totalExpense = newArray.reduce((sum, expense) => sum + expense.totalExpense, 0);
         setTotalExpenses(totalExpense);
         setRowData(newArray);
-        setOriginalData(warehouseExpenseList);
+        setOriginalData(filteredObjects);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -360,16 +382,20 @@ const WareHouseExpenseTable = () => {
               </MDBox>
               <MDBox pt={3}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <Button
-                    sx={{ m: 2 }}
-                    variant="contained"
-                    color="info"
-                    size="small"
-                    onClick={openWareHouseFilterModal}
-                    disabled={permission[1]?.isSelected === true ? false : true}
-                  >
-                    Select WareHouse
-                  </Button>
+                  {user !== "Warehouse Manager" ? (
+                    <Button
+                      sx={{ m: 2 }}
+                      variant="contained"
+                      color="info"
+                      size="small"
+                      onClick={openWareHouseFilterModal}
+                      disabled={permission[1]?.isSelected === true ? false : true}
+                    >
+                      Select WareHouse
+                    </Button>
+                  ) : (
+                    ""
+                  )}
                   <MDTypography sx={{ m: 2, fontSize: 12 }}>
                     {warehouseId
                       ? `Selected WareHouse: ${getWarehouseNameByID(warehouses, warehouseId)}`

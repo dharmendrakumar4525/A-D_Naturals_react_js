@@ -45,6 +45,7 @@ function WareHouseOrderTable() {
   const [vendors, setVendors] = useState([]);
   const [warehouses, setWarehouse] = useState([]);
   const [warehouseId, setWarehouseId] = useState("");
+  const [user, setUser] = useState("");
   const [rowData, setRowData] = useState([]);
   const [originalData, setOriginalData] = useState([]);
   const [isRefetch, setIsRefetch] = useState(false);
@@ -210,10 +211,35 @@ function WareHouseOrderTable() {
         const warehouseData = warehouseResponse.data.data;
         setWarehouse(warehouseData);
 
+        const roleResponse = await axios.get(`${environment.api_path}/roles`);
+        const roleData = roleResponse.data;
+
+        const userData = getLocalStorageData("A&D_User");
+        console.log(userData);
+
+        const role = roleData.filter((role) => role._id === userData.role);
+        console.log(role[0].role, "role");
+
+        setUser(role[0].role);
+
+        var filteredObjects = warehouseOrdersList;
+
+        if (role[0].role == "Warehouse Manager") {
+          const matchingWarehouses = warehouseData.filter(
+            (warehouse) => warehouse.manager === userData._id
+          );
+
+          console.log(matchingWarehouses);
+
+          filteredObjects = filteredObjects.filter(
+            (object) => object.warehouse === matchingWarehouses[0]._id
+          );
+        }
+
         const currentDate = new Date();
         console.log(currentDate);
 
-        const filteredByCurrentMonth = warehouseOrdersList.filter((order) => {
+        const filteredByCurrentMonth = filteredObjects.filter((order) => {
           const orderDate = new Date(order.created_at);
           console.log(orderDate);
           return (
@@ -293,17 +319,13 @@ function WareHouseOrderTable() {
         <>
           <div style={{ display: "flex", alignItems: "center" }}>
             <MDTypography component="a" href="#" variant="caption" color="blue" fontWeight="medium">
-              {warehouseId === "" ? (
-                "view"
-              ) : (
-                <DetailsModal
-                  purchaseOrderData={orders}
-                  vendors={vendors}
-                  warehouses={warehouses}
-                  handleDelete={handleDelete}
-                  permission={permission}
-                />
-              )}
+              <DetailsModal
+                purchaseOrderData={orders}
+                vendors={vendors}
+                warehouses={warehouses}
+                handleDelete={handleDelete}
+                permission={permission}
+              />
             </MDTypography>
           </div>
         </>
@@ -372,18 +394,22 @@ function WareHouseOrderTable() {
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                <MDTypography sx={{ fontSize: 12, marginBottom: 3 }}>
-                  <Button
-                    onClick={openWareHouseFilterModal}
-                    variant="contained"
-                    sx={{ marginLeft: 2, marginRight: 2 }}
-                    color="dark"
-                    disabled={permission[1]?.isSelected === true ? false : true}
-                  >
-                    Select WareHouse
-                  </Button>
-                  Select the WareHouse*
-                </MDTypography>
+                {user !== "Warehouse Manager" ? (
+                  <MDTypography sx={{ fontSize: 12, marginBottom: 3 }}>
+                    <Button
+                      onClick={openWareHouseFilterModal}
+                      variant="contained"
+                      sx={{ marginLeft: 2, marginRight: 2 }}
+                      color="dark"
+                      disabled={permission[1]?.isSelected === true ? false : true}
+                    >
+                      Select WareHouse
+                    </Button>
+                    Select the WareHouse*
+                  </MDTypography>
+                ) : (
+                  ""
+                )}
                 <WareHouseModal
                   open={isWareHouseModalOpen}
                   onClose={() => setIsWareHouseModalOpen(false)}

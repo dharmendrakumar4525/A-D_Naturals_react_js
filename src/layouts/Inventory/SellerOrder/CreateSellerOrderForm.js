@@ -277,7 +277,7 @@ export default function SellerOrderForm() {
     setSellerArray(updatedSellerArray);
   };
 
-  //---------------------Handle changed Vendor -----------------------
+  //---------------------Handle changed Warehouse -----------------------
 
   const handleChangeWarehouse = (event) => {
     const selectedWarehouseId = event.target.value;
@@ -403,7 +403,7 @@ export default function SellerOrderForm() {
                   <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
                       <SelectSeller
-                        availableItems={availableSellers}
+                        availableItems={filteredSeller}
                         handleChange={handleSeller}
                         selectedItem={selectedSeller}
                         fieldName="Seller"

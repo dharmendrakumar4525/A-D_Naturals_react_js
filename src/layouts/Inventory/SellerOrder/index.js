@@ -33,6 +33,7 @@ import WareHouseModal from "./WareHouseModal";
 import PendingSalesDataModal from "./PendingSalesDataModal";
 import Loader from "../../../assets/images/Loader.gif";
 import { useNavigate } from "react-router-dom";
+import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
 
 function PendingSellerOrder() {
   const [warehouse, setWarehouse] = useState("");
@@ -45,6 +46,7 @@ function PendingSellerOrder() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState("");
   const navigate = useNavigate();
 
   const openFilterModal = () => {
@@ -61,18 +63,36 @@ function PendingSellerOrder() {
           `${environment.api_path}${GET_SELLERORDER_API}`
         );
         let SellerOrderResponseList = SellerOrderResponse.data.data;
-
+        setOriginalData(SellerOrderResponseList);
         const warehouseResponse = await axios.get(`${environment.api_path}${GET_WAREHOUSE_API}`);
         let warehouseList = warehouseResponse.data.data;
         console.log(warehouseList);
         setWarehouseArray(warehouseList);
 
-        //Filter PurchaseOrdersList based on the status of warehouse objects
-        const SellerOrderList = SellerOrderResponseList.filter((item) => item.status === "pending");
+        const roleResponse = await axios.get(`${environment.api_path}/roles`);
+        const roleData = roleResponse.data;
 
-        console.log(SellerOrderList);
-        setRowData(SellerOrderList);
-        setOriginalData(SellerOrderList);
+        const userData = getLocalStorageData("A&D_User");
+        console.log(userData);
+
+        const role = roleData.filter((role) => role._id === userData.role);
+
+        setUser(role[0].role);
+        var filteredObjects = SellerOrderResponseList;
+        if (role[0].role === "Warehouse Manager") {
+          const matchingWarehouses = warehouseList.filter(
+            (warehouse) => warehouse.manager === userData._id
+          );
+
+          console.log(SellerOrderResponseList);
+          filteredObjects = filteredObjects.filter(
+            (object) =>
+              object.seller_id.warehouse === matchingWarehouses[0]._id &&
+              object.status === "pending"
+          );
+        }
+
+        setRowData(filteredObjects);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -95,7 +115,7 @@ function PendingSellerOrder() {
     console.log(warehouseId, "here warehouse");
 
     const filteredObjects = originalData.filter(
-      (object) => object.seller_id.warehouse === warehouseId
+      (object) => object.seller_id.warehouse === warehouseId && object.status == "pending"
     );
 
     setRowData(filteredObjects);
@@ -152,9 +172,13 @@ function PendingSellerOrder() {
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
                   Pending Seller Order Table
-                  <Button onClick={openFilterModal} variant="contained" color="white">
-                    Select WareHouse
-                  </Button>
+                  {user !== "Warehouse Manager" ? (
+                    <Button onClick={openFilterModal} variant="contained" color="white">
+                      Select WareHouse
+                    </Button>
+                  ) : (
+                    ""
+                  )}
                   <WareHouseModal
                     open={isWareHouseModalOpen}
                     onClose={() => setIsWareHouseModalOpen(false)}

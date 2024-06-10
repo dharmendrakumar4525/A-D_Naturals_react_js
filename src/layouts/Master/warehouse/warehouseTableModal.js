@@ -232,13 +232,9 @@ export default function SellerTableModal({
       if (!formData?.address?.street_address.trim()) {
         setAddressError("Address is required");
       }
-      if (!formData?.address?.zip_code.trim()) {
-        setZipError("ZIP Code is required");
-      }
 
       if (
         !formData.warehouse_name.trim() ||
-        !formData?.address?.zip_code.trim() ||
         !formData?.address?.street_address.trim() ||
         !selectedLocation
       ) {

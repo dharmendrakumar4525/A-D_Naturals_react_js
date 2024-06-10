@@ -33,15 +33,18 @@ import { getVendorNameByID, formatDate } from "../utils";
 import WareHouseModal from "./WareHouseModal";
 import Loader from "../../../assets/images/Loader.gif";
 import { useNavigate } from "react-router-dom";
+import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
 
 function WarehouseOrder() {
   const [vendors, setVendors] = useState([]);
   const [warehouse, setWarehouse] = useState("");
+  const [user, setUser] = useState("");
   const [rowData, setRowData] = useState([]);
   const [originalData, setOriginalData] = useState([]);
   const [isRefetch, setIsRefetch] = useState(false);
   const [isWareHouseModalOpen, setIsWareHouseModalOpen] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [submitError, setSubmitError] = useState("");
   const navigate = useNavigate();
@@ -73,20 +76,43 @@ function WarehouseOrder() {
           `${environment.api_path}${GET_PURCHASEORDER_API}`
         );
         let PurchaseOrdersList = PurchaseOrderResponse.data.data;
-
+        setOriginalData(PurchaseOrdersList);
         console.log(PurchaseOrdersList, "Here");
 
         const vendorResponse = await axios.get(`${environment.api_path}/vendor`);
         const vendorData = vendorResponse.data.data;
         setVendors(vendorData);
+        const roleResponse = await axios.get(`${environment.api_path}/roles`);
+        const roleData = roleResponse.data;
+        const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
+        const warehouseData = warehouseResponse.data.data;
+        //setWarehouseArray(warehouseData);
+        console.log(warehouseData);
 
-        // Filter PurchaseOrdersList based on the status of warehouse objects
-        PurchaseOrdersList = PurchaseOrdersList.filter((order) => {
-          return order.warehouses.some((warehouse) => warehouse.status === "pending");
-        });
+        const userData = getLocalStorageData("A&D_User");
+        console.log(userData);
 
-        setRowData(PurchaseOrdersList);
-        setOriginalData(PurchaseOrdersList);
+        const role = roleData.filter((role) => role._id === userData.role);
+        console.log(role[0].role, "role");
+
+        setUser(role[0].role);
+        var filteredObjects = PurchaseOrdersList;
+        if (role[0].role === "Warehouse Manager") {
+          const matchingWarehouses = warehouseData.filter(
+            (warehouse) => warehouse.manager === userData._id
+          );
+
+          console.log(matchingWarehouses);
+
+          filteredObjects = filteredObjects.filter((object) =>
+            object.warehouses.some(
+              (warehouse) =>
+                warehouse.warehouse === matchingWarehouses[0]._id && warehouse.status == "pending"
+            )
+          );
+        }
+
+        setRowData(filteredObjects);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -123,13 +149,14 @@ function WarehouseOrder() {
 
   function filterObjectsByWarehouseId(warehouseId) {
     setWarehouse(warehouseId);
-    console.log(warehouseId, "jere warehouse");
+    console.log(originalData);
+    console.log(warehouseId, "here warehouse");
     const filteredObjects = originalData.filter((object) =>
       object.warehouses.some(
         (warehouse) => warehouse.warehouse === warehouseId && warehouse.status == "pending"
       )
     );
-
+    console.log(filteredObjects);
     setRowData(filteredObjects);
   }
 
@@ -186,9 +213,13 @@ function WarehouseOrder() {
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
                   Pending Warehouse Order Table
-                  <Button onClick={openFilterModal} variant="contained" color="white">
-                    Filters
-                  </Button>
+                  {user !== "Warehouse Manager" ? (
+                    <Button onClick={openFilterModal} variant="contained" color="white">
+                      Select WareHouse
+                    </Button>
+                  ) : (
+                    ""
+                  )}
                   <WareHouseModal
                     open={isWareHouseModalOpen}
                     onClose={() => setIsWareHouseModalOpen(false)}

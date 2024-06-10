@@ -58,6 +58,7 @@ function SellerOrderTable() {
   const [permission, setPermission] = useState({});
   const [submitError, setSubmitError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [user, setUser] = useState("");
 
   // Track applied filters
   const [appliedFilters, setAppliedFilters] = useState({
@@ -262,10 +263,30 @@ function SellerOrderTable() {
         setAvailableSeller(sellerData);
         setWarehouse(warehouseData);
 
+        const roleResponse = await axios.get(`${environment.api_path}/roles`);
+        const roleData = roleResponse.data;
+
+        const userData = getLocalStorageData("A&D_User");
+        console.log(userData);
+
+        const role = roleData.filter((role) => role._id === userData.role);
+
+        setUser(role[0].role);
+        var filteredObjects = sellerOrderList;
+        if (role[0].role === "Warehouse Manager") {
+          const matchingWarehouses = warehouseData.filter(
+            (warehouse) => warehouse.manager === userData._id
+          );
+
+          filteredObjects = filteredObjects.filter(
+            (object) => object.seller_id.warehouse === matchingWarehouses[0]._id
+          );
+        }
+
         const currentDate = new Date();
         console.log(currentDate);
 
-        const filteredByCurrentMonth = sellerOrderList.filter((order) => {
+        const filteredByCurrentMonth = filteredObjects.filter((order) => {
           const orderDate = new Date(order.created_at);
           console.log(orderDate);
           return (
@@ -425,27 +446,31 @@ function SellerOrderTable() {
                     width: "95%",
                   }}
                 >
-                  <MDTypography
-                    sx={{
-                      fontSize: 10,
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "center",
-                      marginBottom: 3,
-                      color: "#7b809a",
-                    }}
-                  >
-                    <Button
-                      onClick={openWareHouseFilterModal}
-                      variant="contained"
-                      sx={{ marginLeft: 2, marginRight: 2 }}
-                      color="dark"
-                      disabled={permission[1]?.isSelected === true ? false : true}
+                  {user !== "Warehouse Manager" ? (
+                    <MDTypography
+                      sx={{
+                        fontSize: 10,
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginBottom: 3,
+                        color: "#7b809a",
+                      }}
                     >
-                      Select WareHouse
-                    </Button>
-                    Filter by WareHouse Name
-                  </MDTypography>
+                      <Button
+                        onClick={openWareHouseFilterModal}
+                        variant="contained"
+                        sx={{ marginLeft: 2, marginRight: 2 }}
+                        color="dark"
+                        disabled={permission[1]?.isSelected === true ? false : true}
+                      >
+                        Select WareHouse
+                      </Button>
+                      Filter by WareHouse Name
+                    </MDTypography>
+                  ) : (
+                    ""
+                  )}
                   <MDTypography
                     sx={{
                       fontSize: 10,
