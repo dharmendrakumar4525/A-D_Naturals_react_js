@@ -33,7 +33,11 @@ const style = {
   flexDirection: "column",
 };
 
-export default function ExpenseTableModal({ expenseId = null, setIsRefetch = () => {} }) {
+export default function ExpenseTableModal({
+  expenseId = null,
+  permission,
+  setIsRefetch = () => {},
+}) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -66,6 +70,22 @@ export default function ExpenseTableModal({ expenseId = null, setIsRefetch = () 
   const handleError = (errorMessage) => {
     setSubmitError(errorMessage);
     setOpenSnackbar(true);
+  };
+
+  const handleEditModal = () => {
+    if (permission[2]?.isSelected === false) {
+      handleError("You don't have permission to Edit");
+      return;
+    }
+    handleOpen();
+  };
+
+  const handleAddModal = () => {
+    if (permission[0]?.isSelected === false) {
+      handleError("You don't have permission to Add Expense");
+      return;
+    }
+    handleOpen();
   };
 
   const handleSubmit = async () => {
@@ -103,9 +123,9 @@ export default function ExpenseTableModal({ expenseId = null, setIsRefetch = () 
   return (
     <div>
       {expenseId ? (
-        <EditIcon onClick={handleOpen} />
+        <EditIcon onClick={handleEditModal} />
       ) : (
-        <Button variant="text" style={{ color: "white" }} onClick={handleOpen}>
+        <Button variant="text" style={{ color: "white" }} onClick={handleAddModal}>
           +Add Record
         </Button>
       )}

@@ -65,7 +65,7 @@ export function SelectWarehouse({
 }) {
   return (
     <FormControl sx={{ m: 0, width: "100%" }}>
-      <InputLabel id="checkbox-dropdown-label">Select Warehouses</InputLabel>
+      <InputLabel id="checkbox-dropdown-label">Select Expenses</InputLabel>
       <Select
         labelId="checkbox-dropdown-label"
         multiple
@@ -118,7 +118,7 @@ export default function EditExpense() {
       try {
         const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
-
+        console.log(warehouseData);
         const expenseResponse = await axios.get(`${environment.api_path}/${GET_EXPENSE_API}`);
         const expenseData = expenseResponse.data.data;
         console.log(expenseData);
@@ -141,6 +141,8 @@ export default function EditExpense() {
         date: wareHouseExpense.date,
       });
 
+      console.log(availableWarehouses, "availble");
+
       setWarehouse(getWarehouseNameByID(availableWarehouses, wareHouseExpense.warehouse));
 
       const matchedExpenses = wareHouseExpense.expense
@@ -154,7 +156,7 @@ export default function EditExpense() {
 
       setExpenseArray(updatedWarehouseArray);
     }
-  }, [expenseOrder]);
+  }, [expenseOrder, availableWarehouses]);
 
   const handleSubmit = async () => {
     try {
@@ -328,7 +330,7 @@ export default function EditExpense() {
                       variant="filled"
                       onClose={() => setOpenSnackbar(false)}
                       severity={
-                        submitError === "Purchase Order Created Successfully" ? "success" : "error"
+                        submitError === "Expense Created Successfully" ? "success" : "error"
                       }
                     >
                       {submitError}

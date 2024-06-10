@@ -21,6 +21,8 @@ import MDTypography from "components/MDTypography";
 import { getVendorNameByID, getWarehouseNameByID, formatDate } from "../utils";
 import { useNavigate } from "react-router-dom";
 import { BorderBottom } from "@mui/icons-material";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 const style = {
   position: "absolute",
@@ -41,21 +43,33 @@ export default function DetailsModal({
   purchaseOrderData = null,
   warehouses,
   handleDelete,
+  permission,
   setIsRefetch = () => {},
 }) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const navigate = useNavigate();
+  const [submitError, setSubmitError] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const deletePO = () => {
     handleDelete(purchaseOrderData._id);
   };
 
   const handleEdit = () => {
+    if (permission[2]?.isSelected === false) {
+      handleError("You don't have permission to Edit");
+      return;
+    }
     navigate("/view-orders/warehouse-orders/edit-warehouse-order", {
       state: { warehouseOrder: purchaseOrderData },
     });
+  };
+
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
   };
 
   return (
@@ -140,6 +154,16 @@ export default function DetailsModal({
           )}
         </Box>
       </Modal>
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setOpenSnackbar(false)}
+          severity="error"
+        >
+          {submitError}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 }

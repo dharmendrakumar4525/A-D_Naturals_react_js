@@ -70,7 +70,7 @@ export function SelectRole({
   );
 }
 
-export default function SellerTableModal({ sellerId = null, setIsRefetch = () => {} }) {
+export default function SellerTableModal({ sellerId = null, permission, setIsRefetch = () => {} }) {
   const [open, setOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [availableLoacations, setAvailableLoacations] = useState([]);
@@ -193,6 +193,22 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
     setSelectedWarehouse(event.target.value);
   };
 
+  const handleEditModal = () => {
+    if (permission[2]?.isSelected === false) {
+      handleError("You don't have permission to Edit");
+      return;
+    }
+    handleOpen();
+  };
+
+  const handleAddModal = () => {
+    if (permission[0]?.isSelected === false) {
+      handleError("You don't have permission to Add Seller");
+      return;
+    }
+    handleOpen();
+  };
+
   const handleSubmit = async () => {
     try {
       if (!formData.seller_location.trim()) {
@@ -277,9 +293,9 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
   return (
     <div>
       {sellerId ? (
-        <EditIcon onClick={handleOpen} />
+        <EditIcon onClick={handleEditModal} />
       ) : (
-        <Button variant="text" style={{ color: "white" }} onClick={handleOpen}>
+        <Button variant="text" style={{ color: "white" }} onClick={handleAddModal}>
           +Add Record
         </Button>
       )}

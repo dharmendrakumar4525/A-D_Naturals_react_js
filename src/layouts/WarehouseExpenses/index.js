@@ -26,8 +26,16 @@ import WareHouseModal from "./wareHouseFilterModal";
 import Loader from "../../assets/images/Loader.gif";
 import { useNavigate } from "react-router-dom";
 import { environment } from "environments/environment";
-import { GET_WAREHOUSEORDER_API, GET_WAREHOUSE_EXPENSE_API } from "environments/apiPaths";
+import {
+  GET_WAREHOUSEORDER_API,
+  GET_WAREHOUSE_EXPENSE_API,
+  GET_PERMISSION,
+} from "environments/apiPaths";
 import { getVendorNameByID, formatDate, getMonthName, getWarehouseNameByID } from "../Orders/utils";
+import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
+import { Margin } from "@mui/icons-material";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 const WareHouseExpenseTable = () => {
   const [vendors, setVendors] = useState([]);
@@ -44,6 +52,9 @@ const WareHouseExpenseTable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [permission, setPermission] = useState({});
+  const [submitError, setSubmitError] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const openWareHouseFilterModal = () => {
     setIsWareHouseModalOpen(true);
@@ -58,6 +69,10 @@ const WareHouseExpenseTable = () => {
   };
 
   const handleDelete = async (warehouseOrderID) => {
+    if (permission[3]?.isSelected === false) {
+      handleError("You don't have permission to delete");
+      return;
+    }
     try {
       await axios.delete(
         `${environment.api_path}/${GET_WAREHOUSE_EXPENSE_API}/${warehouseOrderID}`
@@ -80,6 +95,14 @@ const WareHouseExpenseTable = () => {
       console.error("Error deleting Warehouse Order:", error);
     }
   };
+
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
+  };
+
+  //----------------------------Handle Filters ---------------------------
+
   const handleFilter = (filterType, year, month, quarter, halfYear) => {
     if (!warehouseId) {
       setError("Please select a warehouse before applying filters.");
@@ -180,6 +203,8 @@ const WareHouseExpenseTable = () => {
     setRowData(newArray);
   };
 
+  //------------------------------Fetch Data-----------------------
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -229,6 +254,36 @@ const WareHouseExpenseTable = () => {
     fetchData();
   }, [isRefetch]);
 
+  //-------------------------------- GET PERMISSION Array ------------------------
+  useEffect(() => {
+    const fetchPermissionData = async () => {
+      const data = getLocalStorageData("A&D_User");
+      console.log(data, "permission");
+      try {
+        const permissionResponse = await axios.get(
+          `${environment.api_path}/${GET_PERMISSION}${data._id}`
+        );
+        const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
+        console.log(permissionData);
+        // Check if the permission data contains an object with module name "users"
+        const modulePermission = permissionData.find(
+          (item) => item.moduleName === "WarehouseExpense"
+        );
+
+        // If found, save that object in the permission state
+        if (modulePermission) {
+          setPermission(modulePermission.childList);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchPermissionData();
+  }, [isRefetch]);
+
+  //----------------------------------Row Data----------------------------------
+
   const data = {
     columns: [
       { Header: "WareHouse", accessor: "WareHouse", align: "center", width: "15%" },
@@ -251,6 +306,7 @@ const WareHouseExpenseTable = () => {
               expenses={expenses}
               warehouses={warehouses}
               handleDelete={handleDelete}
+              permission={permission}
             />
           </MDTypography>
         </div>
@@ -292,7 +348,12 @@ const WareHouseExpenseTable = () => {
                     Total Expenses: {totalexpenses} INR
                   </MDTypography>
 
-                  <Button onClick={openFilterModal} variant="contained" color="white">
+                  <Button
+                    onClick={openFilterModal}
+                    variant="contained"
+                    color="white"
+                    disabled={permission[1]?.isSelected === true ? false : true}
+                  >
                     Filters
                   </Button>
                 </MDTypography>
@@ -305,6 +366,7 @@ const WareHouseExpenseTable = () => {
                     color="info"
                     size="small"
                     onClick={openWareHouseFilterModal}
+                    disabled={permission[1]?.isSelected === true ? false : true}
                   >
                     Select WareHouse
                   </Button>
@@ -328,6 +390,7 @@ const WareHouseExpenseTable = () => {
                       onClick={() => {
                         navigate("/Warehouse-Expenses/add-wareHouse-expense");
                       }}
+                      disabled={permission[0]?.isSelected === true ? false : true}
                     >
                       Add Expense
                     </Button>
@@ -338,20 +401,44 @@ const WareHouseExpenseTable = () => {
                     <p style={{ color: "red" }}>{error}</p>
                   </div>
                 )}
-                {loading ? (
-                  <div style={{ display: "flex", justifyContent: "center" }}>
-                    <img src={Loader} alt="Loading..." />
-                  </div>
+                {permission[1]?.isSelected === true ? (
+                  loading ? (
+                    <div style={{ display: "flex", justifyContent: "center" }}>
+                      <img src={Loader} alt="Loading..." />
+                    </div>
+                  ) : (
+                    <MDBox p={2}>
+                      <DataTable
+                        table={data}
+                        isSorted={false}
+                        entriesPerPage={false}
+                        showTotalEntries={false}
+                        noEndBorder
+                      />
+                    </MDBox>
+                  )
                 ) : (
-                  <MDBox p={2}>
-                    <DataTable
-                      table={data}
-                      isSorted={false}
-                      entriesPerPage={false}
-                      showTotalEntries={false}
-                      noEndBorder
-                    />
-                  </MDBox>
+                  <MDTypography
+                    sx={{
+                      margin: 10,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      fontSize: "18px",
+                      fontWeight: "bold",
+                      textAlign: "center",
+                    }}
+                  >
+                    Permission not Granted to View the WareHouse Orders
+                    <MDTypography
+                      sx={{
+                        fontSize: "16px",
+                        fontWeight: "normal",
+                      }}
+                    >
+                      Contact the Admin for Access
+                    </MDTypography>
+                  </MDTypography>
                 )}
               </MDBox>
             </Card>
@@ -373,6 +460,17 @@ const WareHouseExpenseTable = () => {
           open={isWareHouseModalOpen}
         />
       )}
+
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setOpenSnackbar(false)}
+          severity="error"
+        >
+          {submitError}
+        </MuiAlert>
+      </Snackbar>
     </DashboardLayout>
   );
 };

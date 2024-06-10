@@ -14,7 +14,10 @@ export const getVendorNameByID = (vendors, id) => {
 };
 
 export const getWarehouseNameByID = (warehouses, id) => {
+  console.log(warehouses);
+  console.log(id);
   const warehouse = warehouses.find((warehouse) => warehouse._id === id);
+  console.log(warehouse);
   return warehouse ? warehouse.warehouse_name : null;
 };
 

@@ -32,14 +32,26 @@ import DataTable from "examples/Tables/DataTable";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { environment } from "environments/environment";
-import { GET_USERS_API, GET_ROLES_API, POST_USER_DELETE_API } from "environments/apiPaths";
+import {
+  GET_USERS_API,
+  GET_ROLES_API,
+  POST_USER_DELETE_API,
+  GET_PERMISSION,
+} from "environments/apiPaths";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
+import { Margin } from "@mui/icons-material";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 function UserTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [rowData, setRowData] = useState([]);
   const [isRefetch, setIsRefetch] = useState(false);
   const [originalData, setOriginalData] = useState([]);
+  const [permission, setPermission] = useState({});
+  const [submitError, setSubmitError] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const onSearch = (query) => {
     setSearchQuery(query);
@@ -102,6 +114,10 @@ function UserTable() {
   //----------------------------Delete Function---------------------------------
 
   const handleDelete = async (userId) => {
+    if (permission[3]?.isSelected === false) {
+      handleError("You don't have permission to delete");
+      return;
+    }
     try {
       await axios.delete(`${environment.api_path}/${POST_USER_DELETE_API}/${userId}`);
       setRowData((prevData) => prevData.filter((user) => user._id !== userId));
@@ -109,6 +125,37 @@ function UserTable() {
       console.error("Error deleting user:", error);
     }
   };
+
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
+  };
+
+  //-------------------------------- GET PERMISSION Array ------------------------
+  useEffect(() => {
+    const fetchPermissionData = async () => {
+      const data = getLocalStorageData("A&D_User");
+      console.log(data, "permission");
+      try {
+        const permissionResponse = await axios.get(
+          `${environment.api_path}/${GET_PERMISSION}${data._id}`
+        );
+        const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
+        console.log(permissionData);
+        // Check if the permission data contains an object with module name "users"
+        const modulePermission = permissionData.find((item) => item.moduleName === "users");
+
+        // If found, save that object in the permission state
+        if (modulePermission) {
+          setPermission(modulePermission.childList);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchPermissionData();
+  }, [isRefetch]);
 
   //----------------------------Row Data---------------------------------
 
@@ -137,7 +184,11 @@ function UserTable() {
               <DeleteIcon />
             </MDTypography>
             <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-              <UserTableModal userId={user._id} setIsRefetch={setIsRefetch} />
+              <UserTableModal
+                userId={user._id}
+                setIsRefetch={setIsRefetch}
+                permission={permission}
+              />
             </MDTypography>
           </div>
         </>
@@ -170,19 +221,57 @@ function UserTable() {
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
                   User Table
-                  <UserTableModal />
+                  <UserTableModal permission={permission} />
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                <DataTable
-                  table={{ columns: data.columns, rows: data.rows }}
-                  isSorted={false}
-                  entriesPerPage={false}
-                  showTotalEntries={false}
-                  noEndBorder
-                />
+                {permission[1]?.isSelected === true ? (
+                  <DataTable
+                    table={{ columns: data.columns, rows: data.rows }}
+                    isSorted={false}
+                    entriesPerPage={false}
+                    showTotalEntries={false}
+                    noEndBorder
+                  />
+                ) : (
+                  <MDTypography
+                    sx={{
+                      margin: 10,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      fontSize: "18px",
+                      fontWeight: "bold",
+                      textAlign: "center",
+                    }}
+                  >
+                    Permission not Granted to View the Users
+                    <MDTypography
+                      sx={{
+                        fontSize: "16px",
+                        fontWeight: "normal",
+                      }}
+                    >
+                      Contact the Admin for Access
+                    </MDTypography>
+                  </MDTypography>
+                )}
               </MDBox>
             </Card>
+            <Snackbar
+              open={openSnackbar}
+              autoHideDuration={6000}
+              onClose={() => setOpenSnackbar(false)}
+            >
+              <MuiAlert
+                elevation={6}
+                variant="filled"
+                onClose={() => setOpenSnackbar(false)}
+                severity="error"
+              >
+                {submitError}
+              </MuiAlert>
+            </Snackbar>
           </Grid>
         </Grid>
       </MDBox>

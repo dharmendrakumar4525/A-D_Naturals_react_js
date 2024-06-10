@@ -44,6 +44,7 @@ import BasicLayout from "layouts/authentication/components/BasicLayout";
 // Images
 import bgImage from "assets/images/ADBg.png";
 import { environment } from "environments/environment";
+import { POST_MANAGE_PERMISSION } from "environments/apiPaths";
 
 function Basic() {
   const [rememberMe, setRememberMe] = useState(false);
@@ -63,9 +64,10 @@ function Basic() {
 
       if (response) {
         localStorage.setItem("A&D_Login_Token", andLoginToken);
+        localStorage.setItem("A&D_User", JSON.stringify(response.data.user));
         dashboardNavigate("/dashboard");
       }
-      console.log("responseresponse", andLoginToken);
+      console.log("responseresponse", response.data);
 
       // Handle the response as needed
       console.log("Sign-in successful:", response.data);

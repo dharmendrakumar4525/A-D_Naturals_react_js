@@ -4,9 +4,58 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
+import { environment } from "environments/environment";
+import { GET_PERMISSION } from "environments/apiPaths";
+import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 function InventoryTable() {
+  const [createPurchase, setCreatePurchase] = useState({});
+  const [createWarehouse, setCreateWarehouse] = useState({});
+  const [createSeller, setCreateSeller] = useState({});
+  const [isRefetch, setIsRefetch] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  //-------------------------------- GET PERMISSION Array ------------------------
+  useEffect(() => {
+    const fetchPermissionData = async () => {
+      const data = getLocalStorageData("A&D_User");
+      console.log(data, "permission");
+      try {
+        const permissionResponse = await axios.get(
+          `${environment.api_path}/${GET_PERMISSION}${data._id}`
+        );
+        const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
+        console.log(permissionData);
+        // Check if the permission data contains an object with module name "users"
+        let modulePermission = permissionData.find((item) => item.moduleName === "PurchaseOrder");
+        setCreatePurchase(modulePermission ? modulePermission.childList : {});
+        modulePermission = permissionData.find((item) => item.moduleName === "WarehouseOrder");
+        setCreateWarehouse(modulePermission ? modulePermission.childList : {});
+        modulePermission = permissionData.find((item) => item.moduleName === "SellerOrder");
+        setCreateSeller(modulePermission ? modulePermission.childList : {});
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchPermissionData();
+  }, [isRefetch]);
+
+  const handleError = (order, permission) => {
+    if (permission[0].isSelected === false) {
+      setSubmitError(`You don't have permission to Create ${order}`);
+      setOpenSnackbar(true);
+    } else {
+      return true;
+    }
+  };
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -14,7 +63,12 @@ function InventoryTable() {
         <Grid container spacing={3}>
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={1.5}>
-              <Link to="/inventory/purchase-order">
+              <Link
+                to="/inventory/purchase-order"
+                onClick={(e) => {
+                  if (!handleError("Purchase Order", createPurchase)) e.preventDefault();
+                }}
+              >
                 <ComplexStatisticsCard
                   color="dark"
                   icon="weekend"
@@ -29,13 +83,17 @@ function InventoryTable() {
           </Grid>
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={1.5}>
-              <Link to="/inventory/warehouse-order">
+              <Link
+                to="/inventory/warehouse-order"
+                onClick={(e) => {
+                  if (!handleError("Warehouse Order", createWarehouse)) e.preventDefault();
+                }}
+              >
                 <ComplexStatisticsCard
                   icon="store"
                   title="Warehouse Order"
                   percentage={{
                     color: "success",
-                    // amount: "+3%",
                     label: "Add Warehouse Order",
                   }}
                 />
@@ -43,14 +101,18 @@ function InventoryTable() {
             </MDBox>
           </Grid>
           <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={31.5}>
-              <Link to="/inventory/pending-seller-order">
+            <MDBox mb={1.5}>
+              <Link
+                to="/inventory/pending-seller-order"
+                onClick={(e) => {
+                  if (!handleError("Seller Order", createSeller)) e.preventDefault();
+                }}
+              >
                 <ComplexStatisticsCard
                   icon="leaderboard"
                   title="Seller Order"
                   percentage={{
                     color: "success",
-                    // amount: "+3%",
                     label: "Add Seller Order",
                   }}
                 />
@@ -59,6 +121,16 @@ function InventoryTable() {
           </Grid>
         </Grid>
       </MDBox>
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setOpenSnackbar(false)}
+          severity="error"
+        >
+          {submitError}
+        </MuiAlert>
+      </Snackbar>
       <Footer />
     </DashboardLayout>
   );

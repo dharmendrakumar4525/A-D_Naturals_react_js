@@ -12,3 +12,5 @@ export const GET_WAREHOUSEORDER_API = "/warehouse_order";
 export const GET_SELLERORDER_API = "/seller_order";
 export const GET_EXPENSE_API = "/expense";
 export const GET_WAREHOUSE_EXPENSE_API = "/warehouse_expense";
+export const POST_MANAGE_PERMISSION = "/roles/update-perm";
+export const GET_PERMISSION = "/user/permission?user_id=";

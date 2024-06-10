@@ -35,7 +35,7 @@ const style = {
   flexDirection: "column",
 };
 
-export default function VendorTableModal({ vendorId = null, setIsRefetch = () => {} }) {
+export default function VendorTableModal({ vendorId = null, permission, setIsRefetch = () => {} }) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const [formData, setFormData] = useState({
@@ -140,6 +140,22 @@ export default function VendorTableModal({ vendorId = null, setIsRefetch = () =>
     setOpenSnackbar(true);
   };
 
+  const handleEditModal = () => {
+    if (permission[2]?.isSelected === false) {
+      handleError("You don't have permission to Edit");
+      return;
+    }
+    handleOpen();
+  };
+
+  const handleAddModal = () => {
+    if (permission[0]?.isSelected === false) {
+      handleError("You don't have permission to Add Vendors");
+      return;
+    }
+    handleOpen();
+  };
+
   const handleInputChange = (event) => {
     const { id, value } = event.target;
     setFormData({ ...formData, [id]: value });
@@ -198,9 +214,9 @@ export default function VendorTableModal({ vendorId = null, setIsRefetch = () =>
   return (
     <div>
       {vendorId ? (
-        <EditIcon onClick={handleOpen} />
+        <EditIcon onClick={handleEditModal} />
       ) : (
-        <Button variant="text" style={{ color: "white" }} onClick={handleOpen}>
+        <Button variant="text" style={{ color: "white" }} onClick={handleAddModal}>
           +Add Record
         </Button>
       )}

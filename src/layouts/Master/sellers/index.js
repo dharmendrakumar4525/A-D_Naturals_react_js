@@ -17,9 +17,18 @@ import DataTable from "examples/Tables/DataTable";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { environment } from "environments/environment";
-import { GET_SELLER_API, GET_WAREHOUSE_API, GET_LOCATION_API } from "environments/apiPaths";
+import {
+  GET_SELLER_API,
+  GET_WAREHOUSE_API,
+  GET_LOCATION_API,
+  GET_PERMISSION,
+} from "environments/apiPaths";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Loader from "../../../assets/images/Loader.gif";
+import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
+import { Margin } from "@mui/icons-material";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 function SellersTable() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,6 +36,9 @@ function SellersTable() {
   const [originalData, setOriginalData] = useState([]);
   const [isRefetch, setIsRefetch] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [permission, setPermission] = useState({});
+  const [submitError, setSubmitError] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const onSearch = (query) => {
     setSearchQuery(query);
@@ -35,12 +47,21 @@ function SellersTable() {
   //----------------------------Delete Function---------------------------------
 
   const handleDelete = async (sellerId) => {
+    if (permission[3]?.isSelected === false) {
+      handleError("You don't have permission to delete");
+      return;
+    }
     try {
       await axios.delete(`${environment.api_path}/${GET_SELLER_API}/${sellerId}`);
       setRowData((prevData) => prevData.filter((seller) => seller._id !== sellerId));
     } catch (error) {
       console.error("Error deleting seller:", error);
     }
+  };
+
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
   };
 
   //----------------------------Filter Function ---------------------------------
@@ -113,6 +134,32 @@ function SellersTable() {
     fetchData();
   }, [isRefetch]);
 
+  //-------------------------------- GET PERMISSION Array ------------------------
+  useEffect(() => {
+    const fetchPermissionData = async () => {
+      const data = getLocalStorageData("A&D_User");
+      console.log(data, "permission");
+      try {
+        const permissionResponse = await axios.get(
+          `${environment.api_path}/${GET_PERMISSION}${data._id}`
+        );
+        const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
+        console.log(permissionData);
+        // Check if the permission data contains an object with module name "users"
+        const modulePermission = permissionData.find((item) => item.moduleName === "Seller");
+
+        // If found, save that object in the permission state
+        if (modulePermission) {
+          setPermission(modulePermission.childList);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchPermissionData();
+  }, [isRefetch]);
+
   //----------------------------Row Data---------------------------------
   const data = {
     columns: [
@@ -138,7 +185,11 @@ function SellersTable() {
               <DeleteIcon />
             </MDTypography>
             <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-              <SellerTableModal sellerId={seller._id} setIsRefetch={setIsRefetch} />
+              <SellerTableModal
+                sellerId={seller._id}
+                setIsRefetch={setIsRefetch}
+                permission={permission}
+              />
             </MDTypography>
           </div>
         </>
@@ -170,28 +221,66 @@ function SellersTable() {
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
                   Sellers Table
-                  <SellerTableModal />
+                  <SellerTableModal permission={permission} />
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                {loading ? (
-                  <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
-                    <img src={Loader} alt="loading..." />
-                    <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
-                  </MDBox>
+                {permission[1]?.isSelected === true ? (
+                  loading ? (
+                    <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                      <img src={Loader} alt="loading..." />
+                      <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                    </MDBox>
+                  ) : (
+                    <DataTable
+                      table={{ columns: data.columns, rows: data.rows }}
+                      isSorted={false}
+                      entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                      showTotalEntries={true}
+                      noEndBorder
+                      pagination={{ variant: "contained", color: "info" }}
+                    />
+                  )
                 ) : (
-                  <DataTable
-                    table={{ columns: data.columns, rows: data.rows }}
-                    isSorted={false}
-                    entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
-                    showTotalEntries={true}
-                    noEndBorder
-                    pagination={{ variant: "contained", color: "info" }}
-                  />
+                  <MDTypography
+                    sx={{
+                      margin: 10,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      fontSize: "18px",
+                      fontWeight: "bold",
+                      textAlign: "center",
+                    }}
+                  >
+                    Permission not Granted to View the Sellers
+                    <MDTypography
+                      sx={{
+                        fontSize: "16px",
+                        fontWeight: "normal",
+                      }}
+                    >
+                      Contact the Admin for Access
+                    </MDTypography>
+                  </MDTypography>
                 )}
               </MDBox>
             </Card>
           </Grid>
+          <Snackbar
+            open={openSnackbar}
+            autoHideDuration={6000}
+            onClose={() => setOpenSnackbar(false)}
+          >
+            <MuiAlert
+              elevation={6}
+              variant="filled"
+              onClose={() => setOpenSnackbar(false)}
+              severity="error"
+            >
+              {submitError}
+            </MuiAlert>
+          </Snackbar>
         </Grid>
       </MDBox>
       <Footer />

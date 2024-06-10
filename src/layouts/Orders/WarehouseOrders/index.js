@@ -25,13 +25,21 @@ import DataTable from "examples/Tables/DataTable";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { environment } from "environments/environment";
-import { GET_PURCHASEORDER_API, GET_WAREHOUSEORDER_API } from "environments/apiPaths";
+import {
+  GET_PURCHASEORDER_API,
+  GET_WAREHOUSEORDER_API,
+  GET_PERMISSION,
+} from "environments/apiPaths";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getVendorNameByID, formatDate, getWarehouseNameByID } from "../utils";
 import DetailsModal from "./DetailsModal";
 import FilterModal from "./FilterModal";
 import WareHouseModal from "./wareHouseFilterModal";
 import Loader from "../../../assets/images/Loader.gif";
+import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
+import { Margin } from "@mui/icons-material";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 function WareHouseOrderTable() {
   const [vendors, setVendors] = useState([]);
@@ -46,6 +54,9 @@ function WareHouseOrderTable() {
   const [rejected, setRejected] = useState(0);
   const [received, setRceived] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [permission, setPermission] = useState({});
+  const [submitError, setSubmitError] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const openWareHouseFilterModal = () => {
     setIsWareHouseModalOpen(true);
@@ -58,6 +69,10 @@ function WareHouseOrderTable() {
   //----------------------------Delete Function---------------------------------
 
   const handleDelete = async (warehouseOrderID) => {
+    if (permission[3]?.isSelected === false) {
+      handleError("You don't have permission to delete");
+      return;
+    }
     try {
       await axios.delete(`${environment.api_path}/${GET_WAREHOUSEORDER_API}/${warehouseOrderID}`);
       setRowData((prevData) => prevData.filter((purchase) => purchase._id !== warehouseOrderID));
@@ -65,6 +80,11 @@ function WareHouseOrderTable() {
     } catch (error) {
       console.error("Error deleting WareHouseOrder:", error);
     }
+  };
+
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
   };
 
   //----------------------------Filter Function ---------------------------------
@@ -78,7 +98,7 @@ function WareHouseOrderTable() {
 
     switch (filterType) {
       case "monthly":
-        filteredData = warehouseFilterData.filter((order) => {
+        filteredData = originalData.filter((order) => {
           const orderDate = parseISO(order.created_at);
           return isWithinInterval(orderDate, {
             start: startOfMonth(new Date(startYear, month - 1, 1)),
@@ -88,7 +108,7 @@ function WareHouseOrderTable() {
         break;
 
       case "quarterly":
-        filteredData = warehouseFilterData.filter((order) => {
+        filteredData = originalData.filter((order) => {
           const orderDate = parseISO(order.created_at);
           return isWithinInterval(orderDate, {
             start: startOfQuarter(addMonths(new Date(startYear, 3, 1), (quarter - 1) * 3)),
@@ -99,7 +119,7 @@ function WareHouseOrderTable() {
 
       case "halfyearly":
         if (halfYear === "1") {
-          filteredData = warehouseFilterData.filter((order) => {
+          filteredData = originalData.filter((order) => {
             const orderDate = parseISO(order.created_at);
             return isWithinInterval(orderDate, {
               start: new Date(startYear, 3, 1),
@@ -107,7 +127,7 @@ function WareHouseOrderTable() {
             });
           });
         } else {
-          filteredData = warehouseFilterData.filter((order) => {
+          filteredData = originalData.filter((order) => {
             const orderDate = parseISO(order.created_at);
             return isWithinInterval(orderDate, {
               start: new Date(startYear, 9, 1),
@@ -127,6 +147,10 @@ function WareHouseOrderTable() {
       default:
         filteredData = originalData;
         break;
+    }
+
+    if (warehouseId) {
+      filteredData = filteredData.filter((order) => order.warehouse === warehouseId);
     }
 
     let received = 0;
@@ -224,6 +248,32 @@ function WareHouseOrderTable() {
     fetchData();
   }, [isRefetch]);
 
+  //-------------------------------- GET PERMISSION Array ------------------------
+  useEffect(() => {
+    const fetchPermissionData = async () => {
+      const data = getLocalStorageData("A&D_User");
+      console.log(data, "permission");
+      try {
+        const permissionResponse = await axios.get(
+          `${environment.api_path}/${GET_PERMISSION}${data._id}`
+        );
+        const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
+        console.log(permissionData);
+        // Check if the permission data contains an object with module name "users"
+        const modulePermission = permissionData.find((item) => item.moduleName === "SellerOrder");
+
+        // If found, save that object in the permission state
+        if (modulePermission) {
+          setPermission(modulePermission.childList);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchPermissionData();
+  }, [isRefetch]);
+
   //----------------------------Row Data---------------------------------
   const data = {
     columns: [
@@ -251,6 +301,7 @@ function WareHouseOrderTable() {
                   vendors={vendors}
                   warehouses={warehouses}
                   handleDelete={handleDelete}
+                  permission={permission}
                 />
               )}
             </MDTypography>
@@ -305,7 +356,12 @@ function WareHouseOrderTable() {
                   >
                     Total Damaged: {rejected}
                   </MDTypography>
-                  <Button onClick={openFilterModal} variant="contained" color="white">
+                  <Button
+                    onClick={openFilterModal}
+                    variant="contained"
+                    color="white"
+                    disabled={permission[1]?.isSelected === true ? false : true}
+                  >
                     Filters
                   </Button>
                   <FilterModal
@@ -322,6 +378,7 @@ function WareHouseOrderTable() {
                     variant="contained"
                     sx={{ marginLeft: 2, marginRight: 2 }}
                     color="dark"
+                    disabled={permission[1]?.isSelected === true ? false : true}
                   >
                     Select WareHouse
                   </Button>
@@ -332,24 +389,62 @@ function WareHouseOrderTable() {
                   onClose={() => setIsWareHouseModalOpen(false)}
                   filterObjectsByWarehouseId={filterObjectsByWarehouseId}
                 />
-                {loading ? (
-                  <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
-                    <img src={Loader} alt="loading..." />
-                    <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
-                  </MDBox>
+                {permission[1]?.isSelected === true ? (
+                  loading ? (
+                    <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                      <img src={Loader} alt="loading..." />
+                      <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                    </MDBox>
+                  ) : (
+                    <DataTable
+                      table={{ columns: data.columns, rows: data.rows }}
+                      isSorted={false}
+                      entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                      showTotalEntries={true}
+                      noEndBorder
+                      pagination={{ variant: "contained", color: "info" }}
+                    />
+                  )
                 ) : (
-                  <DataTable
-                    table={{ columns: data.columns, rows: data.rows }}
-                    isSorted={false}
-                    entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
-                    showTotalEntries={true}
-                    noEndBorder
-                    pagination={{ variant: "contained", color: "info" }}
-                  />
+                  <MDTypography
+                    sx={{
+                      margin: 10,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      fontSize: "18px",
+                      fontWeight: "bold",
+                      textAlign: "center",
+                    }}
+                  >
+                    Permission not Granted to View the WareHouse Orders
+                    <MDTypography
+                      sx={{
+                        fontSize: "16px",
+                        fontWeight: "normal",
+                      }}
+                    >
+                      Contact the Admin for Access
+                    </MDTypography>
+                  </MDTypography>
                 )}
               </MDBox>
             </Card>
           </Grid>
+          <Snackbar
+            open={openSnackbar}
+            autoHideDuration={6000}
+            onClose={() => setOpenSnackbar(false)}
+          >
+            <MuiAlert
+              elevation={6}
+              variant="filled"
+              onClose={() => setOpenSnackbar(false)}
+              severity="error"
+            >
+              {submitError}
+            </MuiAlert>
+          </Snackbar>
         </Grid>
       </MDBox>
       <Footer />

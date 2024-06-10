@@ -27,9 +27,18 @@ import DetailsModal from "./DetailsModal";
 import FilterModal from "./FilterModal";
 import WareHouseModal from "./WareHouseModal";
 import SellerModal from "./sellerModal";
-import { GET_SELLERORDER_API, GET_WAREHOUSEORDER_API, GET_SELLER_API } from "environments/apiPaths";
+import {
+  GET_SELLERORDER_API,
+  GET_WAREHOUSEORDER_API,
+  GET_PERMISSION,
+  GET_SELLER_API,
+} from "environments/apiPaths";
 import { getVendorNameByID, formatDate, getWarehouseNameByID } from "../utils";
 import Loader from "../../../assets/images/Loader.gif";
+import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
+import { Margin } from "@mui/icons-material";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 function SellerOrderTable() {
   const [warehouses, setWarehouse] = useState([]);
@@ -46,6 +55,9 @@ function SellerOrderTable() {
   const [received, setReceived] = useState(0);
   const [sold, setSold] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [permission, setPermission] = useState({});
+  const [submitError, setSubmitError] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   // Track applied filters
   const [appliedFilters, setAppliedFilters] = useState({
@@ -72,6 +84,10 @@ function SellerOrderTable() {
   //----------------------------Delete Function---------------------------------
 
   const handleDelete = async (sellerOrderID) => {
+    if (permission[3]?.isSelected === false) {
+      handleError("You don't have permission to delete");
+      return;
+    }
     try {
       await axios.delete(`${environment.api_path}/${GET_SELLERORDER_API}/${sellerOrderID}`);
       setRowData((prevData) => prevData.filter((purchase) => purchase._id !== sellerOrderID));
@@ -80,6 +96,13 @@ function SellerOrderTable() {
       console.error("Error deleting WareHouseOrder:", error);
     }
   };
+
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
+  };
+
+  //--------------------------- Reset Filters --------------------
 
   const resetFilters = () => {
     setAppliedFilters({
@@ -217,6 +240,8 @@ function SellerOrderTable() {
     applyFilters(newFilters);
   };
 
+  //-------------------------------Fetch Requests
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -263,6 +288,34 @@ function SellerOrderTable() {
     fetchData();
   }, [isRefetch]);
 
+  //-------------------------------- GET PERMISSION Array ------------------------
+  useEffect(() => {
+    const fetchPermissionData = async () => {
+      const data = getLocalStorageData("A&D_User");
+      console.log(data, "permission");
+      try {
+        const permissionResponse = await axios.get(
+          `${environment.api_path}/${GET_PERMISSION}${data._id}`
+        );
+        const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
+        console.log(permissionData);
+        // Check if the permission data contains an object with module name "users"
+        const modulePermission = permissionData.find((item) => item.moduleName === "SellerOrder");
+
+        // If found, save that object in the permission state
+        if (modulePermission) {
+          setPermission(modulePermission.childList);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchPermissionData();
+  }, [isRefetch]);
+
+  //----------------------------Data Rows------------------------------
+
   const data = {
     columns: [
       { Header: "Seller", accessor: "seller", align: "center", width: "15%" },
@@ -284,6 +337,7 @@ function SellerOrderTable() {
                 purchaseOrderData={orders}
                 warehouses={warehouses}
                 handleDelete={handleDelete}
+                permission={permission}
               />
             </MDTypography>
           </div>
@@ -347,7 +401,12 @@ function SellerOrderTable() {
                   >
                     Total Sales: {sold}
                   </MDTypography>
-                  <Button onClick={openFilterModal} variant="contained" color="white">
+                  <Button
+                    onClick={openFilterModal}
+                    variant="contained"
+                    color="white"
+                    disabled={permission[1]?.isSelected === true ? false : true}
+                  >
                     Filters
                   </Button>
                   <FilterModal
@@ -381,6 +440,7 @@ function SellerOrderTable() {
                       variant="contained"
                       sx={{ marginLeft: 2, marginRight: 2 }}
                       color="dark"
+                      disabled={permission[1]?.isSelected === true ? false : true}
                     >
                       Select WareHouse
                     </Button>
@@ -401,6 +461,7 @@ function SellerOrderTable() {
                       variant="contained"
                       sx={{ marginLeft: 2, marginRight: 2 }}
                       color="dark"
+                      disabled={permission[1]?.isSelected === true ? false : true}
                     >
                       Select Seller
                     </Button>
@@ -421,6 +482,7 @@ function SellerOrderTable() {
                       variant="contained"
                       sx={{ marginLeft: 2, marginRight: 2 }}
                       color="dark"
+                      disabled={permission[1]?.isSelected === true ? false : true}
                     >
                       Reset
                     </Button>
@@ -437,24 +499,62 @@ function SellerOrderTable() {
                   onClose={() => setIsSellerModalOpen(false)}
                   filterObjectsBySellerId={filterObjectsBySellerId}
                 />
-                {loading ? (
-                  <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
-                    <img src={Loader} alt="loading..." />
-                    <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
-                  </MDBox>
+                {permission[1]?.isSelected === true ? (
+                  loading ? (
+                    <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                      <img src={Loader} alt="loading..." />
+                      <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                    </MDBox>
+                  ) : (
+                    <DataTable
+                      table={{ columns: data.columns, rows: data.rows }}
+                      isSorted={false}
+                      entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                      showTotalEntries={true}
+                      noEndBorder
+                      pagination={{ variant: "contained", color: "info" }}
+                    />
+                  )
                 ) : (
-                  <DataTable
-                    table={{ columns: data.columns, rows: data.rows }}
-                    isSorted={false}
-                    entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
-                    showTotalEntries={true}
-                    noEndBorder
-                    pagination={{ variant: "contained", color: "info" }}
-                  />
+                  <MDTypography
+                    sx={{
+                      margin: 10,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      fontSize: "18px",
+                      fontWeight: "bold",
+                      textAlign: "center",
+                    }}
+                  >
+                    Permission not Granted to View the Seller Orders
+                    <MDTypography
+                      sx={{
+                        fontSize: "16px",
+                        fontWeight: "normal",
+                      }}
+                    >
+                      Contact the Admin for Access
+                    </MDTypography>
+                  </MDTypography>
                 )}
               </MDBox>
             </Card>
           </Grid>
+          <Snackbar
+            open={openSnackbar}
+            autoHideDuration={6000}
+            onClose={() => setOpenSnackbar(false)}
+          >
+            <MuiAlert
+              elevation={6}
+              variant="filled"
+              onClose={() => setOpenSnackbar(false)}
+              severity="error"
+            >
+              {submitError}
+            </MuiAlert>
+          </Snackbar>
         </Grid>
       </MDBox>
       <Footer />

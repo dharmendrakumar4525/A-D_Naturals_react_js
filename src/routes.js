@@ -67,6 +67,7 @@ import ExpenseTable from "layouts/Master/expenses";
 import WareHouseExpenseTable from "layouts/WarehouseExpenses";
 import EditExpense from "layouts/WarehouseExpenses/EditExpenses";
 import AddExpense from "layouts/WarehouseExpenses/AddExpenses";
+import ManagePermission from "layouts/UserManagement/managePermission";
 
 const routes = [
   {
@@ -394,6 +395,18 @@ const routes = [
     component: (
       <PrivateRoute>
         <AddExpense />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "role Permissions Management",
+    key: "role-permissions-management",
+    route: "/user-management/role-permissions-management",
+    component: (
+      <PrivateRoute>
+        <ManagePermission />
       </PrivateRoute>
     ),
   },

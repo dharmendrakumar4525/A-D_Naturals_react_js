@@ -10,6 +10,8 @@ import MDTypography from "components/MDTypography";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "../utils";
 import PendingSalesDataModal from "./PendingSalesDataModal";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 const style = {
   position: "absolute",
@@ -29,23 +31,35 @@ const style = {
 export default function DetailsModal({
   purchaseOrderData = null,
   handleDelete,
+  permission,
   setIsRefetch = () => {},
 }) {
   const [open, setOpen] = useState(false);
   const [pendingSalesModal, setPendingSalesModal] = useState(false);
   const navigate = useNavigate();
+  const [submitError, setSubmitError] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   const handlePendingClose = () => setPendingSalesModal(false);
   const handleEdit = () => {
+    if (permission[2]?.isSelected === false) {
+      handleError("You don't have permission to Edit");
+      return;
+    }
     setOpen(false);
     setPendingSalesModal(true);
   };
 
   const deletePO = () => {
     handleDelete(purchaseOrderData._id);
+  };
+
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
   };
 
   return (
@@ -127,6 +141,16 @@ export default function DetailsModal({
         handlePendingClose={handlePendingClose}
         pendingSalesModal={pendingSalesModal}
       />
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setOpenSnackbar(false)}
+          severity="error"
+        >
+          {submitError}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 }

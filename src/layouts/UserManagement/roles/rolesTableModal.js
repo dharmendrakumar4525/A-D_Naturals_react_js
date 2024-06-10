@@ -27,7 +27,7 @@ const style = {
   flexDirection: "column",
 };
 
-export default function RolesTableModal({ userId = null, setIsRefetch = () => {} }) {
+export default function RolesTableModal({ userId = null, permission, setIsRefetch = () => {} }) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({ role: "" });
   const [roleError, setRoleError] = useState("");
@@ -53,6 +53,21 @@ export default function RolesTableModal({ userId = null, setIsRefetch = () => {}
     setOpenSnackbar(true);
   };
 
+  const handleEditModal = () => {
+    if (permission[2]?.isSelected === false) {
+      handleError("You don't have permission to Edit");
+      return;
+    }
+    handleOpen();
+  };
+
+  const handleAddModal = () => {
+    if (permission[0]?.isSelected === false) {
+      handleError("You don't have permission to Add Role");
+      return;
+    }
+    handleOpen();
+  };
   const handleSubmit = async () => {
     try {
       if (!formData.role.trim()) {
@@ -83,9 +98,9 @@ export default function RolesTableModal({ userId = null, setIsRefetch = () => {}
   return (
     <div>
       {userId ? (
-        <EditIcon onClick={handleOpen} />
+        <EditIcon onClick={handleEditModal} />
       ) : (
-        <Button variant="text" style={{ color: "white" }} onClick={handleOpen}>
+        <Button variant="text" style={{ color: "white" }} onClick={handleAddModal}>
           +Add Record
         </Button>
       )}
