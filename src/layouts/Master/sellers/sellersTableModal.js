@@ -259,6 +259,7 @@ export default function SellerTableModal({ sellerId = null, permission, setIsRef
         await axios.post(`${environment.api_path}/${GET_SELLER_API}`, payloadformData);
         window.location.reload();
       }
+      handleError("Seller Updated Successfully");
       setIsRefetch(true);
       handleClose();
     } catch (error) {

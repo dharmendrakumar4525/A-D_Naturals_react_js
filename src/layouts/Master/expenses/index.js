@@ -48,6 +48,7 @@ function ExpenseTable() {
     try {
       await axios.delete(`${environment.api_path}/${GET_EXPENSE_API}/${expenseId}`);
       setRowData((prevData) => prevData.filter((expense) => expense._id !== expenseId));
+      handleError("Expense Delete Succeslly");
     } catch (error) {
       console.error("Error deleting seller:", error);
     }

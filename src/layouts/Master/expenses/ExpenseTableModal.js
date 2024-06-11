@@ -104,6 +104,7 @@ export default function ExpenseTableModal({
         await axios.post(`${environment.api_path}/${GET_EXPENSE_API}`, formData);
         window.location.reload();
       }
+      handleError("Expense Updated Succeslly");
       setIsRefetch(true);
       handleClose();
     } catch (error) {

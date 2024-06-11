@@ -62,6 +62,7 @@ function RolesTable() {
     try {
       await axios.delete(`${environment.api_path}/${GET_ROLES_API}/${roleId}`);
       setRowData((prevData) => prevData.filter((role) => role._id !== roleId));
+      handleError("Role Deleted Successully");
     } catch (error) {
       console.error("Error deleting role:", error);
     }
@@ -212,9 +213,10 @@ function RolesTable() {
                   <DataTable
                     table={{ columns: data.columns, rows: data.rows }}
                     isSorted={false}
-                    entriesPerPage={false}
-                    showTotalEntries={false}
+                    entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                    showTotalEntries={true}
                     noEndBorder
+                    pagination={{ variant: "contained", color: "info" }}
                   />
                 ) : (
                   <MDTypography

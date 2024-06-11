@@ -48,6 +48,7 @@ function LocationsTable() {
     try {
       await axios.delete(`${environment.api_path}/location/${vendorId}`);
       setRowData((prevData) => prevData.filter((vendor) => vendor._id !== vendorId));
+      handleError("Location Deleted Sucessfully");
     } catch (error) {
       console.error("Error deleting Location:", error);
     }

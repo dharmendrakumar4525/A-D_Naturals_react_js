@@ -89,7 +89,7 @@ export default function DetailsModal({
             <div>
               <Grid container spacing={1} sx={{ borderBottom: "1px solid black" }}>
                 <MDTypography variant="h6" gutterBottom>
-                  Purchase Order Details
+                  WareHouse Order Details
                 </MDTypography>
               </Grid>
               <Grid container spacing={1} sx={{ marginTop: 2 }}>
@@ -111,7 +111,7 @@ export default function DetailsModal({
                 </Grid>
                 <Grid item xs={12}>
                   <MDTypography sx={{ fontSize: 13 }}>
-                    <strong>Rejected Quantity:</strong> {purchaseOrderData.rejected_qty} unit
+                    <strong>Damaged Quantity:</strong> {purchaseOrderData.rejected_qty} unit
                   </MDTypography>
                 </Grid>
                 <Grid item xs={12}>

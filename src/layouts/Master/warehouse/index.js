@@ -55,6 +55,7 @@ function WarehouseTable() {
     try {
       await axios.delete(`${environment.api_path}/warehouse/${warehouseId}`);
       setRowData((prevData) => prevData.filter((warehouse) => warehouse._id !== warehouseId));
+      handleError("Warehouse Deleted Sucessfully");
     } catch (error) {
       console.error("Error deleting seller:", error);
     }
@@ -68,7 +69,6 @@ function WarehouseTable() {
   //----------------------------Filter Function ---------------------------------
 
   const filterData = () => {
-    console.log(searchQuery, "Here");
     if (!searchQuery) {
       setRowData(originalData);
       return;
@@ -77,7 +77,7 @@ function WarehouseTable() {
     const filteredData = originalData.filter((warehouse) =>
       warehouse.warehouse_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    console.log(filteredData, "here");
+    console.log(filteredData, "here Filter");
 
     setRowData(filteredData);
   };

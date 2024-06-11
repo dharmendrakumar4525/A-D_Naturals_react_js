@@ -100,7 +100,7 @@ export default function DetailsModal({
                 </Grid>
                 <Grid item xs={12}>
                   <MDTypography sx={{ fontSize: 13 }}>
-                    <strong>Rejected Quantity:</strong> {purchaseOrderData.rejected_qty} unit
+                    <strong>Damaged Quantity:</strong> {purchaseOrderData.rejected_qty} unit
                   </MDTypography>
                 </Grid>
                 <Grid item xs={12}>

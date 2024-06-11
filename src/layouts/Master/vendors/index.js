@@ -49,6 +49,7 @@ function VendorsTable() {
     try {
       await axios.delete(`${environment.api_path}/${GET_VENDOR_API}/${vendorId}`);
       setRowData((prevData) => prevData.filter((vendor) => vendor._id !== vendorId));
+      handleError("Vendor Deleted Successfully");
     } catch (error) {
       console.error("Error deleting seller:", error);
     }

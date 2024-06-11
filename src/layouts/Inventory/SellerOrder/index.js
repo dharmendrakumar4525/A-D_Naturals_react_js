@@ -90,6 +90,8 @@ function PendingSellerOrder() {
               object.seller_id.warehouse === matchingWarehouses[0]._id &&
               object.status === "pending"
           );
+        } else {
+          filteredObjects = filteredObjects.filter((object) => object.status === "pending");
         }
 
         setRowData(filteredObjects);

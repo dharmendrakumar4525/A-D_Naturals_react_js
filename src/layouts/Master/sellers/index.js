@@ -54,6 +54,7 @@ function SellersTable() {
     try {
       await axios.delete(`${environment.api_path}/${GET_SELLER_API}/${sellerId}`);
       setRowData((prevData) => prevData.filter((seller) => seller._id !== sellerId));
+      handleError("Seller Deleted Successfully");
     } catch (error) {
       console.error("Error deleting seller:", error);
     }

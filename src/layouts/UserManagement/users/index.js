@@ -121,6 +121,7 @@ function UserTable() {
     try {
       await axios.delete(`${environment.api_path}/${POST_USER_DELETE_API}/${userId}`);
       setRowData((prevData) => prevData.filter((user) => user._id !== userId));
+      handleError("User Deleted Succesfully");
     } catch (error) {
       console.error("Error deleting user:", error);
     }
@@ -229,9 +230,10 @@ function UserTable() {
                   <DataTable
                     table={{ columns: data.columns, rows: data.rows }}
                     isSorted={false}
-                    entriesPerPage={false}
-                    showTotalEntries={false}
+                    entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                    showTotalEntries={true}
                     noEndBorder
+                    pagination={{ variant: "contained", color: "info" }}
                   />
                 ) : (
                   <MDTypography

@@ -7,197 +7,245 @@ import {
 } from "environments/apiPaths";
 import { environment } from "environments/environment";
 
-// Your fetchTotalPurchase function
-export const fetchTotalPurchase = async () => {
+const filterDataByDate = (data, filterType, year, month, quarter, halfYear) => {
+  const startDate = new Date(year, 0, 1);
+  let endDate;
+
+  switch (filterType) {
+    case "monthly":
+      startDate.setMonth(month - 1);
+      endDate = new Date(year, month, 0);
+      break;
+    case "quarterly":
+      const quarterStartMonth = (quarter - 1) * 3;
+      startDate.setMonth(quarterStartMonth);
+      endDate = new Date(year, quarterStartMonth + 3, 0);
+      break;
+    case "halfyearly":
+      const halfYearStartMonth = (halfYear - 1) * 6;
+      startDate.setMonth(halfYearStartMonth);
+      endDate = new Date(year, halfYearStartMonth + 6, 0);
+      break;
+    case "yearly":
+      endDate = new Date(year, 11, 31);
+      break;
+    default:
+      throw new Error("Invalid filter type");
+  }
+
+  return data.filter((item) => {
+    const itemDate = new Date(item.created_at);
+    return itemDate >= startDate && itemDate <= endDate;
+  });
+};
+
+export const fetchFilterTotalPurchase = async (filterType, year, month, quarter, halfYear) => {
   try {
     const PurchaseOrderResponse = await axios.get(
       `${environment.api_path}${GET_PURCHASEORDER_API}`
     );
     const PurchaseOrdersList = PurchaseOrderResponse.data.data;
-    const currentDate = new Date();
-    const filteredByCurrentYear = PurchaseOrdersList.filter((order) => {
-      const orderDate = new Date(order.created_at);
-      return orderDate.getFullYear() === currentDate.getFullYear();
-    });
+    const filteredData = filterDataByDate(
+      PurchaseOrdersList,
+      filterType,
+      year,
+      month,
+      quarter,
+      halfYear
+    );
 
     let totalOrderQuantity = 0;
     let totalPrice = 0;
     let totalResale = 0;
     let TotalResaleValue = 0;
 
-    filteredByCurrentYear.forEach((order) => {
+    filteredData.forEach((order) => {
       totalOrderQuantity += order.order_qty;
       totalPrice += order.price * order.order_qty;
       totalResale += parseInt(order.resale.qty);
       TotalResaleValue += order.resale.qty * order.resale.price;
     });
 
-    console.log(totalOrderQuantity, "total purchase");
-    console.log(totalResale, "total resale");
-
     totalOrderQuantity -= totalResale;
     totalPrice -= TotalResaleValue;
 
-    return { totalOrderQuantity: totalOrderQuantity, totalPrice: totalPrice };
+    return { totalOrderQuantity, totalPrice };
   } catch (error) {
     console.error("Error fetching data:", error);
   }
 };
-export const fetchTotalWareHouseInventory = async () => {
+
+export const fetchFilterTotalWareHouseInventory = async (
+  filterType,
+  year,
+  month,
+  quarter,
+  halfYear
+) => {
   try {
     const WareHouseOrderResponse = await axios.get(
       `${environment.api_path}${GET_WAREHOUSEORDER_API}`
     );
     const WareHouseOrdersList = WareHouseOrderResponse.data.data;
-
     const SellerOrderResponse = await axios.get(`${environment.api_path}${GET_SELLERORDER_API}`);
     const SellerOrdersList = SellerOrderResponse.data.data;
 
-    const currentDate = new Date();
-    const filteredByCurrentYear = WareHouseOrdersList.filter((order) => {
-      const orderDate = new Date(order.created_at);
-      return orderDate.getFullYear() === currentDate.getFullYear();
-    });
-
-    const filteredSellerByCurrentYear = SellerOrdersList.filter((order) => {
-      const orderDate = new Date(order.created_at);
-      return orderDate.getFullYear() === currentDate.getFullYear();
-    });
+    const filteredWareHouseData = filterDataByDate(
+      WareHouseOrdersList,
+      filterType,
+      year,
+      month,
+      quarter,
+      halfYear
+    );
+    const filteredSellerData = filterDataByDate(
+      SellerOrdersList,
+      filterType,
+      year,
+      month,
+      quarter,
+      halfYear
+    );
 
     let totalReceived = 0;
     let TotalDamaged = 0;
     let TotalConsumed = 0;
     let TotalSellerReceived = 0;
 
-    filteredByCurrentYear.forEach((order) => {
+    filteredWareHouseData.forEach((order) => {
       totalReceived += order.received_qty;
       TotalDamaged += order.rejected_qty;
     });
 
-    filteredSellerByCurrentYear.forEach((order) => {
+    filteredSellerData.forEach((order) => {
       TotalSellerReceived = order.received_qty;
       TotalConsumed += order.consumed_qty;
     });
 
     let totalInventory = totalReceived - TotalDamaged - TotalSellerReceived;
 
-    console.log(TotalSellerReceived);
-
-    return { totalInventory: totalInventory, TotalConsumed: TotalConsumed };
+    return { totalInventory, TotalConsumed };
   } catch (error) {
     console.error("Error fetching data:", error);
   }
 };
 
-export const fetchTotalExpense = async () => {
+export const fetchFilterTotalExpense = async (filterType, year, month, quarter, halfYear) => {
   try {
     const WareHouseExpenseResponse = await axios.get(
       `${environment.api_path}${GET_WAREHOUSE_EXPENSE_API}`
     );
     const WareHouseExpenseList = WareHouseExpenseResponse.data.data;
-    const currentDate = new Date();
-    const filteredByCurrentYear = WareHouseExpenseList.filter((order) => {
-      const orderDate = new Date(order.created_at);
-      return orderDate.getFullYear() === currentDate.getFullYear();
-    });
+    const filteredData = filterDataByDate(
+      WareHouseExpenseList,
+      filterType,
+      year,
+      month,
+      quarter,
+      halfYear
+    );
 
     let totalExpense = 0;
 
-    filteredByCurrentYear.forEach((item) => {
+    filteredData.forEach((item) => {
       item.expense.forEach((expenseItem) => {
         totalExpense += expenseItem.amount;
       });
     });
 
-    return { totalExpense: totalExpense };
+    return { totalExpense };
   } catch (error) {
     console.error("Error fetching data:", error);
   }
 };
 
-export const fetchTotalWareHouseInventoryByWarehouseId = async (warehouseId) => {
+export const fetchFilterTotalWareHouseInventoryByWarehouseId = async (
+  warehouseId,
+  filterType,
+  year,
+  month,
+  quarter,
+  halfYear
+) => {
   try {
     const WareHouseOrderResponse = await axios.get(
       `${environment.api_path}${GET_WAREHOUSEORDER_API}`
     );
     const WareHouseOrdersList = WareHouseOrderResponse.data.data;
-
     const SellerOrderResponse = await axios.get(`${environment.api_path}${GET_SELLERORDER_API}`);
     const SellerOrdersList = SellerOrderResponse.data.data;
 
-    const currentDate = new Date();
-    var filteredByCurrentYear = WareHouseOrdersList.filter((order) => {
-      const orderDate = new Date(order.created_at);
-      return orderDate.getFullYear() === currentDate.getFullYear();
-    });
-
-    filteredByCurrentYear = filteredByCurrentYear.filter((order) => {
-      return order.warehouse === warehouseId;
-    });
-
-    console.log(filteredByCurrentYear, "WarehouseOrders");
-
-    var filteredSellerByCurrentYear = SellerOrdersList.filter((order) => {
-      const orderDate = new Date(order.created_at);
-      return orderDate.getFullYear() === currentDate.getFullYear();
-    });
-
-    filteredSellerByCurrentYear = filteredSellerByCurrentYear.filter((order) => {
-      return order.seller_id.warehouse === warehouseId;
-    });
-
-    console.log(filteredSellerByCurrentYear, "SellersOrders");
+    const filteredWareHouseData = filterDataByDate(
+      WareHouseOrdersList,
+      filterType,
+      year,
+      month,
+      quarter,
+      halfYear
+    ).filter((order) => order.warehouse === warehouseId);
+    const filteredSellerData = filterDataByDate(
+      SellerOrdersList,
+      filterType,
+      year,
+      month,
+      quarter,
+      halfYear
+    ).filter((order) => order.seller_id.warehouse === warehouseId);
 
     let totalReceived = 0;
     let TotalDamaged = 0;
     let TotalConsumed = 0;
     let TotalSellerReceived = 0;
 
-    filteredByCurrentYear.forEach((order) => {
+    filteredWareHouseData.forEach((order) => {
       totalReceived += order.received_qty;
       TotalDamaged += order.rejected_qty;
     });
 
-    filteredSellerByCurrentYear.forEach((order) => {
+    filteredSellerData.forEach((order) => {
       TotalSellerReceived = order.received_qty;
       TotalConsumed += order.consumed_qty;
     });
 
     let totalInventory = totalReceived - TotalDamaged - TotalSellerReceived;
 
-    console.log(totalInventory, "Recevied");
-
-    return { totalInventory: totalInventory, TotalConsumed: TotalConsumed };
+    return { totalInventory, TotalConsumed };
   } catch (error) {
     console.error("Error fetching data:", error);
   }
 };
 
-export const fetchTotalExpenseByWareHouseId = async (warehouseId) => {
+export const fetchFilterTotalExpenseByWareHouseId = async (
+  warehouseId,
+  filterType,
+  year,
+  month,
+  quarter,
+  halfYear
+) => {
   try {
     const WareHouseExpenseResponse = await axios.get(
       `${environment.api_path}${GET_WAREHOUSE_EXPENSE_API}`
     );
     const WareHouseExpenseList = WareHouseExpenseResponse.data.data;
-    const currentDate = new Date();
-    var filteredByCurrentYear = WareHouseExpenseList.filter((order) => {
-      const orderDate = new Date(order.created_at);
-      return orderDate.getFullYear() === currentDate.getFullYear();
-    });
-
-    filteredByCurrentYear = filteredByCurrentYear.filter((order) => {
-      return order.warehouse === warehouseId;
-    });
+    const filteredData = filterDataByDate(
+      WareHouseExpenseList,
+      filterType,
+      year,
+      month,
+      quarter,
+      halfYear
+    ).filter((order) => order.warehouse === warehouseId);
 
     let totalExpense = 0;
 
-    filteredByCurrentYear.forEach((item) => {
+    filteredData.forEach((item) => {
       item.expense.forEach((expenseItem) => {
         totalExpense += expenseItem.amount;
       });
     });
 
-    return { totalExpense: totalExpense };
+    return { totalExpense };
   } catch (error) {
     console.error("Error fetching data:", error);
   }

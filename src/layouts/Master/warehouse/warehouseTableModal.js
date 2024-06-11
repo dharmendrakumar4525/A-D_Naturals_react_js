@@ -260,7 +260,7 @@ export default function SellerTableModal({
 
         await axios.post(`${environment.api_path}/warehouse`, NewformData);
       }
-
+      handleError("Warehouse Updated Sucessfully");
       setIsRefetch(true);
       window.location.reload();
       handleClose();

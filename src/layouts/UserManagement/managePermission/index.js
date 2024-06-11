@@ -281,9 +281,9 @@ function ManagePermission() {
                     />
                     <Button onClick={handleExpandAll}>
                       {allExpanded ? (
-                        <img src={arrowUpIcon} alt="Arrow Up" height={12} width={12} />
-                      ) : (
                         <img src={downwardArrowIcon} alt="Downward Arrow" height={18} width={18} />
+                      ) : (
+                        <img src={arrowUpIcon} alt="Arrow Up" height={12} width={12} />
                       )}
                     </Button>
                   </MDBox>

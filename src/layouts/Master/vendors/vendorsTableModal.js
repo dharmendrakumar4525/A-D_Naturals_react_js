@@ -69,7 +69,7 @@ export default function VendorTableModal({ vendorId = null, permission, setIsRef
         setFormData({
           vendor_name: vendor ? vendor.vendor_name : "",
           contact_person: vendor ? vendor.contact_person : "",
-          address: vendor ? vendor.address : "",
+          address: vendor ? vendor?.address?.street_address : "",
           email: vendor ? vendor.email : "",
           phone_number: vendor ? vendor.phone_number : 0,
           gst_number: vendor ? vendor.gst_number : "",
@@ -117,12 +117,30 @@ export default function VendorTableModal({ vendorId = null, permission, setIsRef
         return; // Don't submit if there are validation errors
       }
       console.log("here");
+
+      let newFormData = {
+        vendor_name: formData.vendor_name,
+        address: {
+          street_address: formData.address,
+          street_address2: "",
+          state: "",
+          city: "",
+          zip_code: "",
+          country: "",
+        },
+        contact_person: formData.contact_person,
+        email: formData.email,
+        phone_number: formData.phone_number,
+        gst_number: formData.gst_number,
+        pan_number: formData.pan_number,
+      };
       if (vendorId) {
-        await axios.put(`${environment.api_path}/${GET_VENDOR_API}/${vendorId}`, formData);
+        await axios.put(`${environment.api_path}/${GET_VENDOR_API}/${vendorId}`, newFormData);
       } else {
-        await axios.post(`${environment.api_path}/${GET_VENDOR_API}`, formData);
+        await axios.post(`${environment.api_path}/${GET_VENDOR_API}`, newFormData);
         window.location.reload();
       }
+      handleError("Vendor Updated Successfully");
       setIsRefetch(true);
       handleClose();
     } catch (error) {

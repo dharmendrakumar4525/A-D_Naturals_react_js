@@ -104,6 +104,7 @@ export default function LocationsTableModal({
         await axios.post(`${environment.api_path}/location`, formData);
         window.location.reload();
       }
+      handleError("Location Updated Sucessfully");
       setIsRefetch(true);
       handleClose();
     } catch (error) {

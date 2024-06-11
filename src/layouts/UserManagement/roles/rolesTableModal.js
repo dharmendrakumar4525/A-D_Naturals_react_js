@@ -79,7 +79,9 @@ export default function RolesTableModal({ userId = null, permission, setIsRefetc
         : axios.post("http://localhost:3000/api/web/roles", formData));
 
       setIsRefetch(true);
+
       handleClose();
+      handleError("role Updated Successully");
       setFormData({ role: "" });
       window.location.reload();
     } catch (error) {

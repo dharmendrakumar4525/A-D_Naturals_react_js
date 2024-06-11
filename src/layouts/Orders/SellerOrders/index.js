@@ -299,6 +299,7 @@ function SellerOrderTable() {
         console.log(filteredByCurrentMonth);
         setRowData(filteredByCurrentMonth);
         setOriginalData(sellerOrderList);
+        calculateTotals(filteredByCurrentMonth);
         //calculateTotals(filteredByCurrentMonth);
       } catch (error) {
         console.error("Error fetching data:", error);

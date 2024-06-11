@@ -220,6 +220,7 @@ export default function UserTableModal({ userId = null, permission, setIsRefetch
         window.location.reload();
       }
       setIsRefetch(true);
+      handleError("User Updated Successully");
       handleClose();
     } catch (error) {
       console.error("Error submitting form:", error);
