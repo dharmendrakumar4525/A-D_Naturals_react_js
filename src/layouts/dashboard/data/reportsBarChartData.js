@@ -133,3 +133,112 @@ export const SellerChartData = async () => {
     console.error("Error fetching data:", error);
   }
 };
+
+//--------------------------------------------------------------
+
+export const WareHouseChartDataBYID = async (warehouseId) => {
+  try {
+    const PurchaseOrderResponse = await axios.get(
+      `${environment.api_path}${GET_WAREHOUSEORDER_API}`
+    );
+    const PurchaseOrdersList = PurchaseOrderResponse.data.data;
+    const now = new Date();
+    const startOfWeek = getStartOfWeek(now);
+
+    // Initialize an array to store the net quantities for each day of the week
+    const netQtyArray = Array(7).fill(0);
+
+    // Filter the list based on warehouseId
+    const filteredOrders = PurchaseOrdersList.filter((entry) => entry.warehouse === warehouseId);
+
+    // Process each entry
+    filteredOrders.forEach((entry) => {
+      const createdAt = new Date(entry.created_at);
+      if (
+        createdAt >= startOfWeek &&
+        createdAt < new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000)
+      ) {
+        const dayIndex = Math.floor((createdAt - startOfWeek) / (24 * 60 * 60 * 1000));
+        netQtyArray[dayIndex] += entry.received_qty - entry.rejected_qty;
+      }
+    });
+    return {
+      labels: ["M", "T", "W", "T", "F", "S", "S"],
+      datasets: { label: "Inventory", data: netQtyArray },
+    };
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
+
+export const SellerChartDataBYID = async (warehouseId) => {
+  try {
+    const PurchaseOrderResponse = await axios.get(`${environment.api_path}${GET_SELLERORDER_API}`);
+    const PurchaseOrdersList = PurchaseOrderResponse.data.data;
+
+    const now = new Date();
+    const startOfWeek = getStartOfWeek(now);
+
+    // Initialize an array to store the consumed quantities for each day of the week
+    const consumedQtyArray = Array(7).fill(0);
+
+    // Filter the list based on warehouseId
+    const filteredOrders = PurchaseOrdersList.filter(
+      (entry) => entry.seller_id.warehouse === warehouseId
+    );
+
+    // Process each entry
+    filteredOrders.forEach((entry) => {
+      const createdAt = new Date(entry.created_at);
+      if (
+        createdAt >= startOfWeek &&
+        createdAt < new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000)
+      ) {
+        const dayIndex = Math.floor((createdAt - startOfWeek) / (24 * 60 * 60 * 1000));
+        consumedQtyArray[dayIndex] += entry.consumed_qty;
+      }
+    });
+    return {
+      labels: ["M", "T", "W", "T", "F", "S", "S"],
+      datasets: { label: "Sales", data: consumedQtyArray },
+    };
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
+
+export const WeeklySalesRevenueNyWareHouse = async (warehouseId) => {
+  try {
+    const PurchaseOrderResponse = await axios.get(`${environment.api_path}${GET_SELLERORDER_API}`);
+    const PurchaseOrdersList = PurchaseOrderResponse.data.data;
+
+    const now = new Date();
+    const startOfWeek = getStartOfWeek(now);
+
+    // Initialize an array to store the revenue for each day of the week
+    const revenueArray = Array(7).fill(0);
+
+    // Filter the list based on warehouseId
+    const filteredOrders = PurchaseOrdersList.filter(
+      (entry) => entry.seller_id.warehouse === warehouseId
+    );
+
+    // Process each entry
+    filteredOrders.forEach((entry) => {
+      const createdAt = new Date(entry.created_at);
+      if (
+        createdAt >= startOfWeek &&
+        createdAt < new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000)
+      ) {
+        const dayIndex = Math.floor((createdAt - startOfWeek) / (24 * 60 * 60 * 1000));
+        revenueArray[dayIndex] += entry.consumed_qty * 100;
+      }
+    });
+    return {
+      labels: ["M", "T", "W", "T", "F", "S", "S"],
+      datasets: { label: "Revenue", data: revenueArray },
+    };
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};

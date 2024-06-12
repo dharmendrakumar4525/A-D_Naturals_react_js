@@ -6,11 +6,21 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import ReportsBarChart from "examples/Charts/BarCharts/ReportsBarChart";
+import HorizontalBarChart from "examples/Charts/BarCharts/HorizontalBarChart";
+import VerticalBarChart from "examples/Charts/BarCharts/VerticalBarChart";
+import ReportsLineChart from "examples/Charts/LineCharts/ReportsLineChart";
+import PieChart from "examples/Charts/PieChart";
+import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
 import axios from "axios";
 import { GET_WAREHOUSE_API } from "environments/apiPaths";
 import { environment } from "environments/environment";
 import { PurchaseChartData, WareHouseChartData, SellerChartData } from "./data/reportsBarChartData";
+import {
+  WareHouseChartDataBYID,
+  SellerChartDataBYID,
+  WeeklySalesRevenueNyWareHouse,
+} from "./data/reportsBarChartData";
 import {
   fetchTotalPurchase,
   fetchTotalWareHouseInventory,
@@ -40,11 +50,13 @@ function Dashboard() {
   const [purchaseChart, setPurchaseChart] = useState({});
   const [warehouseChart, setWareHouseChart] = useState({});
   const [sellerChart, setSellerChart] = useState({});
+  const [weeklyRevenue, setWeeklyRevenue] = useState(0);
   const [revenue, setRevenue] = useState(0);
   const [profit, setProfit] = useState(0);
   const [isWareHouseModalOpen, setIsWareHouseModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [user, setUser] = useState("");
+  const { sales, tasks } = reportsLineChartData;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -115,6 +127,14 @@ function Dashboard() {
   const FilterUsingWarehouse = async (wareHouseId) => {
     console.log(wareHouseId);
     setSelectedWarehouse(wareHouseId);
+    const warehouseData = await WareHouseChartData(wareHouseId);
+    setWareHouseChart(warehouseData);
+    console.log(warehouseData, "data");
+    const sellerData = await SellerChartData(wareHouseId);
+    setSellerChart(sellerData);
+    const weeklyRevenue = await WeeklySalesRevenueNyWareHouse(wareHouseId);
+    setWeeklyRevenue(weeklyRevenue);
+    console.log(sellerData, "data");
     const warehouse = await fetchTotalWareHouseInventoryByWarehouseId(wareHouseId);
     const expense = await fetchTotalExpenseByWareHouseId(wareHouseId);
 
@@ -197,14 +217,15 @@ function Dashboard() {
   useEffect(() => {
     const fetchChartData = async () => {
       try {
-        let purchaseChart = await PurchaseChartData();
-        setPurchaseChart(purchaseChart);
-
-        let warehouseChart = await WareHouseChartData();
-        setWareHouseChart(warehouseChart);
-
-        let sellerChart = await SellerChartData();
-        setSellerChart(sellerChart);
+        const purchaseData = await PurchaseChartData();
+        setPurchaseChart(purchaseData);
+        console.log(purchaseData, "data");
+        const warehouseData = await WareHouseChartData();
+        setWareHouseChart(warehouseData);
+        console.log(warehouseData, "data");
+        const sellerData = await SellerChartData(purchaseData.costData);
+        setSellerChart(sellerData);
+        console.log(sellerData, "data");
       } catch (error) {
         console.error("Error fetching chart data:", error);
       }
@@ -337,43 +358,83 @@ function Dashboard() {
             </MDBox>
           </Grid>
         </Grid>
-        <MDBox mt={4.5}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={4}>
-              <MDBox mb={3}>
-                <ReportsBarChart
-                  color="info"
-                  title="Vendor Purchase"
-                  description="Daily Purchases of Week"
-                  date="Updated Today"
-                  chart={purchaseChart}
-                />
-              </MDBox>
+        {user !== "Warehouse Manager" && selectedWarehouse === "" ? (
+          <MDBox mt={4.5}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6} lg={4}>
+                <MDBox mb={3}>
+                  <ReportsBarChart
+                    color="info"
+                    title="Vendor Purchase"
+                    description="Daily Purchases of Week"
+                    date="Updated Today"
+                    chart={purchaseChart}
+                  />
+                </MDBox>
+              </Grid>
+              <Grid item xs={12} md={6} lg={4}>
+                <MDBox mb={3}>
+                  <ReportsLineChart
+                    color="success"
+                    title="Daily sales"
+                    description="Daily sales of Current Week"
+                    date="updated Today"
+                    chart={sellerChart}
+                  />
+                </MDBox>
+              </Grid>
+              <Grid item xs={12} md={6} lg={4}>
+                <MDBox mb={3}>
+                  <ReportsLineChart
+                    color="secondary"
+                    title="WareHouse Inventory"
+                    description="Daily Warehouse Inventory per Week"
+                    date="Updated Today"
+                    chart={warehouseChart}
+                  />
+                </MDBox>
+              </Grid>
             </Grid>
-            <Grid item xs={12} md={6} lg={4}>
-              <MDBox mb={3}>
-                <ReportsBarChart
-                  color="info"
-                  title="Warehouse Inventory"
-                  description="Daily Warehouse Inventory"
-                  date="Updated Today"
-                  chart={warehouseChart}
-                />
-              </MDBox>
+          </MDBox>
+        ) : (
+          <MDBox mt={4.5}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6} lg={4}>
+                <MDBox mb={3}>
+                  <ReportsBarChart
+                    color="info"
+                    title="Warehouse Inventory"
+                    description="Daily Inventory of Warehouse"
+                    date="Updated Today"
+                    chart={warehouseChart}
+                  />
+                </MDBox>
+              </Grid>
+              <Grid item xs={12} md={6} lg={4}>
+                <MDBox mb={3}>
+                  <ReportsLineChart
+                    color="success"
+                    title="Daily sales"
+                    description="Daily sales of WareHouse"
+                    date="updated Today"
+                    chart={sellerChart}
+                  />
+                </MDBox>
+              </Grid>
+              <Grid item xs={12} md={6} lg={4}>
+                <MDBox mb={3}>
+                  <ReportsLineChart
+                    color="secondary"
+                    title="Sales Revenue"
+                    description="Daily Sales Revenue"
+                    date="Updated Today"
+                    chart={weeklyRevenue}
+                  />
+                </MDBox>
+              </Grid>
             </Grid>
-            <Grid item xs={12} md={6} lg={4}>
-              <MDBox mb={3}>
-                <ReportsBarChart
-                  color="info"
-                  title="Total Sales"
-                  description="Daily Sales per Week"
-                  date="Updated Today"
-                  chart={sellerChart}
-                />
-              </MDBox>
-            </Grid>
-          </Grid>
-        </MDBox>
+          </MDBox>
+        )}
       </MDBox>
       <Footer />
     </DashboardLayout>
