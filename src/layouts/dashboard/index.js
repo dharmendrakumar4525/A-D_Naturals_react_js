@@ -127,10 +127,10 @@ function Dashboard() {
   const FilterUsingWarehouse = async (wareHouseId) => {
     console.log(wareHouseId);
     setSelectedWarehouse(wareHouseId);
-    const warehouseData = await WareHouseChartData(wareHouseId);
+    const warehouseData = await WareHouseChartDataBYID(wareHouseId);
     setWareHouseChart(warehouseData);
     console.log(warehouseData, "data");
-    const sellerData = await SellerChartData(wareHouseId);
+    const sellerData = await SellerChartDataBYID(wareHouseId);
     setSellerChart(sellerData);
     const weeklyRevenue = await WeeklySalesRevenueNyWareHouse(wareHouseId);
     setWeeklyRevenue(weeklyRevenue);
@@ -385,7 +385,7 @@ function Dashboard() {
               </Grid>
               <Grid item xs={12} md={6} lg={4}>
                 <MDBox mb={3}>
-                  <ReportsLineChart
+                  <ReportsBarChart
                     color="secondary"
                     title="WareHouse Inventory"
                     description="Daily Warehouse Inventory per Week"
