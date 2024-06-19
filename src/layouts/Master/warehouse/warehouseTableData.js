@@ -17,23 +17,11 @@ export default function data() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axios.get(`http://localhost:3000/api/web/company`);
         const warehouseData = warehouseResponse.data.data;
 
-        const locationResponse = await axios.get(`${environment.api_path}/${GET_LOCATION_API}`);
-        const locationData = locationResponse.data.data;
-
-        const mappedData = warehouseData.map((warehouse) => {
-          const x = locationData.find((it) => {
-            return it._id == warehouse.location;
-          });
-          return {
-            ...warehouse,
-            location: x.location_name,
-          };
-        });
-
-        setRowData(mappedData);
+        const companyData = warehouseData.filter((user) => user.parent_id === null);
+        setRowData(companyData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -44,10 +32,10 @@ export default function data() {
 
   const handleDelete = async (warehouseId) => {
     try {
-      await axios.delete(`${environment.api_path}/warehouse/${warehouseId}`);
-      setRowData((prevData) => prevData.filter((warehouse) => warehouse._id !== warehouseId));
+      await axios.delete(`http://localhost:3000/api/web/company/${warehouseId}`);
+      setRowData((prevData) => prevData.filter((user) => user._id !== warehouseId));
     } catch (error) {
-      console.error("Error deleting seller:", error);
+      console.error("Error deleting vendor:", error.response ? error.response.data : error.message);
     }
   };
 
@@ -68,7 +56,7 @@ export default function data() {
       { Header: "Action", accessor: "action", align: "center" },
     ],
     rows: rowData.map((warehouse) => ({
-      name: <Author name={warehouse.warehouse_name} location={warehouse.location} />,
+      name: <Author name={warehouse.name} />,
       action: (
         <>
           <div style={{ display: "flex", alignItems: "center" }}>

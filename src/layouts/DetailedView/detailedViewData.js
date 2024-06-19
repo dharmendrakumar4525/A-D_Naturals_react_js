@@ -1,32 +1,32 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/function-component-definition */
 
-// @mui material components
 import React, { useState, useEffect } from "react";
-import axios from "axios"; // Import axios
-import { environment } from "environments/environment"; // Assuming environment is a file that contains environment variables
-import DeleteIcon from "@mui/icons-material/Delete";
-import { GET_ROLES_API } from "environments/apiPaths";
-import RolesTableModal from "layouts/UserManagement/roles/rolesTableModal";
-
-// Material Dashboard 2 React components
+import axios from "axios";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+import DeleteIcon from "@mui/icons-material/Delete";
+import DetailedViewModal from "./detailedViewModal";
 
-export default function Data() {
-  // Capitalized component name
+export default function data() {
   const [rowData, setRowData] = useState([]);
   const [isRefetch, setIsRefetch] = useState(false);
+  const Login_User_OrgId = localStorage.getItem("Login_User_OrgId");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const rolesResponse = await axios.get(`http://localhost:3000/api/web/users`);
-        const rolesData = rolesResponse.data;
+        const detailedResponse = await axios.get(`http://localhost:3000/api/web/company`);
+        const detailedData = detailedResponse.data.data;
 
-        const superadminData = rolesData.filter((user) => user.role === "superadmin");
+        const entityData = detailedData.filter((user) => user.parent_id === Login_User_OrgId);
 
-        setRowData(superadminData);
+        console.log("entityData", entityData);
+        console.log("detailedData", detailedData);
+
+        setRowData(entityData);
+
+        // setRowData(detailedData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -34,6 +34,18 @@ export default function Data() {
 
     fetchData();
   }, [isRefetch]);
+
+  const handleDelete = async (detailedId) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/web/company/${detailedId}`);
+      setRowData((prevData) => prevData.filter((user) => user._id !== detailedId));
+    } catch (error) {
+      console.error(
+        "Error deleting detailed:",
+        error.response ? error.response.data : error.message
+      );
+    }
+  };
 
   const Author = ({ name, email }) => (
     <MDBox display="flex" alignItems="center" lineHeight={1}>
@@ -46,24 +58,13 @@ export default function Data() {
     </MDBox>
   );
 
-  // Define handleDelete function
-  const handleDelete = async (userId) => {
-    try {
-      await axios.delete(`http://localhost:3000/api/web/users/${userId}`);
-      setRowData((prevData) => prevData.filter((user) => user._id !== userId));
-    } catch (error) {
-      console.error("Error deleting user:", error);
-    }
-  };
-
   return {
     columns: [
       { Header: "Name", accessor: "name", width: "45%", align: "left" },
       { Header: "Action", accessor: "action", align: "center" },
     ],
-
-    rows: rowData.map((user) => ({
-      name: <Author name={user.name} email={user.email} />,
+    rows: rowData.map((detailed) => ({
+      name: <Author name={detailed.name} />,
       action: (
         <>
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -73,13 +74,13 @@ export default function Data() {
               variant="caption"
               color="text"
               fontWeight="medium"
-              onClick={() => handleDelete(user._id)}
+              onClick={() => handleDelete(detailed._id)}
               style={{ marginRight: "8px" }}
             >
               <DeleteIcon />
             </MDTypography>
             <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-              <RolesTableModal userId={user._id} setIsRefetch={setIsRefetch} />
+              <DetailedViewModal detailedId={detailed._id} setIsRefetch={setIsRefetch} />
             </MDTypography>
           </div>
         </>

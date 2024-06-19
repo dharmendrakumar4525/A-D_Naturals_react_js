@@ -42,7 +42,7 @@ function VendorsTable() {
                   color="white"
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
-                  Vendors Table
+                  Entity Table
                   <VendorTableModal />
                 </MDTypography>
               </MDBox>

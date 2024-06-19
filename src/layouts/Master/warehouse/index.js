@@ -42,7 +42,7 @@ function WarehouseTable() {
                   color="white"
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
-                  Warehouse Table
+                  Company Table
                   <WarehouseTableModal />
                 </MDTypography>
               </MDBox>

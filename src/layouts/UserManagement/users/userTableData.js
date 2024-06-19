@@ -13,26 +13,18 @@ import UserTableModal from "layouts/UserManagement/users/userTableModal";
 export default function data() {
   const [rowData, setRowData] = useState([]);
   const [isRefetch, setIsRefetch] = useState(false);
+  const Login_User_OrgId = localStorage.getItem("Login_User_OrgId");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const usersResponse = await axios.get(`${environment.api_path}/${GET_USERS_API}`);
+        const usersResponse = await axios.get(`http://localhost:3000/api/web/users`);
         const usersData = usersResponse.data;
 
-        const rolesResponse = await axios.get(`${environment.api_path}/${GET_ROLES_API}`);
-        const rolesData = rolesResponse.data;
+        const orgUserData = usersData.filter((user) => user.role === "user");
+        const normalUserData = orgUserData.filter((user) => user.org_id === Login_User_OrgId);
 
-        const mappedData = usersData.map((user) => {
-          const role = rolesData.find((role) => role._id === user.role);
-          return {
-            ...user,
-            role: role ? role.role : "Unknown Role",
-          };
-        });
-
-        setRowData(mappedData);
-        console.log("mappecccdata", mappedData);
+        setRowData(normalUserData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -52,18 +44,9 @@ export default function data() {
     </MDBox>
   );
 
-  const Job = ({ title, description }) => (
-    <MDBox lineHeight={1} textAlign="left">
-      <MDTypography display="block" variant="caption" color="text" fontWeight="medium">
-        {title}
-      </MDTypography>
-      <MDTypography variant="caption">{description}</MDTypography>
-    </MDBox>
-  );
-
   const handleDelete = async (userId) => {
     try {
-      await axios.delete(`${environment.api_path}/${POST_USER_DELETE_API}/${userId}`);
+      await axios.delete(`http://localhost:3000/api/web/users/${userId}`);
       setRowData((prevData) => prevData.filter((user) => user._id !== userId));
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -73,12 +56,10 @@ export default function data() {
   return {
     columns: [
       { Header: "Name", accessor: "name", width: "45%", align: "left" },
-      { Header: "Role", accessor: "role", align: "left" },
       { Header: "Action", accessor: "action", align: "center" },
     ],
     rows: rowData.map((user) => ({
       name: <Author name={user.name} email={user.email} />,
-      role: <Job title={user.role} />,
       action: (
         <>
           <div style={{ display: "flex", alignItems: "center" }}>
