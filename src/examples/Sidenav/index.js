@@ -143,8 +143,17 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
 
   const logoutRedirect = useNavigate();
   const handleLogout = () => {
-    localStorage.removeItem("A&D_Login_Token");
+    // localStorage.removeItem("Login_Token");
+    // localStorage.removeItem("Login_User_Email");
+    // localStorage.removeItem("Login_User_OrgId");
+    // localStorage.removeItem("Login_User_Name");
+    // localStorage.removeItem("Login_User_Role");
+    localStorage.clear();
+
     logoutRedirect("/authentication/sign-in");
+    // console.log("Log Out");
+    // window.location.reload();
+    // console.log("Refresh");
   };
 
   return (

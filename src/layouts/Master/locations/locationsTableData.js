@@ -18,61 +18,87 @@ export default function data() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const locationResponse = await axios.get(`${environment.api_path}/location`);
+        const locationResponse = await axios.get(`http://localhost:3000/api/web/compliance`);
         const locationData = locationResponse.data.data;
-
-        // const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
-        // const warehouseData = warehouseResponse.data.data;
-        // console.log("warehouseData", warehouseData);
-
-        // const mappedData = locationData.map((location) => {
-        //   const warehouse = warehouseData.find(
-        //     (warehouse) => warehouse[0]._id === location.warehouse[0]
-        //   );
-        //   console.log("warehouse._id", warehouseData[0]._id);
-        //   console.log("location.warehouse", location.warehouse[0]);
-        //   return {
-        //     ...location,
-        //     warehouse: warehouse ? warehouse.warehouse : "Unknown",
-        //   };
-        // });
-        // console.log("mappedData", mappedData);
 
         setRowData(locationData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-
     fetchData();
   }, [isRefetch]);
 
+  // const handleDelete = async (vendorId) => {
+  //   try {
+  //     await axios.delete(`localhost:3000/api/web/compliance/${vendorId}`, {
+  //       params: {
+  //         delete: true,
+  //       },
+  //     });
+  //     setRowData((prevData) => prevData.filter((user) => user._id !== vendorId));
+  //   } catch (error) {
+  //     console.error("Error deleting user:", error);
+  //   }
+  // };
+
   const handleDelete = async (vendorId) => {
     try {
-      await axios.delete(`${environment.api_path}/location/${vendorId}`);
-      setRowData((prevData) => prevData.filter((vendor) => vendor._id !== vendorId));
+      await axios.put(`http://localhost:3000/api/web/compliance/${vendorId}`, {
+        deleted: true,
+      });
+      setRowData((prevData) => prevData.filter((user) => user._id !== vendorId));
     } catch (error) {
-      console.error("Error deleting seller:", error);
+      console.error("Error deleting vendor:", error.response ? error.response.data : error.message);
     }
   };
 
-  const Author = ({ name }) => (
+  const Author = ({ name, email }) => (
     <MDBox display="flex" alignItems="center" lineHeight={1}>
       <MDBox ml={2} lineHeight={1}>
         <MDTypography display="block" variant="button" fontWeight="medium">
           {name}
         </MDTypography>
+        <MDTypography variant="caption">{email}</MDTypography>
       </MDBox>
     </MDBox>
   );
 
+  const Job = ({ particular }) => (
+    <MDBox lineHeight={1} textAlign="left">
+      <MDTypography display="block" variant="caption" color="text" fontWeight="medium">
+        {particular}
+      </MDTypography>
+    </MDBox>
+  );
+
+  const Risk = ({ risk }) => (
+    <MDBox lineHeight={1} textAlign="left">
+      <MDTypography display="block" variant="caption" color="text" fontWeight="medium">
+        {risk}
+      </MDTypography>
+    </MDBox>
+  );
+
+  const Date = ({ date }) => (
+    <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+      {date}
+    </MDTypography>
+  );
+
   return {
     columns: [
-      { Header: "Name", accessor: "name", width: "45%", align: "left" },
+      { Header: "Department", accessor: "name", width: "45%", align: "left" },
+      { Header: "Particular", accessor: "particular", align: "left" },
+      { Header: "Date", accessor: "date", align: "left" },
+      { Header: "Risk", accessor: "risk", align: "left" },
       { Header: "Action", accessor: "action", align: "center" },
     ],
     rows: rowData.map((location) => ({
-      name: <Author name={location.location_name} />,
+      name: <Author name={location.dept} />,
+      particular: <Job particular={location.particular} />,
+      date: <Date date={location.date.split("T")[0]} />,
+      risk: <Risk risk={location.risk} />,
       action: (
         <>
           <div style={{ display: "flex", alignItems: "center" }}>

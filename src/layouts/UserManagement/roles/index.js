@@ -32,7 +32,6 @@ import DataTable from "examples/Tables/DataTable";
 // Data
 
 import projectsTableData from "layouts/UserManagement/roles/rolesTableData";
-import MDInput from "components/MDInput";
 
 function RolesTable() {
   const { columns: pColumns, rows: pRows } = projectsTableData();
@@ -59,17 +58,8 @@ function RolesTable() {
                   color="white"
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
-                  Roles Table
+                  Admins Table
                   <RolesTableModal />
-                  {/* <MDBox pr={1}>
-                    <MDInput
-                      style={{ backgroundColor: "white", borderRadius: 8, Text: "white" }}
-                      label="Search here"
-                      InputLabelProps={{
-                        style: { color: "grey" }, // Setting the label color to white
-                      }}
-                    />
-                  </MDBox> */}
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>

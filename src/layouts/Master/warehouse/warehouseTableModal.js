@@ -7,14 +7,10 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
 import { FormControl, FormHelperText } from "@mui/material";
-import Select from "@mui/material/Select";
-import { environment } from "environments/environment";
-import { GET_WAREHOUSE_API, GET_LOCATION_API } from "environments/apiPaths";
-
+import { useForm, Controller } from "react-hook-form";
 import EditIcon from "@mui/icons-material/Edit";
+import { toast } from "react-toastify";
 
 const style = {
   position: "absolute",
@@ -31,107 +27,62 @@ const style = {
   flexDirection: "column",
 };
 
-export function SelectRole({
-  availableItems,
-  handleChange,
-  selectedItem,
-  fieldName,
-  helperText,
-  labelKey,
-}) {
-  return (
-    <div>
-      <FormControl sx={{ m: 0, minWidth: 80 }}>
-        <InputLabel id="demo-simple-select-autowidth-label">{fieldName}</InputLabel>
-        <Select
-          label={fieldName}
-          labelId="demo-simple-select-autowidth-label"
-          id="demo-simple-select-autowidth"
-          value={selectedItem}
-          onChange={handleChange}
-          autoWidth
-          sx={{ height: "2.75rem", width: "330px" }}
-        >
-          {availableItems.map((Loacations) => (
-            <MenuItem key={Loacations._id} value={Loacations._id}>
-              {Loacations[labelKey]}
-            </MenuItem>
-          ))}
-        </Select>
-        <FormHelperText>{helperText}</FormHelperText>
-      </FormControl>
-    </div>
-  );
-}
-
 export default function SellerTableModal({ warehouseId = null, setIsRefetch = () => {} }) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const [selectedLocation, setSelectedLocation] = useState("");
-  const [availableLoacations, setAvailableLoacations] = useState([]);
-  const [formData, setFormData] = useState({
-    warehouse: "",
-    location: "",
-  });
+
+  const {
+    handleSubmit,
+    control,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const locationResponse = await axios.get(`${environment.api_path}/${GET_LOCATION_API}`);
-        const locationData = locationResponse.data.data;
-        setAvailableLoacations(locationData);
-
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axios.get(`http://localhost:3000/api/web/company`);
         const warehouseData = warehouseResponse.data.data;
-        // setAvailableWarehouses(warehouseData);
 
         const warehouse = warehouseData.find((warehouse) => warehouse._id === warehouseId);
 
-        setFormData({
-          warehouse_name: warehouse ? warehouse.warehouse_name : "",
-          location: warehouse ? warehouse.location_name : "",
-        });
+        if (warehouse) {
+          setValue("name", warehouse.name);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
-    fetchData();
-  }, [warehouseId]);
+    if (warehouseId) {
+      fetchData();
+    } else {
+      reset({ name: "" });
+    }
+  }, [warehouseId, setValue, reset]);
 
-  const handleChangeLoacations = (event) => {
-    setSelectedLocation(event.target.value);
-  };
-
-  const handleSubmit = async () => {
+  const onSubmit = async (data) => {
     try {
-      let formData;
       if (warehouseId) {
-        formData = {
-          warehouse_name: document.getElementById("warehouse_name")?.value || "",
-          location: selectedLocation,
-        };
-        await axios.put(`${environment.api_path}/warehouse/${warehouseId}`, formData);
+        await axios.put(`http://localhost:3000/api/web/company/${warehouseId}`, {
+          name: data.name,
+          parent_id: null,
+        });
       } else {
-        formData = {
-          warehouse_name: document.getElementById("warehouse_name")?.value || "",
-          location: selectedLocation,
-        };
-
-        await axios.post(`${environment.api_path}/warehouse`, formData);
-
+        await axios.post(`http://localhost:3000/api/web/company`, {
+          name: data.name,
+          parent_id: null,
+        });
         window.location.reload();
       }
       setIsRefetch(true);
       handleClose();
     } catch (error) {
       console.error("Error submitting form:", error);
+      toast.error(`${error.response.data.message}`);
     }
-  };
-
-  const handleInputChange = (event) => {
-    setFormData({ ...formData, [event.target.id]: event.target.value });
   };
 
   return (
@@ -150,37 +101,37 @@ export default function SellerTableModal({ warehouseId = null, setIsRefetch = ()
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          <FormControl>
-            <TextField
-              id="warehouse_name"
-              label="Warehouse Name"
-              variant="outlined"
-              helperText="Enter Warehouse Name"
-              value={formData.warehouse_name}
-              onChange={handleInputChange}
-            />
-          </FormControl>
-
-          <FormControl>
-            <SelectRole
-              availableItems={availableLoacations}
-              handleChange={handleChangeLoacations}
-              selectedItem={selectedLocation}
-              fieldName={"Location"}
-              helperText={"Select Location"}
-              labelKey={"location_name"}
-            />
-          </FormControl>
-          <FormControl>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            style={{ display: "flex", flexDirection: "column" }}
+          >
+            <FormControl error={Boolean(errors.name)} style={{ marginBottom: "1rem" }}>
+              <Controller
+                name="name"
+                control={control}
+                defaultValue=""
+                rules={{ required: "Company Name is required" }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    id="name"
+                    label="Company Name"
+                    variant="outlined"
+                    error={Boolean(errors.name)}
+                    helperText={errors.name ? errors.name.message : "Enter Company Name"}
+                  />
+                )}
+              />
+            </FormControl>
             <Button
+              type="submit"
               variant="contained"
               color="primary"
-              style={{ color: "white" }}
-              onClick={handleSubmit}
+              style={{ color: "white", alignSelf: "flex-end", width: "332px" }}
             >
               Submit
             </Button>
-          </FormControl>
+          </form>
         </Box>
       </Modal>
     </div>

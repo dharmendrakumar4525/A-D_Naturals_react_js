@@ -1,18 +1,3 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
 import { useState, useEffect, useMemo } from "react";
 
 // react-router components
@@ -68,6 +53,7 @@ export default function App() {
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const [rtlCache, setRtlCache] = useState(null);
   const { pathname } = useLocation();
+  const Login_User_Company_Name = localStorage.getItem("Login_User_Company_Name");
 
   // Cache for the rtl
   useMemo(() => {
@@ -180,22 +166,22 @@ export default function App() {
         <>
           <Sidenav
             color={sidenavColor}
-            brand={
-              "https://assets-global.website-files.com/65e842c42311b272adf8e5b4/65e852d6f077a29ce526db21_Frame-3854-5-1-pdf_1-removebg-preview%20(1)%202.svg"
-            }
-            brandName="A&D Naturals"
+            // brand={
+            //   "https://assets-global.website-files.com/65e842c42311b272adf8e5b4/65e852d6f077a29ce526db21_Frame-3854-5-1-pdf_1-removebg-preview%20(1)%202.svg"
+            // }
+            brandName={`${Login_User_Company_Name}  Dashboard`}
             routes={routes}
             onMouseEnter={handleOnMouseEnter}
             onMouseLeave={handleOnMouseLeave}
           />
-          <Configurator />
-          {configsButton}
+          {/* <Configurator />
+          {configsButton} */}
         </>
       )}
       {layout === "vr" && <Configurator />}
       <Routes>
         {getRoutes(routes)}
-        <Route path="*" element={<Navigate to="/dashboard" />} />
+        <Route path="*" element={<Navigate to="/authentication/sign-in" />} />
       </Routes>
     </ThemeProvider>
   );

@@ -5,22 +5,24 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-import { environment } from "environments/environment";
-import { GET_VENDOR_API } from "environments/apiPaths";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VendorTableModal from "layouts/Master/vendors/vendorsTableModal";
 
 export default function data() {
   const [rowData, setRowData] = useState([]);
   const [isRefetch, setIsRefetch] = useState(false);
+  const Login_User_OrgId = localStorage.getItem("Login_User_OrgId");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const vendorResponse = await axios.get(`${environment.api_path}/${GET_VENDOR_API}`);
+        const vendorResponse = await axios.get(`http://localhost:3000/api/web/company`);
         const vendorData = vendorResponse.data.data;
 
-        setRowData(vendorData);
+        const entityData = vendorData.filter((user) => user.parent_id === Login_User_OrgId);
+        setRowData(entityData);
+
+        // setRowData(vendorData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -31,10 +33,10 @@ export default function data() {
 
   const handleDelete = async (vendorId) => {
     try {
-      await axios.delete(`${environment.api_path}/${GET_VENDOR_API}/${vendorId}`);
-      setRowData((prevData) => prevData.filter((vendor) => vendor._id !== vendorId));
+      await axios.delete(`http://localhost:3000/api/web/company/${vendorId}`);
+      setRowData((prevData) => prevData.filter((user) => user._id !== vendorId));
     } catch (error) {
-      console.error("Error deleting seller:", error);
+      console.error("Error deleting vendor:", error.response ? error.response.data : error.message);
     }
   };
 
@@ -49,23 +51,13 @@ export default function data() {
     </MDBox>
   );
 
-  const Job = ({ contactPerson }) => (
-    <MDBox lineHeight={1} textAlign="left">
-      <MDTypography display="block" variant="caption" color="text" fontWeight="medium">
-        {contactPerson}
-      </MDTypography>
-    </MDBox>
-  );
-
   return {
     columns: [
       { Header: "Name", accessor: "name", width: "45%", align: "left" },
-      { Header: "Contact Person", accessor: "contact_person", align: "left" },
       { Header: "Action", accessor: "action", align: "center" },
     ],
     rows: rowData.map((vendor) => ({
-      name: <Author name={vendor.vendor_name} email={vendor.email} />,
-      contact_person: <Job contactPerson={vendor.contact_person} />,
+      name: <Author name={vendor.name} />,
       action: (
         <>
           <div style={{ display: "flex", alignItems: "center" }}>

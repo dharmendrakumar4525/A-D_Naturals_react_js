@@ -7,14 +7,15 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import { FormControl, FormHelperText } from "@mui/material";
-import Select from "@mui/material/Select";
-import { environment } from "environments/environment";
-import { GET_SELLER_API, GET_WAREHOUSE_API, GET_LOCATION_API } from "environments/apiPaths";
-
+import { FormControl } from "@mui/material";
+import { useForm, Controller } from "react-hook-form";
 import EditIcon from "@mui/icons-material/Edit";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
 
 const style = {
   position: "absolute",
@@ -35,43 +36,56 @@ export default function LocationsTableModal({ locationId = null, setIsRefetch = 
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const [formData, setFormData] = useState({
-    location_name: "",
+  const { control, handleSubmit, setValue, reset } = useForm({
+    defaultValues: {
+      dept: "",
+      particular: "",
+      risk: "",
+      date: null,
+    },
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const locationResponse = await axios.get(`${environment.api_path}/${GET_LOCATION_API}`);
+        const locationResponse = await axios.get(`http://localhost:3000/api/web/compliance`);
         const locationData = locationResponse.data.data;
 
         const location = locationData.find((location) => location._id === locationId);
 
-        setFormData({
-          location_name: location ? location.location_name : "",
-        });
+        if (location) {
+          setValue("dept", location.dept);
+          setValue("particular", location.particular);
+          setValue("risk", location.risk);
+          setValue("date", location.date ? dayjs(location.date) : null);
+        } else {
+          reset();
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
-    fetchData();
-  }, [locationId]);
+    if (locationId) {
+      fetchData();
+    } else {
+      reset();
+    }
+  }, [locationId, setValue, reset]);
 
-  const handleSubmit = async () => {
+  const onSubmit = async (data) => {
     try {
-      let formData;
-      if (locationId) {
-        formData = {
-          location_name: document.getElementById("location_name")?.value || "",
-        };
-        await axios.put(`${environment.api_path}/location/${locationId}`, formData);
-      } else {
-        formData = {
-          location_name: document.getElementById("location_name")?.value || "",
-        };
+      const formData = {
+        ...data,
+        date: data.date ? dayjs(data.date).utc().add(1, "day").format("DD-MM-YYYY") : null,
+      };
+      console.log("date", data.date);
+      console.log("00000000formData00000000", formData);
 
-        await axios.post(`${environment.api_path}/location`, formData);
+      if (locationId) {
+        await axios.put(`http://localhost:3000/api/web/compliance/${locationId}`, formData);
+      } else {
+        await axios.post(`http://localhost:3000/api/web/compliance`, formData);
         window.location.reload();
       }
       setIsRefetch(true);
@@ -79,10 +93,6 @@ export default function LocationsTableModal({ locationId = null, setIsRefetch = 
     } catch (error) {
       console.error("Error submitting form:", error);
     }
-  };
-
-  const handleInputChange = (event) => {
-    setFormData({ ...formData, [event.target.id]: event.target.value });
   };
 
   return (
@@ -101,26 +111,98 @@ export default function LocationsTableModal({ locationId = null, setIsRefetch = 
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          <FormControl>
-            <TextField
-              id="location_name"
-              label="Location Name"
-              variant="outlined"
-              helperText="Enter Location"
-              value={formData.location_name}
-              onChange={handleInputChange}
-            />
-          </FormControl>
-          <FormControl>
-            <Button
-              variant="contained"
-              color="primary"
-              style={{ color: "white" }}
-              onClick={handleSubmit}
-            >
-              Submit
-            </Button>
-          </FormControl>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            style={{ display: "flex", flexDirection: "column" }}
+          >
+            <FormControl sx={{ mb: 1 }}>
+              <Controller
+                name="dept"
+                control={control}
+                rules={{ required: "Department is required" }}
+                render={({ field, fieldState: { error } }) => (
+                  <TextField
+                    {...field}
+                    id="dept"
+                    label="Department"
+                    variant="outlined"
+                    error={!!error}
+                    helperText={error ? error.message : "Enter Department"}
+                  />
+                )}
+              />
+            </FormControl>
+
+            <FormControl sx={{ mb: 1 }}>
+              <Controller
+                name="particular"
+                control={control}
+                rules={{ required: "Particular is required" }}
+                render={({ field, fieldState: { error } }) => (
+                  <TextField
+                    {...field}
+                    id="particular"
+                    label="Particular"
+                    variant="outlined"
+                    error={!!error}
+                    helperText={error ? error.message : "Enter Particular"}
+                  />
+                )}
+              />
+            </FormControl>
+
+            <FormControl sx={{ mb: 1 }}>
+              <Controller
+                name="risk"
+                control={control}
+                rules={{ required: "Risk is required" }}
+                render={({ field, fieldState: { error } }) => (
+                  <TextField
+                    {...field}
+                    id="risk"
+                    label="Risk"
+                    variant="outlined"
+                    error={!!error}
+                    helperText={error ? error.message : "Enter Risk"}
+                  />
+                )}
+              />
+            </FormControl>
+
+            <FormControl sx={{ mb: 1 }}>
+              <Controller
+                name="date"
+                control={control}
+                rules={{ required: "Date is required" }}
+                render={({ field, fieldState: { error } }) => (
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      {...field}
+                      label="Date"
+                      value={field.value}
+                      onChange={(date) => {
+                        field.onChange(date);
+                        console.log("hhhh", date);
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          error={!!error}
+                          helperText={error ? error.message : "Enter Date"}
+                        />
+                      )}
+                    />
+                  </LocalizationProvider>
+                )}
+              />
+            </FormControl>
+
+            <FormControl sx={{ mb: 1 }}>
+              <Button type="submit" variant="contained" color="primary" style={{ color: "white" }}>
+                Submit
+              </Button>
+            </FormControl>
+          </form>
         </Box>
       </Modal>
     </div>
