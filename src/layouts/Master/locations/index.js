@@ -43,7 +43,7 @@ function LocationsTable() {
                   color="white"
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
-                  Locations Table
+                  Compliance Table
                   <LocationsTableModal />
                 </MDTypography>
               </MDBox>

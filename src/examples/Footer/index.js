@@ -63,7 +63,7 @@ function Footer({ company, links }) {
         &copy; {new Date().getFullYear()}
         <Link href={href} target="_blank">
           <MDTypography variant="button" fontWeight="medium">
-            &nbsp;A&D Naturals&nbsp;
+            &nbsp;JCSS &nbsp;
           </MDTypography>
         </Link>
       </MDBox>
@@ -92,10 +92,10 @@ function Footer({ company, links }) {
 
 // Setting default values for the props of Footer
 Footer.defaultProps = {
-  company: { href: "https://www.adnaturals.in/", name: "" },
+  company: { href: "https://www.jcssadvisory.com/", name: "" },
   links: [
-    { href: "https://www.adnaturals.in/about-us", name: "About Us" },
-    { href: "https://www.adnaturals.in/blogs", name: "Blog" },
+    { href: "https://www.jcssadvisory.com/about", name: "About Us" },
+    { href: "https://www.jcssadvisory.com/blogs", name: "Insights" },
   ],
 };
 

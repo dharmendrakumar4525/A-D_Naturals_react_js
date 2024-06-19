@@ -7,32 +7,35 @@ import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatist
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { GET_USERS_API, GET_ROLES_API, GET_SELLER_API } from "environments/apiPaths";
-import { environment } from "environments/environment";
 
 function MasterTables() {
-  const [locationCount, setLocationCount] = useState([]);
-  const [sellerCount, setSellerCount] = useState([]);
-  const [vendorCount, setVendorCount] = useState([]);
-  const [warehouseCount, setWarehouseCount] = useState([]);
+  const [userCount, setUserCount] = useState([]);
+  const [companyCount, setCompanyCount] = useState([]);
+  const [entityCount, setEntityCount] = useState([]);
+  const Login_User_Email = localStorage.getItem("Login_User_Email");
+  const Login_User_OrgId = localStorage.getItem("Login_User_OrgId");
+  const Login_User_Role = localStorage.getItem("Login_User_Role");
 
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const locationResponse = await axios.get(`${environment.api_path}/location`);
-        const sellerResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
-        const vendorResponse = await axios.get(`${environment.api_path}/vendor`);
-        const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
+        const userResponse = await axios.get(`http://localhost:3000/api/web/compliance`);
+        const userData = userResponse.data.data;
 
-        const locationData = locationResponse.data.data.length;
-        const sellerData = sellerResponse.data.data.length;
-        const vendorData = vendorResponse.data.data.length;
-        const warehouseData = warehouseResponse.data.data.length;
+        setUserCount(userData.length);
 
-        setLocationCount(locationData);
-        setSellerCount(sellerData);
-        setVendorCount(vendorData);
-        setWarehouseCount(warehouseData);
+        const companyResponse = await axios.get(`http://localhost:3000/api/web/company`);
+        const companyResponseData = companyResponse.data.data;
+        const companyData = companyResponseData.filter((user) => user.parent_id === null);
+
+        const entityData = companyResponseData.filter(
+          (user) => user.parent_id === Login_User_OrgId
+        );
+        console.log("companyData", companyData);
+        console.log("entityData", entityData);
+
+        setCompanyCount(companyData.length);
+        setEntityCount(entityData.length);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -46,72 +49,61 @@ function MasterTables() {
       <DashboardNavbar />
       <MDBox py={3}>
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <Link to="/master/location">
-                <ComplexStatisticsCard
-                  color="success"
-                  icon="store"
-                  title="Locations"
-                  count={locationCount}
-                  percentage={{
-                    color: "success",
-                    label: "Locations Table",
-                  }}
-                />
-              </Link>
-            </MDBox>
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <Link to="/master/warehouse">
-                <ComplexStatisticsCard
-                  color="dark"
-                  icon="weekend"
-                  title="Warehouses"
-                  count={warehouseCount}
-                  percentage={{
-                    color: "success",
-                    label: "Warehouses",
-                  }}
-                />
-              </Link>
-            </MDBox>
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <Link to="/master/vendors">
-                <ComplexStatisticsCard
-                  icon="leaderboard"
-                  title="Vendors"
-                  count={vendorCount}
-                  percentage={{
-                    color: "success",
-                    // amount: "+3%",
-                    label: "Vendor Table",
-                  }}
-                />
-              </Link>
-            </MDBox>
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={31.5}>
-              <Link to="/master/sellers">
-                <ComplexStatisticsCard
-                  color="primary"
-                  icon="person_add"
-                  title="Sellers"
-                  count={sellerCount}
-                  percentage={{
-                    color: "success",
-                    amount: "",
-                    label: "Sellers Table",
-                  }}
-                  z
-                />
-              </Link>
-            </MDBox>
-          </Grid>
+          {Login_User_Email != "avidus@gmail.com" && Login_User_Role != "user" && (
+            <Grid item xs={12} md={6} lg={3}>
+              <MDBox mb={1.5}>
+                <Link to="/master/compliance">
+                  <ComplexStatisticsCard
+                    color="success"
+                    icon="store"
+                    title="Compliance"
+                    count={userCount}
+                    percentage={{
+                      color: "success",
+                      label: "Compliance Table",
+                    }}
+                  />
+                </Link>
+              </MDBox>
+            </Grid>
+          )}
+
+          {Login_User_Email === "avidus@gmail.com" && (
+            <Grid item xs={12} md={6} lg={3}>
+              <MDBox mb={1.5}>
+                <Link to="/master/companies">
+                  <ComplexStatisticsCard
+                    color="dark"
+                    icon="weekend"
+                    title="Companies"
+                    count={companyCount}
+                    percentage={{
+                      color: "success",
+                      label: "Companies Table",
+                    }}
+                  />
+                </Link>
+              </MDBox>
+            </Grid>
+          )}
+          {Login_User_Email != "avidus@gmail.com" && Login_User_Role != "user" && (
+            <Grid item xs={12} md={6} lg={3}>
+              <MDBox mb={1.5}>
+                <Link to="/master/entity">
+                  <ComplexStatisticsCard
+                    icon="leaderboard"
+                    title="Entity"
+                    count={entityCount}
+                    percentage={{
+                      color: "success",
+                      // amount: "+3%",
+                      label: "Entity Table",
+                    }}
+                  />
+                </Link>
+              </MDBox>
+            </Grid>
+          )}
         </Grid>
       </MDBox>
       <Footer />

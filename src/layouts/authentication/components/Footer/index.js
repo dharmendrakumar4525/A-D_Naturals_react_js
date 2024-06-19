@@ -78,7 +78,7 @@ function Footer({ light }) {
               &copy; {new Date().getFullYear()},
               <Link href="https://www.adnaturals.in/" target="_blank">
                 <MDTypography variant="button" fontWeight="medium" color={light ? "white" : "dark"}>
-                  &nbsp;A&D Naturals&nbsp;
+                  &nbsp;Compliance Dashboard&nbsp;
                 </MDTypography>
               </Link>
             </MDBox>

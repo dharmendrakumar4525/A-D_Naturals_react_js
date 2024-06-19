@@ -20,6 +20,8 @@ import App from "App";
 
 // Material Dashboard 2 React Context Provider
 import { MaterialUIControllerProvider } from "context";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const container = document.getElementById("app");
 const root = createRoot(container);
@@ -28,6 +30,7 @@ root.render(
   <BrowserRouter>
     <MaterialUIControllerProvider>
       <App />
+      <ToastContainer />
     </MaterialUIControllerProvider>
   </BrowserRouter>
 );
