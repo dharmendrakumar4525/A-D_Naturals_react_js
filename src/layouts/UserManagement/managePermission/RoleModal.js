@@ -18,6 +18,7 @@ import PropTypes from "prop-types";
 import { environment } from "environments/environment";
 import { GET_ROLES_API } from "environments/apiPaths";
 import axios from "axios";
+import { axiosInstance } from "environments/environment";
 
 export function SelectRole({
   availableItems,
@@ -59,7 +60,7 @@ const RoleModal = ({ open, onClose, filterObjectsByRoleId }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const roleResponse = await axios.get(`${environment.api_path}/${GET_ROLES_API}`);
+        const roleResponse = await axiosInstance.get(`${GET_ROLES_API}`);
         const roleData = roleResponse.data;
         console.log(roleData);
         setAvailableRole(roleData);

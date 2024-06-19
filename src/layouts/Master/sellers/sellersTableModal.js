@@ -18,6 +18,7 @@ import { GET_SELLER_API, GET_WAREHOUSE_API, GET_LOCATION_API } from "environment
 import { validatePhoneNumber, validateAadhar } from "validatorsFunctions/contactValidators";
 
 import EditIcon from "@mui/icons-material/Edit";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "absolute",
@@ -97,7 +98,7 @@ export default function SellerTableModal({ sellerId = null, permission, setIsRef
     setOpen(true);
     if (sellerId) {
       try {
-        const sellersResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
+        const sellersResponse = await axiosInstance.get(`/${GET_SELLER_API}`);
         const sellerData = sellersResponse.data.data;
 
         const seller = sellerData.find((seller) => seller._id === sellerId);
@@ -129,15 +130,15 @@ export default function SellerTableModal({ sellerId = null, permission, setIsRef
     const fetchData = async () => {
       if (sellerId) {
         try {
-          const locationResponse = await axios.get(`${environment.api_path}/${GET_LOCATION_API}`);
+          const locationResponse = await axiosInstance.get(`${GET_LOCATION_API}`);
           const locationData = locationResponse.data.data;
           setAvailableLoacations(locationData);
 
-          const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+          const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
           const warehouseData = warehouseResponse.data.data;
           setAvailableWarehouses(warehouseData);
 
-          const sellersResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
+          const sellersResponse = await axiosInstance.get(`${GET_SELLER_API}`);
           const sellerData = sellersResponse.data.data;
 
           const seller = sellerData.find((seller) => seller._id === sellerId);
@@ -154,7 +155,7 @@ export default function SellerTableModal({ sellerId = null, permission, setIsRef
         }
       } else {
         try {
-          const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+          const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
           const warehouseData = warehouseResponse.data.data;
           setAvailableWarehouses(warehouseData);
         } catch (error) {
@@ -246,7 +247,7 @@ export default function SellerTableModal({ sellerId = null, permission, setIsRef
           warehouse: selectedWarehouse,
           seller_location: formData.seller_location || "",
         };
-        await axios.put(`${environment.api_path}/${GET_SELLER_API}/${sellerId}`, payloadformData);
+        await axiosInstance.put(`${GET_SELLER_API}/${sellerId}`, payloadformData);
       } else {
         payloadformData = {
           seller_name: formData.seller_name || "",
@@ -256,7 +257,7 @@ export default function SellerTableModal({ sellerId = null, permission, setIsRef
           seller_location: formData.seller_location || "",
         };
 
-        await axios.post(`${environment.api_path}/${GET_SELLER_API}`, payloadformData);
+        await axiosInstance.post(`${GET_SELLER_API}`, payloadformData);
         window.location.reload();
       }
       handleError("Seller Updated Successfully");

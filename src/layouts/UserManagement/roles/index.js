@@ -37,6 +37,8 @@ import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
 import { Margin } from "@mui/icons-material";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { axiosInstance } from "environments/environment";
+import Loader from "../../../assets/images/Loader.gif";
 
 function RolesTable() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,6 +48,7 @@ function RolesTable() {
   const [permission, setPermission] = useState({});
   const [submitError, setSubmitError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const onSearch = (query) => {
     setSearchQuery(query);
@@ -60,7 +63,7 @@ function RolesTable() {
     }
 
     try {
-      await axios.delete(`${environment.api_path}/${GET_ROLES_API}/${roleId}`);
+      await axiosInstance.delete(`${GET_ROLES_API}/${roleId}`);
       setRowData((prevData) => prevData.filter((role) => role._id !== roleId));
       handleError("Role Deleted Successully");
     } catch (error) {
@@ -97,8 +100,9 @@ function RolesTable() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        const rolesResponse = await axios.get(`${environment.api_path}/${GET_ROLES_API}`);
+        const rolesResponse = await axiosInstance.get(GET_ROLES_API);
         const rolesData = rolesResponse.data;
         console.log(rolesData);
         setRowData(rolesData);
@@ -106,6 +110,8 @@ function RolesTable() {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+
+      setLoading(false);
     };
 
     fetchData();
@@ -114,24 +120,41 @@ function RolesTable() {
   //-------------------------------- GET PERMISSION Array ------------------------
   useEffect(() => {
     const fetchPermissionData = async () => {
+      setLoading(true);
       const data = getLocalStorageData("A&D_User");
-      console.log(data, "permission");
-      try {
-        const permissionResponse = await axios.get(
-          `${environment.api_path}/${GET_PERMISSION}${data._id}`
-        );
-        const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
+      if (!data || !data._id) {
+        console.error("Invalid user data:", data);
+        return;
+      }
 
-        // Check if the permission data contains an object with module name "users"
+      console.log(data, "permission");
+
+      try {
+        const url = `${GET_PERMISSION}${data._id}`;
+        console.log("Fetching permissions from URL:", url);
+        const permissionResponse = await axiosInstance.get(url);
+
+        console.log("Permission response:", permissionResponse);
+
+        const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
+        console.log("Permission data:", permissionData);
+
+        // Check if the permission data contains an object with module name "roles"
         const modulePermission = permissionData.find((item) => item.moduleName === "roles");
         console.log(modulePermission);
+
         // If found, save that object in the permission state
         if (modulePermission) {
           setPermission(modulePermission.childList);
+          console.log("Module permission found:", modulePermission);
+        } else {
+          console.log("Module permission 'roles' not found.");
         }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+
+      setLoading(false);
     };
 
     fetchPermissionData();

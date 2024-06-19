@@ -5,14 +5,12 @@ import {
   GET_WAREHOUSEORDER_API,
   GET_SELLERORDER_API,
 } from "environments/apiPaths";
-import { environment } from "environments/environment";
+import { environment, axiosInstance } from "environments/environment";
 
 // Your fetchTotalPurchase function
 export const fetchTotalPurchase = async () => {
   try {
-    const PurchaseOrderResponse = await axios.get(
-      `${environment.api_path}${GET_PURCHASEORDER_API}`
-    );
+    const PurchaseOrderResponse = await axiosInstance.get(GET_PURCHASEORDER_API);
     const PurchaseOrdersList = PurchaseOrderResponse.data.data;
     const currentDate = new Date();
     const filteredByCurrentYear = PurchaseOrdersList.filter((order) => {
@@ -43,14 +41,13 @@ export const fetchTotalPurchase = async () => {
     console.error("Error fetching data:", error);
   }
 };
+
 export const fetchTotalWareHouseInventory = async () => {
   try {
-    const WareHouseOrderResponse = await axios.get(
-      `${environment.api_path}${GET_WAREHOUSEORDER_API}`
-    );
+    const WareHouseOrderResponse = await axiosInstance.get(GET_WAREHOUSEORDER_API);
     const WareHouseOrdersList = WareHouseOrderResponse.data.data;
 
-    const SellerOrderResponse = await axios.get(`${environment.api_path}${GET_SELLERORDER_API}`);
+    const SellerOrderResponse = await axiosInstance.get(GET_SELLERORDER_API);
     const SellerOrdersList = SellerOrderResponse.data.data;
 
     const currentDate = new Date();
@@ -75,7 +72,7 @@ export const fetchTotalWareHouseInventory = async () => {
     });
 
     filteredSellerByCurrentYear.forEach((order) => {
-      TotalSellerReceived = order.received_qty;
+      TotalSellerReceived += order.received_qty;
       TotalConsumed += order.consumed_qty;
     });
 
@@ -91,9 +88,7 @@ export const fetchTotalWareHouseInventory = async () => {
 
 export const fetchTotalExpense = async () => {
   try {
-    const WareHouseExpenseResponse = await axios.get(
-      `${environment.api_path}${GET_WAREHOUSE_EXPENSE_API}`
-    );
+    const WareHouseExpenseResponse = await axiosInstance.get(GET_WAREHOUSE_EXPENSE_API);
     const WareHouseExpenseList = WareHouseExpenseResponse.data.data;
     const currentDate = new Date();
     const filteredByCurrentYear = WareHouseExpenseList.filter((order) => {
@@ -117,12 +112,10 @@ export const fetchTotalExpense = async () => {
 
 export const fetchTotalWareHouseInventoryByWarehouseId = async (warehouseId) => {
   try {
-    const WareHouseOrderResponse = await axios.get(
-      `${environment.api_path}${GET_WAREHOUSEORDER_API}`
-    );
+    const WareHouseOrderResponse = await axiosInstance.get(GET_WAREHOUSEORDER_API);
     const WareHouseOrdersList = WareHouseOrderResponse.data.data;
 
-    const SellerOrderResponse = await axios.get(`${environment.api_path}${GET_SELLERORDER_API}`);
+    const SellerOrderResponse = await axiosInstance.get(GET_SELLERORDER_API);
     const SellerOrdersList = SellerOrderResponse.data.data;
 
     const currentDate = new Date();
@@ -159,7 +152,7 @@ export const fetchTotalWareHouseInventoryByWarehouseId = async (warehouseId) => 
     });
 
     filteredSellerByCurrentYear.forEach((order) => {
-      TotalSellerReceived = order.received_qty;
+      TotalSellerReceived += order.received_qty;
       TotalConsumed += order.consumed_qty;
     });
 
@@ -175,9 +168,7 @@ export const fetchTotalWareHouseInventoryByWarehouseId = async (warehouseId) => 
 
 export const fetchTotalExpenseByWareHouseId = async (warehouseId) => {
   try {
-    const WareHouseExpenseResponse = await axios.get(
-      `${environment.api_path}${GET_WAREHOUSE_EXPENSE_API}`
-    );
+    const WareHouseExpenseResponse = await axiosInstance.get(GET_WAREHOUSE_EXPENSE_API);
     const WareHouseExpenseList = WareHouseExpenseResponse.data.data;
     const currentDate = new Date();
     var filteredByCurrentYear = WareHouseExpenseList.filter((order) => {

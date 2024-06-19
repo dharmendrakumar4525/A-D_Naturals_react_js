@@ -17,6 +17,7 @@ import { environment } from "environments/environment";
 import { GET_SELLER_API, GET_WAREHOUSE_API, GET_LOCATION_API } from "environments/apiPaths";
 
 import EditIcon from "@mui/icons-material/Edit";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "absolute",
@@ -51,7 +52,7 @@ export default function LocationsTableModal({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const locationResponse = await axios.get(`${environment.api_path}/${GET_LOCATION_API}`);
+        const locationResponse = await axiosInstance.get(`${GET_LOCATION_API}`);
         const locationData = locationResponse.data.data;
 
         const location = locationData.find((location) => location._id === locationId);
@@ -95,13 +96,13 @@ export default function LocationsTableModal({
         formData = {
           location_name: document.getElementById("location_name")?.value || "",
         };
-        await axios.put(`${environment.api_path}/location/${locationId}`, formData);
+        await axiosInstance.put(`/location/${locationId}`, formData);
       } else {
         formData = {
           location_name: document.getElementById("location_name")?.value || "",
         };
 
-        await axios.post(`${environment.api_path}/location`, formData);
+        await axiosInstance.post(`/location`, formData);
         window.location.reload();
       }
       handleError("Location Updated Sucessfully");

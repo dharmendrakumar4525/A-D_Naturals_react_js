@@ -26,7 +26,7 @@ import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { environment } from "environments/environment";
+import { environment, axiosInstance } from "environments/environment";
 import { GET_WAREHOUSE_API, GET_SELLERORDER_API } from "environments/apiPaths";
 import { getSellerNameByID, getWarehouseNameByID, formatDate } from "../utils";
 import WareHouseModal from "./WareHouseModal";
@@ -53,23 +53,21 @@ function PendingSellerOrder() {
     setIsWareHouseModalOpen(true);
   };
 
-  //----------------------------Fetch Function---------------------------------
+  //-----------------------------Fetch Function-----------------------------
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const SellerOrderResponse = await axios.get(
-          `${environment.api_path}${GET_SELLERORDER_API}`
-        );
+        const SellerOrderResponse = await axiosInstance.get(`${GET_SELLERORDER_API}`);
         let SellerOrderResponseList = SellerOrderResponse.data.data;
         setOriginalData(SellerOrderResponseList);
-        const warehouseResponse = await axios.get(`${environment.api_path}${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
         let warehouseList = warehouseResponse.data.data;
         console.log(warehouseList);
         setWarehouseArray(warehouseList);
 
-        const roleResponse = await axios.get(`${environment.api_path}/roles`);
+        const roleResponse = await axiosInstance.get(`/roles`);
         const roleData = roleResponse.data;
 
         const userData = getLocalStorageData("A&D_User");

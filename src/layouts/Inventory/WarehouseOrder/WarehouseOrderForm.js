@@ -44,6 +44,7 @@ import {
   GET_WAREHOUSEORDER_API,
 } from "environments/apiPaths";
 import { getWarehouseNameByID } from "../utils";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "relative",
@@ -80,7 +81,7 @@ export default function WarehouseOrderForm() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
         setAvailableWarehouses(warehouseData);
         setWarehouse(getWarehouseNameByID(warehouseData, warehouseId));
@@ -134,7 +135,7 @@ export default function WarehouseOrderForm() {
 
     console.log(newPurchaseFormData);
     try {
-      await axios.post(`${environment.api_path}/${GET_WAREHOUSEORDER_API}`, newFormData);
+      await axiosInstance.post(`${GET_WAREHOUSEORDER_API}`, newFormData);
       setSubmitError("WareHouse Order Created Sucessfully");
       setFormData({
         warehouse: warehouseId,
@@ -143,8 +144,8 @@ export default function WarehouseOrderForm() {
         rejected_qty: 0,
       });
 
-      await axios.put(
-        `${environment.api_path}/${GET_PURCHASEORDER_API}/${purchaseOrderArray._id}`,
+      await axiosInstance.put(
+        `${GET_PURCHASEORDER_API}/${purchaseOrderArray._id}`,
         newPurchaseFormData
       );
 

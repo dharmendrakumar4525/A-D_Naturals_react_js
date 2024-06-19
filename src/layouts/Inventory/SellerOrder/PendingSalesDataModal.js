@@ -17,6 +17,7 @@ import { environment } from "environments/environment";
 import { GET_SELLERORDER_API } from "environments/apiPaths";
 
 import EditIcon from "@mui/icons-material/Edit";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "absolute",
@@ -78,10 +79,7 @@ export default function PendingSalesDataModal({ sellerData = null, setIsRefetch 
     };
     console.log(newFormData);
     try {
-      await axios.put(
-        `${environment.api_path}/${GET_SELLERORDER_API}/${formData._id}`,
-        newFormData
-      );
+      await axiosInstance.put(`${GET_SELLERORDER_API}/${formData._id}`, newFormData);
 
       setFormData({
         seller_id: "",

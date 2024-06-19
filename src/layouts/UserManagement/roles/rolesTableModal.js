@@ -11,6 +11,7 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import { FormControl, FormHelperText } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "absolute",
@@ -38,7 +39,7 @@ export default function RolesTableModal({ userId = null, permission, setIsRefetc
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const rolesResponse = await axios.get("http://localhost:3000/api/web/roles");
+        const rolesResponse = await axiosInstance.get("/roles");
         const role = rolesResponse.data.find((role) => role._id === userId);
         setFormData({ role: role ? role.role : "" });
       } catch (error) {
@@ -75,8 +76,8 @@ export default function RolesTableModal({ userId = null, permission, setIsRefetc
         return; // Don't submit if there are validation errors
       }
       const response = await (userId
-        ? axios.put(`http://localhost:3000/api/web/roles/${userId}`, formData)
-        : axios.post("http://localhost:3000/api/web/roles", formData));
+        ? axiosInstance.put(`/roles/${userId}`, formData)
+        : axiosInstance.post("/roles", formData));
 
       setIsRefetch(true);
 

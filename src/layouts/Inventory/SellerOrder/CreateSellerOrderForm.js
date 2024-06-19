@@ -48,6 +48,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import { GET_SELLER_API } from "environments/apiPaths";
 import { getSellerNameByID } from "../utils";
+import { axiosInstance } from "environments/environment";
 
 //------------------------Style for main Component's Container ----------------
 const style = {
@@ -178,23 +179,19 @@ export default function SellerOrderForm() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
         setAvailableWarehouses(warehouseData);
-        const SelllerResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
+        const SelllerResponse = await axiosInstance.get(`${GET_SELLER_API}`);
         const SellerData = SelllerResponse.data.data;
         console.log(SellerData);
         setAvailableSellers(SellerData);
 
-        const wareHouseOrderResponse = await axios.get(
-          `${environment.api_path}/${GET_WAREHOUSEORDER_API}`
-        );
+        const wareHouseOrderResponse = await axiosInstance.get(`${GET_WAREHOUSEORDER_API}`);
         const wareHouseOrderData = wareHouseOrderResponse.data.data;
         setWareHouseOrder(wareHouseOrderData);
 
-        const sellerOrderResponse = await axios.get(
-          `${environment.api_path}/${GET_SELLERORDER_API}`
-        );
+        const sellerOrderResponse = await axiosInstance.get(`${GET_SELLERORDER_API}`);
         const sellerOrderData = sellerOrderResponse.data.data;
         setSellerOrder(sellerOrderData);
       } catch (error) {
@@ -218,7 +215,7 @@ export default function SellerOrderForm() {
       return;
     }
     try {
-      await axios.post(`${environment.api_path}/${GET_SELLERORDER_API}`, seller);
+      await axiosInstance.post(`${GET_SELLERORDER_API}`, seller);
       handleError("Purchase Order Created Sucessfully");
       setInventory(inventory - seller.received_qty);
       setSubmittedSellers((prev) => [...prev, seller.seller_id]);

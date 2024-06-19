@@ -39,6 +39,7 @@ import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
 import { Margin } from "@mui/icons-material";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { axiosInstance } from "environments/environment";
 
 function SellerOrderTable() {
   const [warehouses, setWarehouse] = useState([]);
@@ -90,7 +91,7 @@ function SellerOrderTable() {
       return;
     }
     try {
-      await axios.delete(`${environment.api_path}/${GET_SELLERORDER_API}/${sellerOrderID}`);
+      await axiosInstance.delete(`${GET_SELLERORDER_API}/${sellerOrderID}`);
       setRowData((prevData) => prevData.filter((purchase) => purchase._id !== sellerOrderID));
       setIsFilterModalOpen(false);
     } catch (error) {
@@ -247,23 +248,21 @@ function SellerOrderTable() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const sellerOrderResponse = await axios.get(
-          `${environment.api_path}${GET_SELLERORDER_API}`
-        );
+        const sellerOrderResponse = await axiosInstance.get(`${GET_SELLERORDER_API}`);
         const SellerOrderResponseList = sellerOrderResponse.data.data;
         const sellerOrderList = SellerOrderResponseList.filter(
           (item) => item.status === "completed"
         );
 
-        const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
+        const warehouseResponse = await axiosInstance.get(`/warehouse`);
         const warehouseData = warehouseResponse.data.data;
-        const sellerResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
+        const sellerResponse = await axiosInstance.get(`${GET_SELLER_API}`);
         const sellerData = sellerResponse.data.data;
 
         setAvailableSeller(sellerData);
         setWarehouse(warehouseData);
 
-        const roleResponse = await axios.get(`${environment.api_path}/roles`);
+        const roleResponse = await axiosInstance.get(`/roles`);
         const roleData = roleResponse.data;
 
         const userData = getLocalStorageData("A&D_User");
@@ -316,9 +315,7 @@ function SellerOrderTable() {
       const data = getLocalStorageData("A&D_User");
       console.log(data, "permission");
       try {
-        const permissionResponse = await axios.get(
-          `${environment.api_path}/${GET_PERMISSION}${data._id}`
-        );
+        const permissionResponse = await axiosInstance.get(`${GET_PERMISSION}${data._id}`);
         const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
         console.log(permissionData);
         // Check if the permission data contains an object with module name "users"

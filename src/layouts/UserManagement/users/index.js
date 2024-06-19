@@ -43,6 +43,7 @@ import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
 import { Margin } from "@mui/icons-material";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { axiosInstance } from "environments/environment";
 
 function UserTable() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -83,10 +84,10 @@ function UserTable() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const usersResponse = await axios.get(`${environment.api_path}/${GET_USERS_API}`);
+        const usersResponse = await axiosInstance.get(GET_USERS_API);
         const usersData = usersResponse.data;
 
-        const rolesResponse = await axios.get(`${environment.api_path}/${GET_ROLES_API}`);
+        const rolesResponse = await axiosInstance.get(GET_ROLES_API);
         const rolesData = rolesResponse.data;
 
         console.log("usersDaaata", usersData);
@@ -119,7 +120,7 @@ function UserTable() {
       return;
     }
     try {
-      await axios.delete(`${environment.api_path}/${POST_USER_DELETE_API}/${userId}`);
+      await axiosInstance.delete(`${POST_USER_DELETE_API}/${userId}`);
       setRowData((prevData) => prevData.filter((user) => user._id !== userId));
       handleError("User Deleted Succesfully");
     } catch (error) {
@@ -136,19 +137,32 @@ function UserTable() {
   useEffect(() => {
     const fetchPermissionData = async () => {
       const data = getLocalStorageData("A&D_User");
+      if (!data || !data._id) {
+        console.error("Invalid user data:", data);
+        return;
+      }
+
       console.log(data, "permission");
+
       try {
-        const permissionResponse = await axios.get(
-          `${environment.api_path}/${GET_PERMISSION}${data._id}`
-        );
+        const url = `${GET_PERMISSION}${data._id}`;
+        console.log("Fetching permissions from URL:", url);
+        const permissionResponse = await axiosInstance.get(url);
+
+        console.log("Permission response:", permissionResponse);
+
         const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
-        console.log(permissionData);
+        console.log("Permission data:", permissionData);
+
         // Check if the permission data contains an object with module name "users"
         const modulePermission = permissionData.find((item) => item.moduleName === "users");
 
         // If found, save that object in the permission state
         if (modulePermission) {
           setPermission(modulePermission.childList);
+          console.log("Module permission found:", modulePermission);
+        } else {
+          console.log("Module permission 'users' not found.");
         }
       } catch (error) {
         console.error("Error fetching data:", error);

@@ -40,6 +40,7 @@ import {
   GET_PURCHASEORDER_API,
   GET_WAREHOUSEORDER_API,
 } from "environments/apiPaths";
+import { axiosInstance } from "environments/environment";
 
 //------------------------Style for main Component's Container ----------------
 const style = {
@@ -161,12 +162,12 @@ export default function EditPurchaseOrder() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
 
-        const vendorResponse = await axios.get(`${environment.api_path}/${GET_VENDOR_API}`);
+        const vendorResponse = await axiosInstance.get(`${GET_VENDOR_API}`);
         const vendorData = vendorResponse.data.data;
-        const orderResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSEORDER_API}`);
+        const orderResponse = await axiosInstance.get(`${GET_WAREHOUSEORDER_API}`);
         const orderData = orderResponse.data.data;
 
         setAvailableWarehouses(warehouseData);
@@ -237,10 +238,7 @@ export default function EditPurchaseOrder() {
 
       console.log(NewformData);
       console.log(purchaseOrder._id);
-      await axios.put(
-        `${environment.api_path}/${GET_PURCHASEORDER_API}/${formData._id}`,
-        NewformData
-      );
+      await axiosInstance.put(`${GET_PURCHASEORDER_API}/${formData._id}`, NewformData);
 
       setSubmitError("Purchase Order Updated Successfully");
       setFormData({

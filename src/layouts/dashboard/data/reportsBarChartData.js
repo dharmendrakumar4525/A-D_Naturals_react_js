@@ -19,7 +19,7 @@ import {
   GET_WAREHOUSEORDER_API,
   GET_SELLERORDER_API,
 } from "environments/apiPaths";
-import { environment } from "environments/environment";
+import { environment, axiosInstance } from "environments/environment";
 
 const formatDate = (date) => {
   const d = new Date(date);
@@ -37,9 +37,7 @@ function getStartOfWeek(date) {
 
 export const PurchaseChartData = async () => {
   try {
-    const PurchaseOrderResponse = await axios.get(
-      `${environment.api_path}${GET_PURCHASEORDER_API}`
-    );
+    const PurchaseOrderResponse = await axiosInstance.get(GET_PURCHASEORDER_API);
     const PurchaseOrdersList = PurchaseOrderResponse.data.data;
 
     const today = new Date();
@@ -73,9 +71,7 @@ export const PurchaseChartData = async () => {
 
 export const WareHouseChartData = async () => {
   try {
-    const PurchaseOrderResponse = await axios.get(
-      `${environment.api_path}${GET_WAREHOUSEORDER_API}`
-    );
+    const PurchaseOrderResponse = await axiosInstance.get(GET_WAREHOUSEORDER_API);
     const PurchaseOrdersList = PurchaseOrderResponse.data.data;
     const now = new Date();
     const startOfWeek = getStartOfWeek(now);
@@ -105,7 +101,7 @@ export const WareHouseChartData = async () => {
 
 export const SellerChartData = async () => {
   try {
-    const PurchaseOrderResponse = await axios.get(`${environment.api_path}${GET_SELLERORDER_API}`);
+    const PurchaseOrderResponse = await axiosInstance.get(GET_SELLERORDER_API);
     const PurchaseOrdersList = PurchaseOrderResponse.data.data;
 
     const now = new Date();
@@ -134,13 +130,9 @@ export const SellerChartData = async () => {
   }
 };
 
-//--------------------------------------------------------------
-
 export const WareHouseChartDataBYID = async (warehouseId) => {
   try {
-    const PurchaseOrderResponse = await axios.get(
-      `${environment.api_path}${GET_WAREHOUSEORDER_API}`
-    );
+    const PurchaseOrderResponse = await axiosInstance.get(GET_WAREHOUSEORDER_API);
     const PurchaseOrdersList = PurchaseOrderResponse.data.data;
     const now = new Date();
     const startOfWeek = getStartOfWeek(now);
@@ -173,7 +165,7 @@ export const WareHouseChartDataBYID = async (warehouseId) => {
 
 export const SellerChartDataBYID = async (warehouseId) => {
   try {
-    const PurchaseOrderResponse = await axios.get(`${environment.api_path}${GET_SELLERORDER_API}`);
+    const PurchaseOrderResponse = await axiosInstance.get(GET_SELLERORDER_API);
     const PurchaseOrdersList = PurchaseOrderResponse.data.data;
 
     const now = new Date();
@@ -209,7 +201,7 @@ export const SellerChartDataBYID = async (warehouseId) => {
 
 export const WeeklySalesRevenueNyWareHouse = async (warehouseId) => {
   try {
-    const PurchaseOrderResponse = await axios.get(`${environment.api_path}${GET_SELLERORDER_API}`);
+    const PurchaseOrderResponse = await axiosInstance.get(GET_SELLERORDER_API);
     const PurchaseOrdersList = PurchaseOrderResponse.data.data;
 
     const now = new Date();

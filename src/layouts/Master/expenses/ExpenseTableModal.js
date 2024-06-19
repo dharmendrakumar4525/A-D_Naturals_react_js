@@ -17,6 +17,7 @@ import { environment } from "environments/environment";
 import { GET_LOCATION_API, GET_EXPENSE_API } from "environments/apiPaths";
 
 import EditIcon from "@mui/icons-material/Edit";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "absolute",
@@ -51,7 +52,7 @@ export default function ExpenseTableModal({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const expenseResponse = await axios.get(`${environment.api_path}/${GET_EXPENSE_API}`);
+        const expenseResponse = await axiosInstance.get(`${GET_EXPENSE_API}`);
         const expenseData = expenseResponse.data.data;
 
         const expense = expenseData.find((expense) => expense._id === expenseId);
@@ -95,13 +96,13 @@ export default function ExpenseTableModal({
         formData = {
           expense_name: document.getElementById("expense_name")?.value || "",
         };
-        await axios.put(`${environment.api_path}/${GET_EXPENSE_API}/${expenseId}`, formData);
+        await axiosInstance.put(`${GET_EXPENSE_API}/${expenseId}`, formData);
       } else {
         formData = {
           expense_name: document.getElementById("expense_name")?.value || "",
         };
 
-        await axios.post(`${environment.api_path}/${GET_EXPENSE_API}`, formData);
+        await axiosInstance.post(`${GET_EXPENSE_API}`, formData);
         window.location.reload();
       }
       handleError("Expense Updated Succeslly");

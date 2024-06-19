@@ -34,6 +34,7 @@ import WareHouseModal from "./WareHouseModal";
 import Loader from "../../../assets/images/Loader.gif";
 import { useNavigate } from "react-router-dom";
 import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
+import { axiosInstance } from "environments/environment";
 
 function WarehouseOrder() {
   const [vendors, setVendors] = useState([]);
@@ -57,7 +58,7 @@ function WarehouseOrder() {
 
   const handleDelete = async (purchaseOrderID) => {
     try {
-      await axios.delete(`${environment.api_path}/${GET_PURCHASEORDER_API}/${purchaseOrderID}`);
+      await axiosInstance.delete(`${GET_PURCHASEORDER_API}/${purchaseOrderID}`);
       setRowData((prevData) => prevData.filter((purchase) => purchase._id !== purchaseOrderID));
     } catch (error) {
       console.error("Error deleting PurchaseOrder:", error);
@@ -72,19 +73,17 @@ function WarehouseOrder() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const PurchaseOrderResponse = await axios.get(
-          `${environment.api_path}${GET_PURCHASEORDER_API}`
-        );
+        const PurchaseOrderResponse = await axiosInstance.get(`${GET_PURCHASEORDER_API}`);
         let PurchaseOrdersList = PurchaseOrderResponse.data.data;
         setOriginalData(PurchaseOrdersList);
         console.log(PurchaseOrdersList, "Here");
 
-        const vendorResponse = await axios.get(`${environment.api_path}/vendor`);
+        const vendorResponse = await axiosInstance.get(`/vendor`);
         const vendorData = vendorResponse.data.data;
         setVendors(vendorData);
-        const roleResponse = await axios.get(`${environment.api_path}/roles`);
+        const roleResponse = await axiosInstance.get(`/roles`);
         const roleData = roleResponse.data;
-        const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
+        const warehouseResponse = await axiosInstance.get(`/warehouse`);
         const warehouseData = warehouseResponse.data.data;
         //setWarehouseArray(warehouseData);
         console.log(warehouseData);

@@ -14,7 +14,7 @@ import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
 import axios from "axios";
 import { GET_WAREHOUSE_API } from "environments/apiPaths";
-import { environment } from "environments/environment";
+import { environment, defaultOptions, axiosInstance } from "environments/environment";
 import { PurchaseChartData, WareHouseChartData, SellerChartData } from "./data/reportsBarChartData";
 import {
   WareHouseChartDataBYID,
@@ -40,6 +40,7 @@ import WareHouseModal from "./WareHouseModal";
 import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
 import { getWarehouseNameByID } from "layouts/Orders/utils";
 import FilterModal from "./FilterModal";
+import Loader from "../../assets/images/Loader.gif";
 
 function Dashboard() {
   const [purchaseOrder, setPurchaseOrder] = useState(0);
@@ -57,6 +58,7 @@ function Dashboard() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [user, setUser] = useState("");
   const { sales, tasks } = reportsLineChartData;
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,11 +96,12 @@ function Dashboard() {
   useEffect(() => {
     const fetchUserAndWareHouse = async () => {
       try {
-        const WareHouseResponse = await axios.get(`${environment.api_path}${GET_WAREHOUSE_API}`);
+        const WareHouseResponse = await axiosInstance.get(GET_WAREHOUSE_API);
+        console.log(WareHouseResponse, "response");
         const WareHouseList = WareHouseResponse.data.data;
         setAvailableWarehouses(WareHouseList);
 
-        const roleResponse = await axios.get(`${environment.api_path}/roles`);
+        const roleResponse = await axiosInstance.get("/roles");
         const roleData = roleResponse.data;
 
         const userData = getLocalStorageData("A&D_User");

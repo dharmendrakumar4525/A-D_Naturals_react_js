@@ -15,6 +15,7 @@ import {
   GET_WAREHOUSE_API,
 } from "environments/apiPaths";
 import { environment } from "environments/environment";
+import { axiosInstance } from "environments/environment";
 
 function MasterTables() {
   const [locationCount, setLocationCount] = useState([]);
@@ -26,11 +27,11 @@ function MasterTables() {
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const locationResponse = await axios.get(`${environment.api_path}/${GET_LOCATION_API}`);
-        const sellerResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
-        const vendorResponse = await axios.get(`${environment.api_path}/${GET_VENDOR_API}`);
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
-        const expenseResponse = await axios.get(`${environment.api_path}/${GET_EXPENSE_API}`);
+        const locationResponse = await axiosInstance.get(`${GET_LOCATION_API}`);
+        const sellerResponse = await axiosInstance.get(`${GET_SELLER_API}`);
+        const vendorResponse = await axiosInstance.get(`${GET_VENDOR_API}`);
+        const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
+        const expenseResponse = await axiosInstance.get(`${GET_EXPENSE_API}`);
 
         const locationData = locationResponse.data.data.length;
         const sellerData = sellerResponse.data.data.length;

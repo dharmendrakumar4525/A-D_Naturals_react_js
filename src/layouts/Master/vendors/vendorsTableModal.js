@@ -19,6 +19,7 @@ import {
   validatePANNumber,
 } from "validatorsFunctions/contactValidators";
 import EditIcon from "@mui/icons-material/Edit";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "absolute",
@@ -61,7 +62,7 @@ export default function VendorTableModal({ vendorId = null, permission, setIsRef
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const vendorResponse = await axios.get(`${environment.api_path}/${GET_VENDOR_API}`);
+        const vendorResponse = await axiosInstance.get(`${GET_VENDOR_API}`);
         const vendorData = vendorResponse.data.data;
 
         const vendor = vendorData.find((vendor) => vendor._id === vendorId);
@@ -135,9 +136,9 @@ export default function VendorTableModal({ vendorId = null, permission, setIsRef
         pan_number: formData.pan_number,
       };
       if (vendorId) {
-        await axios.put(`${environment.api_path}/${GET_VENDOR_API}/${vendorId}`, newFormData);
+        await axiosInstance.put(`${GET_VENDOR_API}/${vendorId}`, newFormData);
       } else {
-        await axios.post(`${environment.api_path}/${GET_VENDOR_API}`, newFormData);
+        await axiosInstance.post(`${GET_VENDOR_API}`, newFormData);
         window.location.reload();
       }
       handleError("Vendor Updated Successfully");

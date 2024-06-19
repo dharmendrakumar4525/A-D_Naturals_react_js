@@ -20,6 +20,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import { validateEmail, validatePhoneNumber } from "validatorsFunctions/contactValidators";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "absolute",
@@ -89,11 +90,11 @@ export default function UserTableModal({ userId = null, permission, setIsRefetch
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const rolesResponse = await axios.get("http://localhost:3000/api/web/roles");
+        const rolesResponse = await axiosInstance.get("/roles");
         setAvailableRoles(rolesResponse.data);
 
         if (userId) {
-          const usersResponse = await axios.get("http://localhost:3000/api/web/users");
+          const usersResponse = await axiosInstance.get("/users");
           const user = usersResponse.data.find((user) => user._id === userId);
 
           setSelectedRole(user.role);
@@ -189,10 +190,7 @@ export default function UserTableModal({ userId = null, permission, setIsRefetch
           role: selectedRole,
           password: formData.password || "",
         };
-        const response = await axios.put(
-          `http://localhost:3000/api/web/users/${userId}`,
-          formPayload
-        );
+        const response = await axiosInstance.put(`/users/${userId}`, formPayload);
         console.log("responceccccccccccc", response);
       } else {
         if (formData.password === "") {
@@ -213,10 +211,7 @@ export default function UserTableModal({ userId = null, permission, setIsRefetch
         }
 
         console.log("formPayload", formPayload);
-        const response = await axios.post(
-          "http://localhost:3000/api/web/users/register",
-          formPayload
-        );
+        const response = await axiosInstance.post("/users/register", formPayload);
         window.location.reload();
       }
       setIsRefetch(true);

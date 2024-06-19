@@ -15,6 +15,7 @@ import PropTypes from "prop-types";
 import { environment } from "environments/environment";
 import { GET_WAREHOUSE_API, GET_SELLER_API } from "environments/apiPaths";
 import axios from "axios";
+import { axiosInstance } from "environments/environment";
 
 export function SelectRole({
   availableItems,
@@ -56,7 +57,7 @@ const SellerModal = ({ open, onClose, filterObjectsBySellerId }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const SellerResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
+        const SellerResponse = await axiosInstance.get(`${GET_SELLER_API}`);
         const SellerData = SellerResponse.data.data;
         console.log(SellerData);
         setAvailableSeller(SellerData);

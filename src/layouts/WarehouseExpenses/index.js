@@ -36,6 +36,7 @@ import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
 import { Margin } from "@mui/icons-material";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { axiosInstance } from "environments/environment";
 
 const WareHouseExpenseTable = () => {
   const [vendors, setVendors] = useState([]);
@@ -75,9 +76,7 @@ const WareHouseExpenseTable = () => {
       return;
     }
     try {
-      await axios.delete(
-        `${environment.api_path}/${GET_WAREHOUSE_EXPENSE_API}/${warehouseOrderID}`
-      );
+      await axiosInstance.delete(`${GET_WAREHOUSE_EXPENSE_API}/${warehouseOrderID}`);
 
       // Logging before and after state update to check the flow
       console.log("Before updating state:", rowData);
@@ -210,20 +209,18 @@ const WareHouseExpenseTable = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const warehouseExpenseResponse = await axios.get(
-          `${environment.api_path}${GET_WAREHOUSE_EXPENSE_API}`
-        );
+        const warehouseExpenseResponse = await axiosInstance.get(`${GET_WAREHOUSE_EXPENSE_API}`);
         const warehouseExpenseList = warehouseExpenseResponse.data.data;
         console.log(warehouseExpenseList);
-        const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
+        const warehouseResponse = await axiosInstance.get(`/warehouse`);
         const warehouseData = warehouseResponse.data.data;
         setWarehouse(warehouseData);
 
-        const ExpenseResponse = await axios.get(`${environment.api_path}/expense`);
+        const ExpenseResponse = await axiosInstance.get(`/expense`);
         const expenseData = ExpenseResponse.data.data;
         setExpenses(expenseData);
 
-        const roleResponse = await axios.get(`${environment.api_path}/roles`);
+        const roleResponse = await axiosInstance.get(`/roles`);
         const roleData = roleResponse.data;
 
         const userData = getLocalStorageData("A&D_User");
@@ -282,9 +279,7 @@ const WareHouseExpenseTable = () => {
       const data = getLocalStorageData("A&D_User");
       console.log(data, "permission");
       try {
-        const permissionResponse = await axios.get(
-          `${environment.api_path}/${GET_PERMISSION}${data._id}`
-        );
+        const permissionResponse = await axiosInstance.get(`${GET_PERMISSION}${data._id}`);
         const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
         console.log(permissionData);
         // Check if the permission data contains an object with module name "users"

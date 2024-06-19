@@ -29,6 +29,7 @@ import MuiAlert from "@mui/material/Alert";
 import axios from "axios";
 import { GET_ROLES_API } from "environments/apiPaths";
 import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
+import { axiosInstance } from "environments/environment";
 
 function ManagePermission() {
   const [role, setRole] = useState(initialData);
@@ -53,7 +54,7 @@ function ManagePermission() {
       const data = getLocalStorageData("A&D_User");
       console.log(data, "permission");
       try {
-        const rolesResponse = await axios.get(`${environment.api_path}/${GET_ROLES_API}`);
+        const rolesResponse = await axiosInstance.get(GET_ROLES_API);
         const rolesData = rolesResponse.data;
         const selectedRole = rolesData.find((role) => role._id === data.role);
         console.log(selectedRole.role);
@@ -190,8 +191,8 @@ function ManagePermission() {
       };
       console.log("New form data for dashboard permissions:", newFormData);
 
-      const url = `${environment.api_path}/${POST_MANAGE_PERMISSION}/${role.role}`;
-      await axios.put(url, newFormData);
+      const url = `${POST_MANAGE_PERMISSION}/${role.role}`;
+      await axiosInstance.put(url, newFormData);
 
       handleError("Permission Updated Successfully");
     } catch (error) {

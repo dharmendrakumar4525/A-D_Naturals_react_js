@@ -12,7 +12,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import PropTypes from "prop-types";
-import { environment } from "environments/environment";
+import { environment, axiosInstance } from "environments/environment";
 import { GET_WAREHOUSE_API } from "environments/apiPaths";
 import axios from "axios";
 
@@ -56,7 +56,7 @@ const WareHouseModal = ({ open, onClose, filterObjectsByWarehouseId }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
         console.log(warehouseData);
         setAvailableWarehouses(warehouseData);

@@ -5,7 +5,7 @@ import {
   GET_WAREHOUSEORDER_API,
   GET_SELLERORDER_API,
 } from "environments/apiPaths";
-import { environment } from "environments/environment";
+import { environment, axiosInstance } from "environments/environment";
 
 const filterDataByDate = (data, filterType, year, month, quarter, halfYear) => {
   const startDate = new Date(year, 0, 1);
@@ -41,9 +41,7 @@ const filterDataByDate = (data, filterType, year, month, quarter, halfYear) => {
 
 export const fetchFilterTotalPurchase = async (filterType, year, month, quarter, halfYear) => {
   try {
-    const PurchaseOrderResponse = await axios.get(
-      `${environment.api_path}${GET_PURCHASEORDER_API}`
-    );
+    const PurchaseOrderResponse = await axiosInstance.get(GET_PURCHASEORDER_API);
     const PurchaseOrdersList = PurchaseOrderResponse.data.data;
     const filteredData = filterDataByDate(
       PurchaseOrdersList,
@@ -83,11 +81,9 @@ export const fetchFilterTotalWareHouseInventory = async (
   halfYear
 ) => {
   try {
-    const WareHouseOrderResponse = await axios.get(
-      `${environment.api_path}${GET_WAREHOUSEORDER_API}`
-    );
+    const WareHouseOrderResponse = await axiosInstance.get(GET_WAREHOUSEORDER_API);
     const WareHouseOrdersList = WareHouseOrderResponse.data.data;
-    const SellerOrderResponse = await axios.get(`${environment.api_path}${GET_SELLERORDER_API}`);
+    const SellerOrderResponse = await axiosInstance.get(GET_SELLERORDER_API);
     const SellerOrdersList = SellerOrderResponse.data.data;
 
     const filteredWareHouseData = filterDataByDate(
@@ -118,7 +114,7 @@ export const fetchFilterTotalWareHouseInventory = async (
     });
 
     filteredSellerData.forEach((order) => {
-      TotalSellerReceived = order.received_qty;
+      TotalSellerReceived += order.received_qty;
       TotalConsumed += order.consumed_qty;
     });
 
@@ -132,9 +128,7 @@ export const fetchFilterTotalWareHouseInventory = async (
 
 export const fetchFilterTotalExpense = async (filterType, year, month, quarter, halfYear) => {
   try {
-    const WareHouseExpenseResponse = await axios.get(
-      `${environment.api_path}${GET_WAREHOUSE_EXPENSE_API}`
-    );
+    const WareHouseExpenseResponse = await axiosInstance.get(GET_WAREHOUSE_EXPENSE_API);
     const WareHouseExpenseList = WareHouseExpenseResponse.data.data;
     const filteredData = filterDataByDate(
       WareHouseExpenseList,
@@ -168,11 +162,9 @@ export const fetchFilterTotalWareHouseInventoryByWarehouseId = async (
   halfYear
 ) => {
   try {
-    const WareHouseOrderResponse = await axios.get(
-      `${environment.api_path}${GET_WAREHOUSEORDER_API}`
-    );
+    const WareHouseOrderResponse = await axiosInstance.get(GET_WAREHOUSEORDER_API);
     const WareHouseOrdersList = WareHouseOrderResponse.data.data;
-    const SellerOrderResponse = await axios.get(`${environment.api_path}${GET_SELLERORDER_API}`);
+    const SellerOrderResponse = await axiosInstance.get(GET_SELLERORDER_API);
     const SellerOrdersList = SellerOrderResponse.data.data;
 
     const filteredWareHouseData = filterDataByDate(
@@ -203,7 +195,7 @@ export const fetchFilterTotalWareHouseInventoryByWarehouseId = async (
     });
 
     filteredSellerData.forEach((order) => {
-      TotalSellerReceived = order.received_qty;
+      TotalSellerReceived += order.received_qty;
       TotalConsumed += order.consumed_qty;
     });
 
@@ -224,9 +216,7 @@ export const fetchFilterTotalExpenseByWareHouseId = async (
   halfYear
 ) => {
   try {
-    const WareHouseExpenseResponse = await axios.get(
-      `${environment.api_path}${GET_WAREHOUSE_EXPENSE_API}`
-    );
+    const WareHouseExpenseResponse = await axiosInstance.get(GET_WAREHOUSE_EXPENSE_API);
     const WareHouseExpenseList = WareHouseExpenseResponse.data.data;
     const filteredData = filterDataByDate(
       WareHouseExpenseList,

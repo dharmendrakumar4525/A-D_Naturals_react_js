@@ -23,6 +23,7 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
 import LocationsTableModal from "layouts/Master/locations/locationsTableModal";
+import { axiosInstance } from "environments/environment";
 
 function LocationsTable() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,7 +47,7 @@ function LocationsTable() {
       return;
     }
     try {
-      await axios.delete(`${environment.api_path}/location/${vendorId}`);
+      await axiosInstance.delete(`/location/${vendorId}`);
       setRowData((prevData) => prevData.filter((vendor) => vendor._id !== vendorId));
       handleError("Location Deleted Sucessfully");
     } catch (error) {
@@ -86,7 +87,7 @@ function LocationsTable() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const locationResponse = await axios.get(`${environment.api_path}/location`);
+        const locationResponse = await axiosInstance.get(`/location`);
         const locationData = locationResponse.data.data;
 
         // const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
@@ -123,9 +124,7 @@ function LocationsTable() {
       const data = getLocalStorageData("A&D_User");
       console.log(data, "permission");
       try {
-        const permissionResponse = await axios.get(
-          `${environment.api_path}/${GET_PERMISSION}${data._id}`
-        );
+        const permissionResponse = await axiosInstance.get(`${GET_PERMISSION}${data._id}`);
         const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
         console.log(permissionData);
         // Check if the permission data contains an object with module name "users"

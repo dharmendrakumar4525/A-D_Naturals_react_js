@@ -29,6 +29,7 @@ import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
 import { Margin } from "@mui/icons-material";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { axiosInstance } from "environments/environment";
 
 function SellersTable() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -52,7 +53,7 @@ function SellersTable() {
       return;
     }
     try {
-      await axios.delete(`${environment.api_path}/${GET_SELLER_API}/${sellerId}`);
+      await axiosInstance.delete(`${GET_SELLER_API}/${sellerId}`);
       setRowData((prevData) => prevData.filter((seller) => seller._id !== sellerId));
       handleError("Seller Deleted Successfully");
     } catch (error) {
@@ -92,13 +93,13 @@ function SellersTable() {
     setLoading(true);
     const fetchData = async () => {
       try {
-        const sellerResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
+        const sellerResponse = await axiosInstance.get(`${GET_SELLER_API}`);
         const sellerData = sellerResponse.data.data;
 
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
 
-        const locationResponse = await axios.get(`${environment.api_path}/${GET_LOCATION_API}`);
+        const locationResponse = await axiosInstance.get(`${GET_LOCATION_API}`);
         const locationData = locationResponse.data.data;
 
         const mappedData = sellerData.map((seller) => {
@@ -141,9 +142,7 @@ function SellersTable() {
       const data = getLocalStorageData("A&D_User");
       console.log(data, "permission");
       try {
-        const permissionResponse = await axios.get(
-          `${environment.api_path}/${GET_PERMISSION}${data._id}`
-        );
+        const permissionResponse = await axiosInstance.get(`${GET_PERMISSION}${data._id}`);
         const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
         console.log(permissionData);
         // Check if the permission data contains an object with module name "users"

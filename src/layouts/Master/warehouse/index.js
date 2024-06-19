@@ -30,6 +30,7 @@ import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
 import { Margin } from "@mui/icons-material";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { axiosInstance } from "environments/environment";
 
 function WarehouseTable() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,7 +54,7 @@ function WarehouseTable() {
       return;
     }
     try {
-      await axios.delete(`${environment.api_path}/warehouse/${warehouseId}`);
+      await axiosInstance.delete(`/warehouse/${warehouseId}`);
       setRowData((prevData) => prevData.filter((warehouse) => warehouse._id !== warehouseId));
       handleError("Warehouse Deleted Sucessfully");
     } catch (error) {
@@ -92,10 +93,10 @@ function WarehouseTable() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
 
-        const locationResponse = await axios.get(`${environment.api_path}/${GET_LOCATION_API}`);
+        const locationResponse = await axiosInstance.get(`${GET_LOCATION_API}`);
         const locationData = locationResponse.data.data;
 
         const mappedData = warehouseData.map((warehouse) => {
@@ -125,9 +126,7 @@ function WarehouseTable() {
       const data = getLocalStorageData("A&D_User");
       console.log(data, "permission");
       try {
-        const permissionResponse = await axios.get(
-          `${environment.api_path}/${GET_PERMISSION}${data._id}`
-        );
+        const permissionResponse = await axiosInstance.get(`${GET_PERMISSION}${data._id}`);
         const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
         console.log(permissionData);
         // Check if the permission data contains an object with module name "users"

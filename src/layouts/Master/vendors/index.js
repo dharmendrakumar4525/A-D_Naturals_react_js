@@ -24,6 +24,7 @@ import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
 import { Margin } from "@mui/icons-material";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { axiosInstance } from "environments/environment";
 
 function VendorsTable() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,7 +48,7 @@ function VendorsTable() {
       return;
     }
     try {
-      await axios.delete(`${environment.api_path}/${GET_VENDOR_API}/${vendorId}`);
+      await axiosInstance.delete(`${GET_VENDOR_API}/${vendorId}`);
       setRowData((prevData) => prevData.filter((vendor) => vendor._id !== vendorId));
       handleError("Vendor Deleted Successfully");
     } catch (error) {
@@ -87,7 +88,7 @@ function VendorsTable() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const vendorResponse = await axios.get(`${environment.api_path}/${GET_VENDOR_API}`);
+        const vendorResponse = await axiosInstance.get(`${GET_VENDOR_API}`);
         const vendorData = vendorResponse.data.data;
 
         setRowData(vendorData);
@@ -107,9 +108,7 @@ function VendorsTable() {
       const data = getLocalStorageData("A&D_User");
       console.log(data, "permission");
       try {
-        const permissionResponse = await axios.get(
-          `${environment.api_path}/${GET_PERMISSION}${data._id}`
-        );
+        const permissionResponse = await axiosInstance.get(`${GET_PERMISSION}${data._id}`);
         const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
         console.log(permissionData);
         // Check if the permission data contains an object with module name "users"

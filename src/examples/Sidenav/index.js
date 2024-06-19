@@ -52,6 +52,7 @@ import {
   setWhiteSidenav,
 } from "context";
 import { Box } from "@mui/material";
+import { axiosInstance } from "environments/environment";
 
 function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const [controller, dispatch] = useMaterialUIController();
@@ -74,7 +75,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const roleResponse = await axios.get(`${environment.api_path}/roles`);
+        const roleResponse = await axiosInstance.get("roles");
         const roleData = roleResponse.data;
 
         const userData = getLocalStorageData("A&D_User");

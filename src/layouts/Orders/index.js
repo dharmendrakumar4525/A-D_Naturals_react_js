@@ -13,6 +13,7 @@ import {
   GET_SELLERORDER_API,
 } from "environments/apiPaths";
 import { environment } from "environments/environment";
+import { axiosInstance } from "environments/environment";
 
 function OrderTable() {
   const [purchaseOrderCount, setPurchaseOrderCount] = useState([]);
@@ -23,16 +24,10 @@ function OrderTable() {
     const fetchCount = async () => {
       try {
         //const sellerOrderResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
-        const purchaseOrderResponse = await axios.get(
-          `${environment.api_path}/${GET_PURCHASEORDER_API}`
-        );
-        const warehouseOrderResponse = await axios.get(
-          `${environment.api_path}/${GET_WAREHOUSEORDER_API}`
-        );
+        const purchaseOrderResponse = await axiosInstance.get(`${GET_PURCHASEORDER_API}`);
+        const warehouseOrderResponse = await axiosInstance.get(`${GET_WAREHOUSEORDER_API}`);
 
-        const sellerOrderResponse = await axios.get(
-          `${environment.api_path}${GET_SELLERORDER_API}`
-        );
+        const sellerOrderResponse = await axiosInstance.get(`${GET_SELLERORDER_API}`);
 
         //const sellerData = sellerOrderResponse.data.length;
         const purchaseData = purchaseOrderResponse.data.data.length;

@@ -17,6 +17,7 @@ import { environment } from "environments/environment";
 import { GET_WAREHOUSE_API, GET_LOCATION_API, GET_USERS_API } from "environments/apiPaths";
 
 import EditIcon from "@mui/icons-material/Edit";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "absolute",
@@ -100,13 +101,13 @@ export default function SellerTableModal({
     setOpen(true);
     if (warehouseId) {
       try {
-        const locationResponse = await axios.get(`${environment.api_path}/${GET_LOCATION_API}`);
+        const locationResponse = await axiosInstance.get(`/${GET_LOCATION_API}`);
         const locationData = locationResponse.data.data;
         setAvailableLoacations(locationData);
 
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axiosInstance.get(`/${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
-        const userResponse = await axios.get(`${environment.api_path}/${GET_USERS_API}`);
+        const userResponse = await axiosInstance.get(`/${GET_USERS_API}`);
         const userData = userResponse.data;
         console.log(userData);
 
@@ -143,13 +144,13 @@ export default function SellerTableModal({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const locationResponse = await axios.get(`${environment.api_path}/${GET_LOCATION_API}`);
+        const locationResponse = await axiosInstance.get(GET_LOCATION_API);
         const locationData = locationResponse.data.data;
         setAvailableLoacations(locationData);
 
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axiosInstance.get(GET_WAREHOUSE_API);
         const warehouseData = warehouseResponse.data.data;
-        const userResponse = await axios.get(`${environment.api_path}/${GET_USERS_API}`);
+        const userResponse = await axiosInstance.get(GET_USERS_API);
         const userData = userResponse.data;
         console.log(userData);
 
@@ -249,7 +250,7 @@ export default function SellerTableModal({
           manager: selectedUser,
         };
         console.log(NewformData);
-        await axios.put(`${environment.api_path}/warehouse/${warehouseId}`, NewformData);
+        await axiosInstance.put(`/warehouse/${warehouseId}`, NewformData);
       } else {
         NewformData = {
           warehouse_name: formData.warehouse_name || "",
@@ -258,7 +259,7 @@ export default function SellerTableModal({
           manager: selectedUser,
         };
 
-        await axios.post(`${environment.api_path}/warehouse`, NewformData);
+        await axiosInstance.post(`/warehouse`, NewformData);
       }
       handleError("Warehouse Updated Sucessfully");
       setIsRefetch(true);

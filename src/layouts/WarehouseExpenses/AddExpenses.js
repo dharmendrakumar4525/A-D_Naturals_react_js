@@ -39,6 +39,7 @@ import { environment } from "environments/environment";
 import { GET_WAREHOUSE_API, GET_EXPENSE_API } from "environments/apiPaths";
 import { formatDate } from "layouts/Inventory/utils";
 import { GET_WAREHOUSE_EXPENSE_API } from "environments/apiPaths";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "relative",
@@ -161,10 +162,10 @@ export default function AddExpense() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
 
-        const expenseResponse = await axios.get(`${environment.api_path}/${GET_EXPENSE_API}`);
+        const expenseResponse = await axiosInstance.get(`${GET_EXPENSE_API}`);
         const expenseData = expenseResponse.data.data;
         setAvailableExpense(expenseData);
         setAvailableWarehouses(warehouseData);
@@ -185,10 +186,7 @@ export default function AddExpense() {
       };
 
       console.log(NewformData);
-      const response = await axios.post(
-        `${environment.api_path}/${GET_WAREHOUSE_EXPENSE_API}`,
-        NewformData
-      );
+      const response = await axiosInstance.post(`${GET_WAREHOUSE_EXPENSE_API}`, NewformData);
 
       //handleError(response);
       console.log(response, "respobse");

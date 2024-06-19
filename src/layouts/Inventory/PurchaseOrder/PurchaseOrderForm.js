@@ -33,7 +33,7 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import Footer from "examples/Footer";
-import { environment } from "environments/environment";
+import { environment, axiosInstance } from "environments/environment";
 import {
   GET_WAREHOUSE_API,
   GET_VENDOR_API,
@@ -158,12 +158,12 @@ export default function PurchaseOrderForm() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
 
-        const vendorResponse = await axios.get(`${environment.api_path}/${GET_VENDOR_API}`);
+        const vendorResponse = await axiosInstance.get(`${GET_VENDOR_API}`);
         const vendorData = vendorResponse.data.data;
-        const orderResponse = await axios.get(`${environment.api_path}/${GET_PURCHASEORDER_API}`);
+        const orderResponse = await axiosInstance.get(`${GET_PURCHASEORDER_API}`);
         const orderData = orderResponse.data.data.length;
 
         setFormData({ ...formData, po_no: orderData + 1 });
@@ -171,7 +171,7 @@ export default function PurchaseOrderForm() {
         setAvailableWarehouses(warehouseData);
         setAvailableVendor(vendorData);
       } catch (error) {
-        console.error("Error fetch data:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
@@ -203,7 +203,7 @@ export default function PurchaseOrderForm() {
       };
 
       console.log(NewformData);
-      await axios.post(`${environment.api_path}/${GET_PURCHASEORDER_API}`, NewformData);
+      await axiosInstance.post(`${GET_PURCHASEORDER_API}`, NewformData);
 
       setSubmitError("Purchase Order Updated Successfully");
       setFormData({
@@ -231,7 +231,6 @@ export default function PurchaseOrderForm() {
       }
     }
   };
-
   //--------------------------Handle Error Display---------------------------
   const handleError = (errorMessage) => {
     setSubmitError(errorMessage);

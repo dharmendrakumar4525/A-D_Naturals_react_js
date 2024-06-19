@@ -12,6 +12,7 @@ import { GET_PERMISSION } from "environments/apiPaths";
 import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { axiosInstance } from "environments/environment";
 
 function InventoryTable() {
   const [createPurchase, setCreatePurchase] = useState({});
@@ -27,9 +28,7 @@ function InventoryTable() {
       const data = getLocalStorageData("A&D_User");
       console.log(data, "permission");
       try {
-        const permissionResponse = await axios.get(
-          `${environment.api_path}/${GET_PERMISSION}${data._id}`
-        );
+        const permissionResponse = await axiosInstance.get(`${GET_PERMISSION}${data._id}`);
         const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
         console.log(permissionData);
         // Check if the permission data contains an object with module name "users"

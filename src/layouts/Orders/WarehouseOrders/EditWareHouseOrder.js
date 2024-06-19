@@ -44,6 +44,7 @@ import {
   GET_WAREHOUSEORDER_API,
 } from "environments/apiPaths";
 import { getWarehouseNameByID } from "../utils";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "relative",
@@ -79,7 +80,7 @@ export default function EditWareHouseOrder() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
         const warehouseName = getWarehouseNameByID(warehouseData, formData.warehouse);
         console.log(warehouseName);
@@ -105,10 +106,7 @@ export default function EditWareHouseOrder() {
     };
 
     try {
-      await axios.put(
-        `${environment.api_path}/${GET_WAREHOUSEORDER_API}/${formData._id}`,
-        newFormData
-      );
+      await axiosInstance.put(`${GET_WAREHOUSEORDER_API}/${formData._id}`, newFormData);
       setSubmitError("WareHouse Order Created Sucessfully");
       setFormData({
         warehouse: "",

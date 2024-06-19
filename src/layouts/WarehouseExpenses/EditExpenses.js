@@ -40,6 +40,7 @@ import {
   GET_EXPENSE_API,
   GET_WAREHOUSE_EXPENSE_API,
 } from "environments/apiPaths";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "relative",
@@ -116,10 +117,10 @@ export default function EditExpense() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
         console.log(warehouseData);
-        const expenseResponse = await axios.get(`${environment.api_path}/${GET_EXPENSE_API}`);
+        const expenseResponse = await axiosInstance.get(`${GET_EXPENSE_API}`);
         const expenseData = expenseResponse.data.data;
         console.log(expenseData);
         setAvailableExpense(expenseData);
@@ -167,10 +168,7 @@ export default function EditExpense() {
       };
 
       console.log(NewformData);
-      await axios.put(
-        `${environment.api_path}/${GET_WAREHOUSE_EXPENSE_API}/${formData._id}`,
-        NewformData
-      );
+      await axiosInstance.put(`${GET_WAREHOUSE_EXPENSE_API}/${formData._id}`, NewformData);
 
       setSubmitError("Expense Updated Successfully");
       setFormData({
