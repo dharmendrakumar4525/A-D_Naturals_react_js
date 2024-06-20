@@ -6,8 +6,8 @@ import axios from "axios";
   encryption: false,
   environmentType: "local",
 
-  api_path: "http://localhost:3000/api/web",
-  api_base_path: "http://localhost:3000",
+  api_path: "https://8anma2kjyp.us-east-1.awsapprunner.com/api/web",
+  api_base_path: "https://8anma2kjyp.us-east-1.awsapprunner.com",
 
   cookiesOptions: {
     storeUnencoded: true,
