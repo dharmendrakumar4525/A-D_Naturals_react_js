@@ -13,6 +13,7 @@ import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import { axiosInstance } from "environments/environment";
+import LoadingOverlay from "validatorsFunctions/LoadingOverlay";
 
 function InventoryTable() {
   const [createPurchase, setCreatePurchase] = useState({});
@@ -21,6 +22,7 @@ function InventoryTable() {
   const [isRefetch, setIsRefetch] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   //-------------------------------- GET PERMISSION Array ------------------------
   useEffect(() => {
@@ -38,8 +40,10 @@ function InventoryTable() {
         setCreateWarehouse(modulePermission ? modulePermission.childList : {});
         modulePermission = permissionData.find((item) => item.moduleName === "SellerOrder");
         setCreateSeller(modulePermission ? modulePermission.childList : {});
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setLoading(false);
       }
     };
 
@@ -57,80 +61,89 @@ function InventoryTable() {
 
   return (
     <DashboardLayout>
-      <DashboardNavbar />
-      <MDBox py={3}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <Link
-                to="/inventory/purchase-order"
-                onClick={(e) => {
-                  if (!handleError("Purchase Order", createPurchase)) e.preventDefault();
-                }}
-              >
-                <ComplexStatisticsCard
-                  color="dark"
-                  icon="weekend"
-                  title="Purchase Order"
-                  percentage={{
-                    color: "success",
-                    label: "Add Purchase Order ",
-                  }}
-                />
-              </Link>
-            </MDBox>
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <Link
-                to="/inventory/warehouse-order"
-                onClick={(e) => {
-                  if (!handleError("Warehouse Order", createWarehouse)) e.preventDefault();
-                }}
-              >
-                <ComplexStatisticsCard
-                  icon="store"
-                  title="Warehouse Order"
-                  percentage={{
-                    color: "success",
-                    label: "Add Warehouse Order",
-                  }}
-                />
-              </Link>
-            </MDBox>
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <Link
-                to="/inventory/pending-seller-order"
-                onClick={(e) => {
-                  if (!handleError("Seller Order", createSeller)) e.preventDefault();
-                }}
-              >
-                <ComplexStatisticsCard
-                  icon="leaderboard"
-                  title="Seller Order"
-                  percentage={{
-                    color: "success",
-                    label: "Add Seller Order",
-                  }}
-                />
-              </Link>
-            </MDBox>
-          </Grid>
-        </Grid>
-      </MDBox>
-      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
-        <MuiAlert
-          elevation={6}
-          variant="filled"
-          onClose={() => setOpenSnackbar(false)}
-          severity="error"
-        >
-          {submitError}
-        </MuiAlert>
-      </Snackbar>
-      <Footer />
+      {loading && <LoadingOverlay />}
+      {!loading && (
+        <>
+          <DashboardNavbar />
+          <MDBox py={3}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6} lg={3}>
+                <MDBox mb={1.5}>
+                  <Link
+                    to="/inventory/purchase-order"
+                    onClick={(e) => {
+                      if (!handleError("Purchase Order", createPurchase)) e.preventDefault();
+                    }}
+                  >
+                    <ComplexStatisticsCard
+                      color="dark"
+                      icon="weekend"
+                      title="Purchase Order"
+                      percentage={{
+                        color: "success",
+                        label: "Add Purchase Order ",
+                      }}
+                    />
+                  </Link>
+                </MDBox>
+              </Grid>
+              <Grid item xs={12} md={6} lg={3}>
+                <MDBox mb={1.5}>
+                  <Link
+                    to="/inventory/warehouse-order"
+                    onClick={(e) => {
+                      if (!handleError("Warehouse Order", createWarehouse)) e.preventDefault();
+                    }}
+                  >
+                    <ComplexStatisticsCard
+                      icon="store"
+                      title="Warehouse Order"
+                      percentage={{
+                        color: "success",
+                        label: "Add Warehouse Order",
+                      }}
+                    />
+                  </Link>
+                </MDBox>
+              </Grid>
+              <Grid item xs={12} md={6} lg={3}>
+                <MDBox mb={1.5}>
+                  <Link
+                    to="/inventory/pending-seller-order"
+                    onClick={(e) => {
+                      if (!handleError("Seller Order", createSeller)) e.preventDefault();
+                    }}
+                  >
+                    <ComplexStatisticsCard
+                      icon="leaderboard"
+                      title="Seller Order"
+                      percentage={{
+                        color: "success",
+                        label: "Add Seller Order",
+                      }}
+                    />
+                  </Link>
+                </MDBox>
+              </Grid>
+            </Grid>
+          </MDBox>
+          <Snackbar
+            open={openSnackbar}
+            autoHideDuration={6000}
+            onClose={() => setOpenSnackbar(false)}
+          >
+            <MuiAlert
+              elevation={6}
+              variant="filled"
+              onClose={() => setOpenSnackbar(false)}
+              severity="error"
+            >
+              {submitError}
+            </MuiAlert>
+          </Snackbar>
+          <Footer />
+        </>
+      )}
     </DashboardLayout>
   );
 }

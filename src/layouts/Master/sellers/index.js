@@ -1,22 +1,8 @@
-// @mui material components
+import React, { useState, useEffect } from "react";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import PropTypes from "prop-types";
-
-// Material Dashboard 2 React components
-import MDBox from "components/MDBox";
-import MDTypography from "components/MDTypography";
-
-import SellerTableModal from "layouts/Master/sellers/sellersTableModal";
-
-// Material Dashboard 2 React example components
-import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
-import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import Footer from "examples/Footer";
-import DataTable from "examples/Tables/DataTable";
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { environment } from "environments/environment";
+import { axiosInstance } from "environments/environment";
 import {
   GET_SELLER_API,
   GET_WAREHOUSE_API,
@@ -26,10 +12,15 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import Loader from "../../../assets/images/Loader.gif";
 import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
-import { Margin } from "@mui/icons-material";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-import { axiosInstance } from "environments/environment";
+import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
+import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import Footer from "examples/Footer";
+import DataTable from "examples/Tables/DataTable";
+import MDBox from "components/MDBox";
+import MDTypography from "components/MDTypography";
+import SellerTableModal from "layouts/Master/sellers/sellersTableModal";
 
 function SellersTable() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,13 +31,14 @@ function SellersTable() {
   const [permission, setPermission] = useState({});
   const [submitError, setSubmitError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
+  const [loadingPermissions, setLoadingPermissions] = useState(true);
 
   const onSearch = (query) => {
     setSearchQuery(query);
   };
 
-  //----------------------------Delete Function---------------------------------
-
+  // Delete Function
   const handleDelete = async (sellerId) => {
     if (permission[3]?.isSelected === false) {
       handleError("You don't have permission to delete");
@@ -66,10 +58,8 @@ function SellersTable() {
     setOpenSnackbar(true);
   };
 
-  //----------------------------Filter Function ---------------------------------
-
+  // Filter Function
   const filterData = () => {
-    console.log(searchQuery, "Here");
     if (!searchQuery) {
       setRowData(originalData);
       return;
@@ -78,7 +68,6 @@ function SellersTable() {
     const filteredData = originalData.filter((seller) =>
       seller.seller_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    console.log(filteredData, "here");
 
     setRowData(filteredData);
   };
@@ -87,11 +76,10 @@ function SellersTable() {
     filterData();
   }, [searchQuery]);
 
-  //----------------------------Fetch Function---------------------------------
-
+  // Fetch Function
   useEffect(() => {
-    setLoading(true);
     const fetchData = async () => {
+      setLoadingData(true);
       try {
         const sellerResponse = await axiosInstance.get(`${GET_SELLER_API}`);
         const sellerData = sellerResponse.data.data;
@@ -103,25 +91,11 @@ function SellersTable() {
         const locationData = locationResponse.data.data;
 
         const mappedData = sellerData.map((seller) => {
-          // const sellerLocation = locationData.find((location) => {
-          //   return location._id === seller.seller_location;
-          // });
-
-          const warehouse = warehouseData.find((warehouse) => {
-            return warehouse._id === seller.warehouse;
-          });
-
-          // let seller_location;
-          // if (sellerLocation && sellerLocation.location_name) {
-          //   seller_location = sellerLocation.location_name;
-          // } else {
-          //   seller_location = "Not Known";
-          // }
+          const warehouse = warehouseData.find((warehouse) => warehouse._id === seller.warehouse);
 
           return {
             ...seller,
             warehouse_name: warehouse ? warehouse.warehouse_name : "Not Known",
-            // seller_location: seller_location,
           };
         });
 
@@ -130,37 +104,38 @@ function SellersTable() {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-      setLoading(false);
+
+      setLoadingData(false);
     };
 
     fetchData();
   }, [isRefetch]);
 
-  //-------------------------------- GET PERMISSION Array ------------------------
+  // Fetch Permission Data
   useEffect(() => {
     const fetchPermissionData = async () => {
+      setLoadingPermissions(true);
       const data = getLocalStorageData("A&D_User");
-      console.log(data, "permission");
       try {
         const permissionResponse = await axiosInstance.get(`${GET_PERMISSION}${data._id}`);
         const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
-        console.log(permissionData);
-        // Check if the permission data contains an object with module name "users"
+
         const modulePermission = permissionData.find((item) => item.moduleName === "Seller");
 
-        // If found, save that object in the permission state
         if (modulePermission) {
           setPermission(modulePermission.childList);
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching permission data:", error);
       }
+      setLoadingPermissions(false);
     };
-
     fetchPermissionData();
   }, [isRefetch]);
 
-  //----------------------------Row Data---------------------------------
+  const isLoading = loadingData || loadingPermissions;
+
+  // Main Component
   const data = {
     columns: [
       { Header: "Name", accessor: "name", width: "45%", align: "left" },
@@ -168,7 +143,7 @@ function SellersTable() {
       { Header: "Action", accessor: "action", align: "center" },
     ],
     rows: rowData.map((seller) => ({
-      name: <Author name={seller.seller_name} loaction={seller.seller_location} />,
+      name: <Author name={seller.seller_name} location={seller.seller_location} />,
       warehouse_location: <Job warehouseName={seller.warehouse_name} />,
       action: (
         <>
@@ -196,7 +171,6 @@ function SellersTable() {
       ),
     })),
   };
-  //----------------------------Main Component---------------------------------
 
   return (
     <DashboardLayout>
@@ -225,22 +199,20 @@ function SellersTable() {
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                {permission[1]?.isSelected === true ? (
-                  loading ? (
-                    <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
-                      <img src={Loader} alt="loading..." />
-                      <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
-                    </MDBox>
-                  ) : (
-                    <DataTable
-                      table={{ columns: data.columns, rows: data.rows }}
-                      isSorted={false}
-                      entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
-                      showTotalEntries={true}
-                      noEndBorder
-                      pagination={{ variant: "contained", color: "info" }}
-                    />
-                  )
+                {isLoading ? (
+                  <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                    <img src={Loader} alt="loading..." />
+                    <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                  </MDBox>
+                ) : permission[1]?.isSelected === true ? (
+                  <DataTable
+                    table={{ columns: data.columns, rows: data.rows }}
+                    isSorted={false}
+                    entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                    showTotalEntries={true}
+                    noEndBorder
+                    pagination={{ variant: "contained", color: "info" }}
+                  />
                 ) : (
                   <MDTypography
                     sx={{
@@ -253,7 +225,7 @@ function SellersTable() {
                       textAlign: "center",
                     }}
                   >
-                    Permission not Granted to View the Sellers
+                    Permission not Granted to View the Locations
                     <MDTypography
                       sx={{
                         fontSize: "16px",

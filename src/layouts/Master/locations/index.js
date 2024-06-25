@@ -30,7 +30,8 @@ function LocationsTable() {
   const [rowData, setRowData] = useState([]);
   const [originalData, setOriginalData] = useState([]);
   const [isRefetch, setIsRefetch] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loadingData, setLoadingData] = useState(true);
+  const [loadingPermissions, setLoadingPermissions] = useState(true);
   const [permission, setPermission] = useState({});
   const [submitError, setSubmitError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -63,7 +64,6 @@ function LocationsTable() {
   //----------------------------Filter Function ---------------------------------
 
   const filterData = () => {
-    console.log(searchQuery, "Here");
     if (!searchQuery) {
       setRowData(originalData);
       return;
@@ -72,8 +72,6 @@ function LocationsTable() {
     const filteredData = originalData.filter((location) =>
       location.location_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    console.log(filteredData, "here");
-
     setRowData(filteredData);
   };
 
@@ -85,34 +83,17 @@ function LocationsTable() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
+      setLoadingData(true);
       try {
         const locationResponse = await axiosInstance.get(`/location`);
         const locationData = locationResponse.data.data;
-
-        // const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
-        // const warehouseData = warehouseResponse.data.data;
-        // console.log("warehouseData", warehouseData);
-
-        // const mappedData = locationData.map((location) => {
-        //   const warehouse = warehouseData.find(
-        //     (warehouse) => warehouse[0]._id === location.warehouse[0]
-        //   );
-        //   console.log("warehouse._id", warehouseData[0]._id);
-        //   console.log("location.warehouse", location.warehouse[0]);
-        //   return {
-        //     ...location,
-        //     warehouse: warehouse ? warehouse.warehouse : "Unknown",
-        //   };
-        // });
-        // console.log("mappedData", mappedData);
 
         setRowData(locationData);
         setOriginalData(locationData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-      setLoading(false);
+      setLoadingData(false);
     };
 
     fetchData();
@@ -121,13 +102,13 @@ function LocationsTable() {
   //-------------------------------- GET PERMISSION Array ------------------------
   useEffect(() => {
     const fetchPermissionData = async () => {
+      setLoadingPermissions(true);
       const data = getLocalStorageData("A&D_User");
-      console.log(data, "permission");
       try {
         const permissionResponse = await axiosInstance.get(`${GET_PERMISSION}${data._id}`);
         const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
-        console.log(permissionData);
-        // Check if the permission data contains an object with module name "users"
+
+        // Check if the permission data contains an object with module name "Location"
         const modulePermission = permissionData.find((item) => item.moduleName === "Location");
 
         // If found, save that object in the permission state
@@ -137,10 +118,13 @@ function LocationsTable() {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+      setLoadingPermissions(false);
     };
 
     fetchPermissionData();
   }, [isRefetch]);
+
+  const isLoading = loadingData || loadingPermissions;
 
   //----------------------------Row Data---------------------------------
   const data = {
@@ -205,22 +189,20 @@ function LocationsTable() {
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                {permission[1]?.isSelected === true ? (
-                  loading ? (
-                    <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
-                      <img src={Loader} alt="loading..." />
-                      <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
-                    </MDBox>
-                  ) : (
-                    <DataTable
-                      table={{ columns: data.columns, rows: data.rows }}
-                      isSorted={false}
-                      entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
-                      showTotalEntries={true}
-                      noEndBorder
-                      pagination={{ variant: "contained", color: "info" }}
-                    />
-                  )
+                {isLoading ? (
+                  <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                    <img src={Loader} alt="loading..." />
+                    <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                  </MDBox>
+                ) : permission[1]?.isSelected === true ? (
+                  <DataTable
+                    table={{ columns: data.columns, rows: data.rows }}
+                    isSorted={false}
+                    entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                    showTotalEntries={true}
+                    noEndBorder
+                    pagination={{ variant: "contained", color: "info" }}
+                  />
                 ) : (
                   <MDTypography
                     sx={{

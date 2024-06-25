@@ -50,6 +50,8 @@ function PurchaseOrderTable() {
   const [permission, setPermission] = useState({});
   const [submitError, setSubmitError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
+  const [loadingPermissions, setLoadingPermissions] = useState(true);
 
   const openFilterModal = () => {
     setIsFilterModalOpen(true);
@@ -160,7 +162,7 @@ function PurchaseOrderTable() {
   //----------------------------Fetch Function---------------------------------
 
   useEffect(() => {
-    setLoading(true);
+    setLoadingData(true);
     const fetchData = async () => {
       try {
         const PurchaseOrderResponse = await axiosInstance.get(`${GET_PURCHASEORDER_API}`);
@@ -212,7 +214,7 @@ function PurchaseOrderTable() {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-      setLoading(false);
+      setLoadingData(false);
     };
 
     fetchData();
@@ -221,6 +223,7 @@ function PurchaseOrderTable() {
   //-------------------------------- GET PERMISSION Array ------------------------
   useEffect(() => {
     const fetchPermissionData = async () => {
+      setLoadingPermissions(true);
       const data = getLocalStorageData("A&D_User");
       console.log(data, "permission");
       try {
@@ -237,10 +240,13 @@ function PurchaseOrderTable() {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+      setLoadingPermissions(false);
     };
 
     fetchPermissionData();
   }, [isRefetch]);
+
+  const isLoading = loadingData || loadingPermissions;
 
   //----------------------------Row Data---------------------------------
   const data = {
@@ -336,22 +342,20 @@ function PurchaseOrderTable() {
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                {permission[1]?.isSelected === true ? (
-                  loading ? (
-                    <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
-                      <img src={Loader} alt="loading..." />
-                      <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
-                    </MDBox>
-                  ) : (
-                    <DataTable
-                      table={{ columns: data.columns, rows: data.rows }}
-                      isSorted={false}
-                      entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
-                      showTotalEntries={true}
-                      noEndBorder
-                      pagination={{ variant: "contained", color: "info" }}
-                    />
-                  )
+                {isLoading ? (
+                  <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                    <img src={Loader} alt="loading..." />
+                    <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                  </MDBox>
+                ) : permission[1]?.isSelected === true ? (
+                  <DataTable
+                    table={{ columns: data.columns, rows: data.rows }}
+                    isSorted={false}
+                    entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                    showTotalEntries={true}
+                    noEndBorder
+                    pagination={{ variant: "contained", color: "info" }}
+                  />
                 ) : (
                   <MDTypography
                     sx={{
@@ -364,7 +368,7 @@ function PurchaseOrderTable() {
                       textAlign: "center",
                     }}
                   >
-                    Permission not Granted to View the Purchase Orders
+                    Permission not Granted to View the Locations
                     <MDTypography
                       sx={{
                         fontSize: "16px",

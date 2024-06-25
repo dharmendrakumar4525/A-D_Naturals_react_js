@@ -41,6 +41,8 @@ function WarehouseTable() {
   const [permission, setPermission] = useState({});
   const [submitError, setSubmitError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
+  const [loadingPermissions, setLoadingPermissions] = useState(true);
 
   const onSearch = (query) => {
     setSearchQuery(query);
@@ -91,7 +93,7 @@ function WarehouseTable() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
+      setLoadingData(true);
       try {
         const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
@@ -114,7 +116,7 @@ function WarehouseTable() {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-      setLoading(false);
+      setLoadingData(false);
     };
 
     fetchData();
@@ -123,6 +125,7 @@ function WarehouseTable() {
   //-------------------------------- GET PERMISSION Array ------------------------
   useEffect(() => {
     const fetchPermissionData = async () => {
+      setLoadingPermissions(true);
       const data = getLocalStorageData("A&D_User");
       console.log(data, "permission");
       try {
@@ -139,10 +142,13 @@ function WarehouseTable() {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+      setLoadingPermissions(false);
     };
 
     fetchPermissionData();
   }, [isRefetch]);
+
+  const isLoading = loadingData || loadingPermissions;
 
   //----------------------------Row Data---------------------------------
   const data = {
@@ -207,22 +213,20 @@ function WarehouseTable() {
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                {permission[1]?.isSelected === true ? (
-                  loading ? (
-                    <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
-                      <img src={Loader} alt="loading..." />
-                      <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
-                    </MDBox>
-                  ) : (
-                    <DataTable
-                      table={{ columns: data.columns, rows: data.rows }}
-                      isSorted={false}
-                      entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
-                      showTotalEntries={true}
-                      noEndBorder
-                      pagination={{ variant: "contained", color: "info" }}
-                    />
-                  )
+                {isLoading ? (
+                  <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                    <img src={Loader} alt="loading..." />
+                    <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                  </MDBox>
+                ) : permission[1]?.isSelected === true ? (
+                  <DataTable
+                    table={{ columns: data.columns, rows: data.rows }}
+                    isSorted={false}
+                    entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                    showTotalEntries={true}
+                    noEndBorder
+                    pagination={{ variant: "contained", color: "info" }}
+                  />
                 ) : (
                   <MDTypography
                     sx={{
@@ -235,7 +239,7 @@ function WarehouseTable() {
                       textAlign: "center",
                     }}
                   >
-                    Permission not Granted to View the Warehouse
+                    Permission not Granted to View the Locations
                     <MDTypography
                       sx={{
                         fontSize: "16px",

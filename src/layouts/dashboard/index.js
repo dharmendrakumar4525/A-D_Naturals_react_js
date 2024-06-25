@@ -40,7 +40,7 @@ import WareHouseModal from "./WareHouseModal";
 import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
 import { getWarehouseNameByID } from "layouts/Orders/utils";
 import FilterModal from "./FilterModal";
-import Loader from "../../assets/images/Loader.gif";
+import LoadingOverlay from "validatorsFunctions/LoadingOverlay"; // Import the LoadingOverlay component
 
 function Dashboard() {
   const [purchaseOrder, setPurchaseOrder] = useState(0);
@@ -58,7 +58,7 @@ function Dashboard() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [user, setUser] = useState("");
   const { sales, tasks } = reportsLineChartData;
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,6 +83,8 @@ function Dashboard() {
         } else {
           setProfit(`${parseFloat(-Profit.toFixed(2))} % Loss`);
         }
+
+        setLoading(false); // Set loading to false after data is fetched
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -229,6 +231,8 @@ function Dashboard() {
         const sellerData = await SellerChartData(purchaseData.costData);
         setSellerChart(sellerData);
         console.log(sellerData, "data");
+
+        setLoading(false); // Set loading to false after data is fetched
       } catch (error) {
         console.error("Error fetching chart data:", error);
       }
@@ -239,207 +243,212 @@ function Dashboard() {
 
   return (
     <DashboardLayout>
-      <DashboardNavbar />
-      <MDBox>
-        <MDTypography
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            width: "95%",
-            marginTop: 5,
-          }}
-        >
-          <MDTypography sx={{ fontSize: 15, marginBottom: 3 }}>
-            {user !== "Warehouse Manager" && (
-              <Button
-                onClick={() => {
-                  setIsWareHouseModalOpen(true);
-                }}
-                variant="contained"
-                sx={{ marginLeft: 2, marginRight: 2 }}
-                color="dark"
-              >
-                Select WareHouse
-              </Button>
-            )}
-            {selectedWarehouse === ""
-              ? "Select the WareHouse*"
-              : `Warehouse : ${getWarehouseNameByID(availableWarehouses, selectedWarehouse)}`}
-          </MDTypography>
-          <MDTypography
-            sx={{
-              fontSize: 12,
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 3,
-              color: "#7b809a",
-            }}
-          >
-            <Button
-              onClick={() => setIsFilterModalOpen(true)}
-              variant="contained"
-              sx={{ marginLeft: 2, marginRight: 2 }}
-              color="dark"
+      {loading && <LoadingOverlay />} {/* Conditionally render the LoadingOverlay */}
+      {!loading && (
+        <>
+          <DashboardNavbar />
+          <MDBox>
+            <MDTypography
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "95%",
+                marginTop: 5,
+              }}
             >
-              Select Filters
-            </Button>
-            Filter by Month/Year
-          </MDTypography>
-        </MDTypography>
-      </MDBox>
-      <FilterModal
-        open={isFilterModalOpen}
-        onClose={() => setIsFilterModalOpen(false)}
-        onFilter={FilterByTime}
-      />
-      <WareHouseModal
-        open={isWareHouseModalOpen}
-        onClose={() => setIsWareHouseModalOpen(false)}
-        filterObjectsByWarehouseId={FilterUsingWarehouse}
-      />
-
-      <MDBox py={3}>
-        <Grid container spacing={3}>
-          {user !== "Warehouse Manager" && selectedWarehouse === "" ? (
-            <Grid item xs={12} md={6} lg={3}>
-              <MDBox mb={1.5}>
-                <ComplexStatisticsCard
+              <MDTypography sx={{ fontSize: 15, marginBottom: 3 }}>
+                {user !== "Warehouse Manager" && (
+                  <Button
+                    onClick={() => {
+                      setIsWareHouseModalOpen(true);
+                    }}
+                    variant="contained"
+                    sx={{ marginLeft: 2, marginRight: 2 }}
+                    color="dark"
+                  >
+                    Select WareHouse
+                  </Button>
+                )}
+                {selectedWarehouse === ""
+                  ? "Select the WareHouse*"
+                  : `Warehouse : ${getWarehouseNameByID(availableWarehouses, selectedWarehouse)}`}
+              </MDTypography>
+              <MDTypography
+                sx={{
+                  fontSize: 12,
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginBottom: 3,
+                  color: "#7b809a",
+                }}
+              >
+                <Button
+                  onClick={() => setIsFilterModalOpen(true)}
+                  variant="contained"
+                  sx={{ marginLeft: 2, marginRight: 2 }}
                   color="dark"
-                  icon="weekend"
-                  title="Total Purchase"
-                  count={purchaseOrder}
-                  percentage={{
-                    label: "Updated Today",
-                  }}
-                />
-              </MDBox>
-            </Grid>
-          ) : (
-            ""
-          )}
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <ComplexStatisticsCard
-                icon="leaderboard"
-                title="Store Inventory"
-                count={warehouseOrder}
-                percentage={{
-                  label: "Updated Today",
-                }}
-              />
-            </MDBox>
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <ComplexStatisticsCard
-                color="success"
-                icon="store"
-                title="Total Sales"
-                count={sellerOrder}
-                percentage={{
-                  label: "Updated Today",
-                }}
-              />
-            </MDBox>
-          </Grid>
+                >
+                  Select Filters
+                </Button>
+                Filter by Month/Year
+              </MDTypography>
+            </MDTypography>
+          </MDBox>
+          <FilterModal
+            open={isFilterModalOpen}
+            onClose={() => setIsFilterModalOpen(false)}
+            onFilter={FilterByTime}
+          />
+          <WareHouseModal
+            open={isWareHouseModalOpen}
+            onClose={() => setIsWareHouseModalOpen(false)}
+            filterObjectsByWarehouseId={FilterUsingWarehouse}
+          />
 
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <ComplexStatisticsCard
-                color="primary"
-                icon="person_add"
-                title="Revenue"
-                count={revenue}
-                percentage={{
-                  color: "success",
-                  amount: `${profit}`,
-                  label: "",
-                }}
-              />
-            </MDBox>
-          </Grid>
-        </Grid>
-        {user !== "Warehouse Manager" && selectedWarehouse === "" ? (
-          <MDBox mt={4.5}>
+          <MDBox py={3}>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6} lg={4}>
-                <MDBox mb={3}>
-                  <ReportsBarChart
-                    color="info"
-                    title="Vendor Purchase"
-                    description="Daily Purchases of Week"
-                    date="Updated Today"
-                    chart={purchaseChart}
+              {user !== "Warehouse Manager" && selectedWarehouse === "" ? (
+                <Grid item xs={12} md={6} lg={3}>
+                  <MDBox mb={1.5}>
+                    <ComplexStatisticsCard
+                      color="dark"
+                      icon="weekend"
+                      title="Total Purchase"
+                      count={purchaseOrder}
+                      percentage={{
+                        label: "Updated Today",
+                      }}
+                    />
+                  </MDBox>
+                </Grid>
+              ) : (
+                ""
+              )}
+              <Grid item xs={12} md={6} lg={3}>
+                <MDBox mb={1.5}>
+                  <ComplexStatisticsCard
+                    icon="leaderboard"
+                    title="Store Inventory"
+                    count={warehouseOrder}
+                    percentage={{
+                      label: "Updated Today",
+                    }}
                   />
                 </MDBox>
               </Grid>
-              <Grid item xs={12} md={6} lg={4}>
-                <MDBox mb={3}>
-                  <ReportsLineChart
+              <Grid item xs={12} md={6} lg={3}>
+                <MDBox mb={1.5}>
+                  <ComplexStatisticsCard
                     color="success"
-                    title="Daily sales"
-                    description="Daily sales of Current Week"
-                    date="updated Today"
-                    chart={sellerChart}
+                    icon="store"
+                    title="Total Sales"
+                    count={sellerOrder}
+                    percentage={{
+                      label: "Updated Today",
+                    }}
                   />
                 </MDBox>
               </Grid>
-              <Grid item xs={12} md={6} lg={4}>
-                <MDBox mb={3}>
-                  <ReportsBarChart
-                    color="secondary"
-                    title="WareHouse Inventory"
-                    description="Daily Warehouse Inventory per Week"
-                    date="Updated Today"
-                    chart={warehouseChart}
+
+              <Grid item xs={12} md={6} lg={3}>
+                <MDBox mb={1.5}>
+                  <ComplexStatisticsCard
+                    color="primary"
+                    icon="person_add"
+                    title="Revenue"
+                    count={revenue}
+                    percentage={{
+                      color: "success",
+                      amount: `${profit}`,
+                      label: "",
+                    }}
                   />
                 </MDBox>
               </Grid>
             </Grid>
+            {user !== "Warehouse Manager" && selectedWarehouse === "" ? (
+              <MDBox mt={4.5}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6} lg={4}>
+                    <MDBox mb={3}>
+                      <ReportsBarChart
+                        color="info"
+                        title="Vendor Purchase"
+                        description="Daily Purchases of Week"
+                        date="Updated Today"
+                        chart={purchaseChart}
+                      />
+                    </MDBox>
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={4}>
+                    <MDBox mb={3}>
+                      <ReportsLineChart
+                        color="success"
+                        title="Daily sales"
+                        description="Daily sales of Current Week"
+                        date="updated Today"
+                        chart={sellerChart}
+                      />
+                    </MDBox>
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={4}>
+                    <MDBox mb={3}>
+                      <ReportsBarChart
+                        color="secondary"
+                        title="WareHouse Inventory"
+                        description="Daily Warehouse Inventory per Week"
+                        date="Updated Today"
+                        chart={warehouseChart}
+                      />
+                    </MDBox>
+                  </Grid>
+                </Grid>
+              </MDBox>
+            ) : (
+              <MDBox mt={4.5}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6} lg={4}>
+                    <MDBox mb={3}>
+                      <ReportsBarChart
+                        color="info"
+                        title="Warehouse Inventory"
+                        description="Daily Inventory of Warehouse"
+                        date="Updated Today"
+                        chart={warehouseChart}
+                      />
+                    </MDBox>
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={4}>
+                    <MDBox mb={3}>
+                      <ReportsLineChart
+                        color="success"
+                        title="Daily sales"
+                        description="Daily sales of WareHouse"
+                        date="updated Today"
+                        chart={sellerChart}
+                      />
+                    </MDBox>
+                  </Grid>
+                  <Grid item xs={12} md={6} lg={4}>
+                    <MDBox mb={3}>
+                      <ReportsLineChart
+                        color="secondary"
+                        title="Sales Revenue"
+                        description="Daily Sales Revenue"
+                        date="Updated Today"
+                        chart={weeklyRevenue}
+                      />
+                    </MDBox>
+                  </Grid>
+                </Grid>
+              </MDBox>
+            )}
           </MDBox>
-        ) : (
-          <MDBox mt={4.5}>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6} lg={4}>
-                <MDBox mb={3}>
-                  <ReportsBarChart
-                    color="info"
-                    title="Warehouse Inventory"
-                    description="Daily Inventory of Warehouse"
-                    date="Updated Today"
-                    chart={warehouseChart}
-                  />
-                </MDBox>
-              </Grid>
-              <Grid item xs={12} md={6} lg={4}>
-                <MDBox mb={3}>
-                  <ReportsLineChart
-                    color="success"
-                    title="Daily sales"
-                    description="Daily sales of WareHouse"
-                    date="updated Today"
-                    chart={sellerChart}
-                  />
-                </MDBox>
-              </Grid>
-              <Grid item xs={12} md={6} lg={4}>
-                <MDBox mb={3}>
-                  <ReportsLineChart
-                    color="secondary"
-                    title="Sales Revenue"
-                    description="Daily Sales Revenue"
-                    date="Updated Today"
-                    chart={weeklyRevenue}
-                  />
-                </MDBox>
-              </Grid>
-            </Grid>
-          </MDBox>
-        )}
-      </MDBox>
-      <Footer />
+          <Footer />
+        </>
+      )}
     </DashboardLayout>
   );
 }

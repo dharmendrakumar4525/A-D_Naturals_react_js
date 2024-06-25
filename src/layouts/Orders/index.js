@@ -14,11 +14,13 @@ import {
 } from "environments/apiPaths";
 import { environment } from "environments/environment";
 import { axiosInstance } from "environments/environment";
+import LoadingOverlay from "validatorsFunctions/LoadingOverlay";
 
 function OrderTable() {
   const [purchaseOrderCount, setPurchaseOrderCount] = useState([]);
   const [sellerOrderCount, setSellerOrderCount] = useState([]);
   const [warehouseOrderCount, setWarehouseOrderCount] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCount = async () => {
@@ -36,8 +38,10 @@ function OrderTable() {
         setSellerOrderCount(SellerData);
         setPurchaseOrderCount(purchaseData);
         setWarehouseOrderCount(warehouseData);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setLoading(false);
       }
     };
 
@@ -46,66 +50,71 @@ function OrderTable() {
 
   return (
     <DashboardLayout>
-      <DashboardNavbar />
-      <MDBox py={3}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <Link to="/view-orders/purchase-orders">
-                <ComplexStatisticsCard
-                  color="primary"
-                  icon="person_add"
-                  title="Purchase Orders"
-                  count={purchaseOrderCount}
-                  percentage={{
-                    color: "success",
-                    amount: "",
-                    label: " Purchase Orders Table",
-                  }}
-                  z
-                />
-              </Link>
-            </MDBox>
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <Link to="/view-orders/warehouse-orders">
-                <ComplexStatisticsCard
-                  color="primary"
-                  icon="person_add"
-                  title="Warehouse Orders"
-                  count={warehouseOrderCount}
-                  percentage={{
-                    color: "success",
-                    amount: "",
-                    label: "Warehouse Orders Table",
-                  }}
-                  z
-                />
-              </Link>
-            </MDBox>
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={31.5}>
-              <Link to="/view-orders/seller-orders">
-                <ComplexStatisticsCard
-                  color="primary"
-                  icon="person_add"
-                  title="Seller Orders"
-                  count={sellerOrderCount}
-                  percentage={{
-                    color: "success",
-                    amount: "",
-                    label: " Sellers Orders Table",
-                  }}
-                  z
-                />
-              </Link>
-            </MDBox>
-          </Grid>
-        </Grid>
-      </MDBox>
-      <Footer />
+      {loading && <LoadingOverlay />}
+      {!loading && (
+        <>
+          <DashboardNavbar />
+          <MDBox py={3}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6} lg={3}>
+                <MDBox mb={1.5}>
+                  <Link to="/view-orders/purchase-orders">
+                    <ComplexStatisticsCard
+                      color="primary"
+                      icon="person_add"
+                      title="Purchase Orders"
+                      count={purchaseOrderCount}
+                      percentage={{
+                        color: "success",
+                        amount: "",
+                        label: " Purchase Orders Table",
+                      }}
+                      z
+                    />
+                  </Link>
+                </MDBox>
+              </Grid>
+              <Grid item xs={12} md={6} lg={3}>
+                <MDBox mb={1.5}>
+                  <Link to="/view-orders/warehouse-orders">
+                    <ComplexStatisticsCard
+                      color="primary"
+                      icon="person_add"
+                      title="Warehouse Orders"
+                      count={warehouseOrderCount}
+                      percentage={{
+                        color: "success",
+                        amount: "",
+                        label: "Warehouse Orders Table",
+                      }}
+                      z
+                    />
+                  </Link>
+                </MDBox>
+              </Grid>
+              <Grid item xs={12} md={6} lg={3}>
+                <MDBox mb={31.5}>
+                  <Link to="/view-orders/seller-orders">
+                    <ComplexStatisticsCard
+                      color="primary"
+                      icon="person_add"
+                      title="Seller Orders"
+                      count={sellerOrderCount}
+                      percentage={{
+                        color: "success",
+                        amount: "",
+                        label: " Sellers Orders Table",
+                      }}
+                      z
+                    />
+                  </Link>
+                </MDBox>
+              </Grid>
+            </Grid>
+          </MDBox>
+          <Footer />
+        </>
+      )}
     </DashboardLayout>
   );
 }

@@ -16,6 +16,7 @@ import {
 } from "environments/apiPaths";
 import { environment } from "environments/environment";
 import { axiosInstance } from "environments/environment";
+import LoadingOverlay from "validatorsFunctions/LoadingOverlay";
 
 function MasterTables() {
   const [locationCount, setLocationCount] = useState([]);
@@ -23,6 +24,7 @@ function MasterTables() {
   const [vendorCount, setVendorCount] = useState([]);
   const [expenseCount, setExpenseCount] = useState([]);
   const [warehouseCount, setWarehouseCount] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCount = async () => {
@@ -44,8 +46,10 @@ function MasterTables() {
         setVendorCount(vendorData);
         setWarehouseCount(warehouseData);
         setExpenseCount(expenseData);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setLoading(false);
       }
     };
 
@@ -54,96 +58,101 @@ function MasterTables() {
 
   return (
     <DashboardLayout>
-      <DashboardNavbar />
-      <MDBox py={3}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <Link to="/master/location">
-                <ComplexStatisticsCard
-                  color="success"
-                  icon="store"
-                  title="Locations"
-                  count={locationCount}
-                  percentage={{
-                    color: "success",
-                    label: "Locations Table",
-                  }}
-                />
-              </Link>
-            </MDBox>
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <Link to="/master/warehouse">
-                <ComplexStatisticsCard
-                  color="dark"
-                  icon="weekend"
-                  title="Warehouses"
-                  count={warehouseCount}
-                  percentage={{
-                    color: "success",
-                    label: "Warehouses",
-                  }}
-                />
-              </Link>
-            </MDBox>
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <Link to="/master/vendors">
-                <ComplexStatisticsCard
-                  icon="leaderboard"
-                  title="Vendors"
-                  count={vendorCount}
-                  percentage={{
-                    color: "success",
-                    // amount: "+3%",
-                    label: "Vendor Table",
-                  }}
-                />
-              </Link>
-            </MDBox>
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <Link to="/master/sellers">
-                <ComplexStatisticsCard
-                  color="primary"
-                  icon="person_add"
-                  title="Sellers"
-                  count={sellerCount}
-                  percentage={{
-                    color: "success",
-                    amount: "",
-                    label: "Sellers Table",
-                  }}
-                  z
-                />
-              </Link>
-            </MDBox>
-          </Grid>
-          <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={1.5}>
-              <Link to="/master/expenses">
-                <ComplexStatisticsCard
-                  color="primary"
-                  icon="person_add"
-                  title="Expenses"
-                  count={expenseCount}
-                  percentage={{
-                    color: "success",
-                    amount: "",
-                    label: "Expenses Table",
-                  }}
-                  z
-                />
-              </Link>
-            </MDBox>
-          </Grid>
-        </Grid>
-      </MDBox>
-      <Footer />
+      {loading && <LoadingOverlay />}
+      {!loading && (
+        <>
+          <DashboardNavbar />
+          <MDBox py={3}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6} lg={3}>
+                <MDBox mb={1.5}>
+                  <Link to="/master/location">
+                    <ComplexStatisticsCard
+                      color="success"
+                      icon="store"
+                      title="Locations"
+                      count={locationCount}
+                      percentage={{
+                        color: "success",
+                        label: "Locations Table",
+                      }}
+                    />
+                  </Link>
+                </MDBox>
+              </Grid>
+              <Grid item xs={12} md={6} lg={3}>
+                <MDBox mb={1.5}>
+                  <Link to="/master/warehouse">
+                    <ComplexStatisticsCard
+                      color="dark"
+                      icon="weekend"
+                      title="Warehouses"
+                      count={warehouseCount}
+                      percentage={{
+                        color: "success",
+                        label: "Warehouses",
+                      }}
+                    />
+                  </Link>
+                </MDBox>
+              </Grid>
+              <Grid item xs={12} md={6} lg={3}>
+                <MDBox mb={1.5}>
+                  <Link to="/master/vendors">
+                    <ComplexStatisticsCard
+                      icon="leaderboard"
+                      title="Vendors"
+                      count={vendorCount}
+                      percentage={{
+                        color: "success",
+                        // amount: "+3%",
+                        label: "Vendor Table",
+                      }}
+                    />
+                  </Link>
+                </MDBox>
+              </Grid>
+              <Grid item xs={12} md={6} lg={3}>
+                <MDBox mb={1.5}>
+                  <Link to="/master/sellers">
+                    <ComplexStatisticsCard
+                      color="primary"
+                      icon="person_add"
+                      title="Sellers"
+                      count={sellerCount}
+                      percentage={{
+                        color: "success",
+                        amount: "",
+                        label: "Sellers Table",
+                      }}
+                      z
+                    />
+                  </Link>
+                </MDBox>
+              </Grid>
+              <Grid item xs={12} md={6} lg={3}>
+                <MDBox mb={1.5}>
+                  <Link to="/master/expenses">
+                    <ComplexStatisticsCard
+                      color="primary"
+                      icon="person_add"
+                      title="Expenses"
+                      count={expenseCount}
+                      percentage={{
+                        color: "success",
+                        amount: "",
+                        label: "Expenses Table",
+                      }}
+                      z
+                    />
+                  </Link>
+                </MDBox>
+              </Grid>
+            </Grid>
+          </MDBox>
+          <Footer />
+        </>
+      )}
     </DashboardLayout>
   );
 }

@@ -30,7 +30,8 @@ function ExpenseTable() {
   const [rowData, setRowData] = useState([]);
   const [originalData, setOriginalData] = useState([]);
   const [isRefetch, setIsRefetch] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loadingExpenses, setLoadingExpenses] = useState(true);
+  const [loadingPermissions, setLoadingPermissions] = useState(true);
   const [permission, setPermission] = useState({});
   const [submitError, setSubmitError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -49,9 +50,9 @@ function ExpenseTable() {
     try {
       await axiosInstance.delete(`${GET_EXPENSE_API}/${expenseId}`);
       setRowData((prevData) => prevData.filter((expense) => expense._id !== expenseId));
-      handleError("Expense Delete Succeslly");
+      handleError("Expense Delete Successfully");
     } catch (error) {
-      console.error("Error deleting seller:", error);
+      console.error("Error deleting expense:", error);
     }
   };
 
@@ -63,7 +64,6 @@ function ExpenseTable() {
   //----------------------------Filter Function ---------------------------------
 
   const filterData = () => {
-    console.log(searchQuery, "Here");
     if (!searchQuery) {
       setRowData(originalData);
       return;
@@ -72,7 +72,6 @@ function ExpenseTable() {
     const filteredData = originalData.filter((expense) =>
       expense.expense_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    console.log(filteredData, "here");
 
     setRowData(filteredData);
   };
@@ -85,7 +84,7 @@ function ExpenseTable() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
+      setLoadingExpenses(true);
       try {
         const expenseResponse = await axiosInstance.get(`${GET_EXPENSE_API}`);
         const expenseResponseData = expenseResponse.data.data;
@@ -93,10 +92,10 @@ function ExpenseTable() {
         setRowData(expenseResponseData);
         setOriginalData(expenseResponseData);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching expense data:", error);
       }
 
-      setLoading(false);
+      setLoadingExpenses(false);
     };
 
     fetchData();
@@ -105,22 +104,22 @@ function ExpenseTable() {
   //-------------------------------- GET PERMISSION Array ------------------------
   useEffect(() => {
     const fetchPermissionData = async () => {
+      setLoadingPermissions(true);
       const data = getLocalStorageData("A&D_User");
-      console.log(data, "permission");
       try {
         const permissionResponse = await axiosInstance.get(`${GET_PERMISSION}${data._id}`);
         const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
-        console.log(permissionData);
-        // Check if the permission data contains an object with module name "users"
+
         const modulePermission = permissionData.find((item) => item.moduleName === "Expense");
 
-        // If found, save that object in the permission state
         if (modulePermission) {
           setPermission(modulePermission.childList);
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching permission data:", error);
       }
+
+      setLoadingPermissions(false);
     };
 
     fetchPermissionData();
@@ -135,31 +134,30 @@ function ExpenseTable() {
     rows: rowData.map((expense) => ({
       name: <Author name={expense.expense_name} />,
       action: (
-        <>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <MDTypography
-              component="a"
-              href="#"
-              variant="caption"
-              color="text"
-              fontWeight="medium"
-              onClick={() => handleDelete(expense._id)}
-              style={{ marginRight: "8px" }}
-            >
-              <DeleteIcon />
-            </MDTypography>
-            <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
-              <ExpenseTableModal
-                expenseId={expense._id}
-                setIsRefetch={setIsRefetch}
-                permission={permission}
-              />
-            </MDTypography>
-          </div>
-        </>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <MDTypography
+            component="a"
+            href="#"
+            variant="caption"
+            color="text"
+            fontWeight="medium"
+            onClick={() => handleDelete(expense._id)}
+            style={{ marginRight: "8px" }}
+          >
+            <DeleteIcon />
+          </MDTypography>
+          <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+            <ExpenseTableModal
+              expenseId={expense._id}
+              setIsRefetch={setIsRefetch}
+              permission={permission}
+            />
+          </MDTypography>
+        </div>
       ),
     })),
   };
+
   //----------------------------Main Component---------------------------------
 
   return (
@@ -190,44 +188,46 @@ function ExpenseTable() {
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                {permission[1]?.isSelected === true ? (
-                  loading ? (
-                    <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
-                      <img src={Loader} alt="loading..." />
-                      <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
-                    </MDBox>
-                  ) : (
-                    <DataTable
-                      table={{ columns: data.columns, rows: data.rows }}
-                      isSorted={false}
-                      entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
-                      showTotalEntries={true}
-                      noEndBorder
-                      pagination={{ variant: "contained", color: "info" }}
-                    />
-                  )
+                {loadingExpenses || loadingPermissions ? (
+                  <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                    <img src={Loader} alt="loading..." />
+                    <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                  </MDBox>
                 ) : (
-                  <MDTypography
-                    sx={{
-                      margin: 10,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      fontSize: "18px",
-                      fontWeight: "bold",
-                      textAlign: "center",
-                    }}
-                  >
-                    Permission not Granted to View the Expenses
-                    <MDTypography
-                      sx={{
-                        fontSize: "16px",
-                        fontWeight: "normal",
-                      }}
-                    >
-                      Contact the Admin for Access
-                    </MDTypography>
-                  </MDTypography>
+                  <>
+                    {permission[1]?.isSelected === true ? (
+                      <DataTable
+                        table={{ columns: data.columns, rows: data.rows }}
+                        isSorted={false}
+                        entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                        showTotalEntries={true}
+                        noEndBorder
+                        pagination={{ variant: "contained", color: "info" }}
+                      />
+                    ) : (
+                      <MDTypography
+                        sx={{
+                          margin: 10,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          fontSize: "18px",
+                          fontWeight: "bold",
+                          textAlign: "center",
+                        }}
+                      >
+                        Permission not Granted to View the Expenses
+                        <MDTypography
+                          sx={{
+                            fontSize: "16px",
+                            fontWeight: "normal",
+                          }}
+                        >
+                          Contact the Admin for Access
+                        </MDTypography>
+                      </MDTypography>
+                    )}
+                  </>
                 )}
               </MDBox>
             </Card>
