@@ -314,7 +314,7 @@ function ManagePermission() {
                   </Button>
                 </MDBox>
               )}
-              {!isLoading ? (
+              {!isLoading && userRole === "SuperAdmin" ? (
                 <MDBox p={2}>
                   <Grid container spacing={2}>
                     {dashboardPermission.map((module) => (
