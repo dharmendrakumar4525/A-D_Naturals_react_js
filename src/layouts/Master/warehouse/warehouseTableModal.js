@@ -1,6 +1,5 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/function-component-definition */
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Box from "@mui/material/Box";
@@ -13,9 +12,7 @@ import { FormControl, FormHelperText } from "@mui/material";
 import Select from "@mui/material/Select";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
-import { environment } from "environments/environment";
 import { GET_WAREHOUSE_API, GET_LOCATION_API, GET_USERS_API } from "environments/apiPaths";
-
 import EditIcon from "@mui/icons-material/Edit";
 import { axiosInstance } from "environments/environment";
 
@@ -70,7 +67,7 @@ export function SelectRole({
   );
 }
 
-export default function SellerTableModal({
+export default function WarehouseTableModal({
   warehouseId = null,
   permission,
   setIsRefetch = () => {},
@@ -79,7 +76,7 @@ export default function SellerTableModal({
   const [selectedLocation, setSelectedLocation] = useState("");
   const [availableLoacations, setAvailableLoacations] = useState([]);
   const [selectedUser, setSelectedUser] = useState("");
-  const [availableUser, setAvailableUsers] = useState("");
+  const [availableUser, setAvailableUsers] = useState([]);
   const [formData, setFormData] = useState({
     warehouse_name: "",
     location_name: "",
@@ -99,22 +96,23 @@ export default function SellerTableModal({
 
   const handleOpen = async () => {
     setOpen(true);
+    console.log("here");
     if (warehouseId) {
+      console.log("there");
       try {
-        const locationResponse = await axiosInstance.get(`/${GET_LOCATION_API}`);
+        const locationResponse = await axiosInstance.get(`${GET_LOCATION_API}`);
         const locationData = locationResponse.data.data;
         setAvailableLoacations(locationData);
 
-        const warehouseResponse = await axiosInstance.get(`/${GET_WAREHOUSE_API}`);
+        const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
         const warehouseData = warehouseResponse.data.data;
-        const userResponse = await axiosInstance.get(`/${GET_USERS_API}`);
-        const userData = userResponse.data;
-        console.log(userData);
 
+        const userResponse = await axiosInstance.get(`${GET_USERS_API}`);
+        const userData = userResponse.data;
         setAvailableUsers(userData);
 
         const warehouse = warehouseData.find((warehouse) => warehouse._id === warehouseId);
-        console.log(warehouse);
+        console.log(warehouse, "doom");
         setSelectedLocation(warehouse ? warehouse.location : "");
         setSelectedUser(warehouse ? warehouse.manager : "");
 
@@ -131,12 +129,6 @@ export default function SellerTableModal({
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-    } else {
-      // Clear form data if there is no warehouseId
-      setFormData({
-        warehouse_name: "",
-        location_name: "",
-      });
     }
   };
 
@@ -148,30 +140,16 @@ export default function SellerTableModal({
         const locationData = locationResponse.data.data;
         setAvailableLoacations(locationData);
 
-        const warehouseResponse = await axiosInstance.get(GET_WAREHOUSE_API);
-        const warehouseData = warehouseResponse.data.data;
         const userResponse = await axiosInstance.get(GET_USERS_API);
         const userData = userResponse.data;
-        console.log(userData);
-
         setAvailableUsers(userData);
-
-        const warehouse = warehouseData.find((warehouse) => warehouse._id === warehouseId);
-        setSelectedUser(warehouse ? warehouse.manager : "");
-
-        console.log(warehouse);
-        setSelectedLocation(warehouse ? warehouse.location : "");
-        setFormData({
-          warehouse_name: warehouse ? warehouse.warehouse_name : "",
-          location_name: warehouse ? warehouse.location_name : "",
-        });
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
-  }, [warehouseId]);
+  }, []);
 
   const handleEditModal = () => {
     if (permission[2]?.isSelected === false) {
@@ -186,7 +164,19 @@ export default function SellerTableModal({
       handleError("You don't have permission to Add Warehouse");
       return;
     }
-    handleOpen();
+    setOpen(true);
+    setFormData({
+      warehouse_name: "",
+      location_name: "",
+      address: {
+        street_address: "",
+        state: "",
+        city: "",
+        zip_code: "",
+      },
+    });
+    setSelectedLocation("");
+    setSelectedUser("");
   };
 
   const handleChangeLoacations = (event) => {
@@ -222,7 +212,6 @@ export default function SellerTableModal({
   };
 
   const handleSubmit = async () => {
-    console.log(formData);
     try {
       if (!formData.warehouse_name.trim()) {
         setWareHouseError("Warehouse Name is required");
@@ -241,27 +230,21 @@ export default function SellerTableModal({
       ) {
         return; // Don't submit if there are validation errors
       }
-      let NewformData;
+
+      const NewformData = {
+        warehouse_name: formData.warehouse_name || "",
+        location: selectedLocation,
+        address: formData.address,
+        manager: selectedUser,
+      };
+
       if (warehouseId) {
-        NewformData = {
-          warehouse_name: formData.warehouse_name || "",
-          location: selectedLocation,
-          address: formData.address,
-          manager: selectedUser,
-        };
-        console.log(NewformData);
         await axiosInstance.put(`/warehouse/${warehouseId}`, NewformData);
       } else {
-        NewformData = {
-          warehouse_name: formData.warehouse_name || "",
-          location: selectedLocation,
-          address: formData.address,
-          manager: selectedUser,
-        };
-
         await axiosInstance.post(`/warehouse`, NewformData);
       }
-      handleError("Warehouse Updated Sucessfully");
+
+      handleError("Warehouse Updated Successfully");
       setIsRefetch(true);
       window.location.reload();
       handleClose();
