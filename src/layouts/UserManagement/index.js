@@ -8,7 +8,8 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { GET_USERS_API, GET_ROLES_API } from "environments/apiPaths";
-import { environment } from "environments/environment";
+//import { environment } from "environments/environment";
+import { axiosInstance } from "environments/environment";
 
 function Tables() {
   const [rolesLength, setRolesLength] = useState([]);
@@ -17,8 +18,8 @@ function Tables() {
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const usersResponse = await axios.get(`${environment.api_path}/${GET_USERS_API}`);
-        const rolesResponse = await axios.get(`${environment.api_path}/${GET_ROLES_API}`);
+        const usersResponse = await axiosInstance.get(GET_USERS_API);
+        const rolesResponse = await axiosInstance.get(GET_ROLES_API);
 
         const usersData = usersResponse.data.length;
         const rolesData = rolesResponse.data.length;
@@ -72,17 +73,19 @@ function Tables() {
           </Grid>
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={31.5}>
-              <ComplexStatisticsCard
-                color="primary"
-                icon="person_add"
-                title="Permissions"
-                count="+91"
-                percentage={{
-                  color: "success",
-                  amount: "",
-                  label: "Manage Permissions ",
-                }}
-              />
+              <Link to="/user-management/role-permissions-management">
+                <ComplexStatisticsCard
+                  color="primary"
+                  icon="person_add"
+                  title="Permissions"
+                  count={"."}
+                  percentage={{
+                    color: "success",
+                    amount: "",
+                    label: "Manage Role Permissions ",
+                  }}
+                />
+              </Link>
             </MDBox>
           </Grid>
         </Grid>

@@ -50,7 +50,24 @@ import SellersTable from "layouts/Master/sellers";
 import VendorsTable from "layouts/Master/vendors";
 import WarehouseTable from "layouts/Master/warehouse";
 import LocationsTable from "layouts/Master/locations";
+import WarehouseOrder from "layouts/Inventory/WarehouseOrder";
+import PendingSellerOrder from "layouts/Inventory/SellerOrder";
+import PurchaseOrder from "layouts/Inventory/PurchaseOrder";
 import { LoginRoute } from "loginRedirect";
+import InventoryTable from "layouts/Inventory";
+import OrderTable from "layouts/Orders";
+import PurchaseOrderTable from "layouts/Orders/PurchaseOrders";
+import SellerOrderTable from "layouts/Orders/SellerOrders";
+import WarehouseOrderTable from "layouts/Orders/WarehouseOrders";
+import EditPurchaseOrder from "layouts/Orders/PurchaseOrders/EditPurchaseOrder";
+import WarehouseOrderForm from "layouts/Inventory/WarehouseOrder/WarehouseOrderForm";
+import EditWareHouseOrder from "layouts/Orders/WarehouseOrders/EditWareHouseOrder";
+import SellerOrderForm from "layouts/Inventory/SellerOrder/CreateSellerOrderForm";
+import ExpenseTable from "layouts/Master/expenses";
+import WareHouseExpenseTable from "layouts/WarehouseExpenses";
+import EditExpense from "layouts/WarehouseExpenses/EditExpenses";
+import AddExpense from "layouts/WarehouseExpenses/AddExpenses";
+import ManagePermission from "layouts/UserManagement/managePermission";
 
 const routes = [
   {
@@ -132,6 +149,19 @@ const routes = [
 
   {
     type: "noCollapse",
+    name: "Expense",
+    key: "expenses",
+    icon: <Icon fontSize="small">table_view</Icon>,
+    route: "/master/expenses",
+    component: (
+      <PrivateRoute>
+        <ExpenseTable />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
     name: "Vendors ",
     key: "vendors",
     icon: <Icon fontSize="small">table_view</Icon>,
@@ -179,6 +209,205 @@ const routes = [
       <LoginRoute>
         <SignIn />
       </LoginRoute>
+    ),
+  },
+
+  {
+    type: "collapse",
+    name: "Inventory",
+    key: "Inventory",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/inventory",
+    component: (
+      <PrivateRoute>
+        <InventoryTable />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "PurchaseOrder",
+    key: "PurchaseOrder",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/inventory/purchase-order",
+    component: (
+      <PrivateRoute>
+        <PurchaseOrder />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "WarehouseOrder",
+    key: "warehouseOrder",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/inventory/warehouse-order",
+    component: (
+      <PrivateRoute>
+        <WarehouseOrder />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "Pending SellerOrder",
+    key: "PendingsellerOrder",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/inventory/pending-seller-order",
+    component: (
+      <PrivateRoute>
+        <PendingSellerOrder />
+      </PrivateRoute>
+    ),
+  },
+  {
+    type: "collapse",
+    name: "Orders",
+    key: "Orders",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/view-orders",
+    component: (
+      <PrivateRoute>
+        <OrderTable />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "PurchaseOrderTable",
+    key: "PurchaseOrderTable",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/view-orders/purchase-orders",
+    component: (
+      <PrivateRoute>
+        <PurchaseOrderTable />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "WarehouseOrderTable",
+    key: "warehouseOrderTable",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/view-orders/warehouse-orders",
+    component: (
+      <PrivateRoute>
+        <WarehouseOrderTable />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "SellerOrderTab;e",
+    key: "sellerOrderTable",
+    icon: <Icon fontSize="small">receipt_long</Icon>,
+    route: "/view-orders/seller-orders",
+    component: (
+      <PrivateRoute>
+        <SellerOrderTable />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "Edit Purchase Order",
+    key: "edit-purchase-order",
+    route: "/view-orders/purchase-orders/edit-purchase-order",
+    component: (
+      <PrivateRoute>
+        <EditPurchaseOrder />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "Create Warehouse Order",
+    key: "create-warehouse-order",
+    route: "/inventory/warehouse-order/create-warehouse-order",
+    component: (
+      <PrivateRoute>
+        <WarehouseOrderForm />
+      </PrivateRoute>
+    ),
+  },
+  {
+    type: "noCollapse",
+    name: "Edit Warehouse Order",
+    key: "edit-warehouse-order",
+    route: "/view-orders/warehouse-orders/edit-warehouse-order",
+    component: (
+      <PrivateRoute>
+        <EditWareHouseOrder />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "Create Seller Order",
+    key: "create-Seller-order",
+    route: "/inventory/pending-seller-order/create-seller-order",
+    component: (
+      <PrivateRoute>
+        <SellerOrderForm />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "collapse",
+    name: "Warehouse Expenses",
+    key: "Warehouse_Expenses",
+    icon: <Icon fontSize="small">table_view</Icon>,
+    route: "/Warehouse-Expenses",
+    component: (
+      <PrivateRoute>
+        <WareHouseExpenseTable />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "Edit WareHouse Expense",
+    key: "edit-wareHouse-expense",
+    route: "/Warehouse-Expenses/edit-wareHouse-expense",
+    component: (
+      <PrivateRoute>
+        <EditExpense />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "Add WareHouse Expense",
+    key: "add-wareHouse-expense",
+    route: "/Warehouse-Expenses/add-wareHouse-expense",
+    component: (
+      <PrivateRoute>
+        <AddExpense />
+      </PrivateRoute>
+    ),
+  },
+
+  {
+    type: "noCollapse",
+    name: "role Permissions Management",
+    key: "role-permissions-management",
+    route: "/user-management/role-permissions-management",
+    component: (
+      <PrivateRoute>
+        <ManagePermission />
+      </PrivateRoute>
     ),
   },
 ];

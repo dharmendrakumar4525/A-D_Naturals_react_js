@@ -38,6 +38,11 @@ import SidenavCollapse from "examples/Sidenav/SidenavCollapse";
 // Custom styles for the Sidenav
 import SidenavRoot from "examples/Sidenav/SidenavRoot";
 import sidenavLogoLabel from "examples/Sidenav/styles/sidenav";
+import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
+import axios from "axios";
+import { GET_PERMISSION } from "environments/apiPaths";
+import { environment } from "environments/environment";
+import { useState } from "react";
 
 // Material Dashboard 2 React context
 import {
@@ -47,12 +52,15 @@ import {
   setWhiteSidenav,
 } from "context";
 import { Box } from "@mui/material";
+import { axiosInstance } from "environments/environment";
 
 function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
   const location = useLocation();
   const collapseName = location.pathname.replace("/", "");
+  const [user, setUser] = useState("");
+  const [role, setRole] = useState("");
 
   let textColor = "white";
 
@@ -63,6 +71,26 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   }
 
   const closeSidenav = () => setMiniSidenav(dispatch, true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const roleResponse = await axiosInstance.get("roles");
+        const roleData = roleResponse.data;
+
+        const userData = getLocalStorageData("A&D_User");
+
+        setUser(userData?.name);
+        const role = roleData.find((role) => role._id === userData.role);
+        console.log(role, "....!");
+        setRole(role?.role);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     // A function that sets the mini state of the sidenav.
@@ -186,7 +214,44 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
         }
       />
       <List>{renderRoutes}</List>
-
+      <MDBox p={2} mt="auto">
+        <MDTypography
+          color={textColor}
+          display="flex"
+          alignItems="center"
+          variant="caption"
+          sx={{ marginBottom: 1, fontSize: 13 }}
+        >
+          <span>User : </span>
+          <MDTypography
+            color={textColor}
+            display="block"
+            variant="caption"
+            fontWeight="bold"
+            sx={{ marginLeft: 2, fontSize: 13 }}
+          >
+            {user}
+          </MDTypography>
+        </MDTypography>
+        <MDTypography
+          color={textColor}
+          display="flex"
+          alignItems="center"
+          variant="caption"
+          sx={{ marginBottom: 1, fontSize: 13 }}
+        >
+          <span> Role : </span>
+          <MDTypography
+            color={textColor}
+            display="block"
+            variant="caption"
+            fontWeight="bold"
+            sx={{ marginLeft: 2, fontSize: 13 }}
+          >
+            {role}
+          </MDTypography>
+        </MDTypography>
+      </MDBox>
       <MDBox p={2} mt="auto" onClick={handleLogout}>
         <MDButton variant="gradient" color={sidenavColor} fullWidth>
           Log Out

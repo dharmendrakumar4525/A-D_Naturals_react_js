@@ -11,11 +11,14 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import { FormControl, FormHelperText } from "@mui/material";
 import Select from "@mui/material/Select";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 import { environment } from "environments/environment";
 import { GET_SELLER_API, GET_WAREHOUSE_API, GET_LOCATION_API } from "environments/apiPaths";
 import { validatePhoneNumber, validateAadhar } from "validatorsFunctions/contactValidators";
 
 import EditIcon from "@mui/icons-material/Edit";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "absolute",
@@ -68,7 +71,7 @@ export function SelectRole({
   );
 }
 
-export default function SellerTableModal({ sellerId = null, setIsRefetch = () => {} }) {
+export default function SellerTableModal({ sellerId = null, permission, setIsRefetch = () => {} }) {
   const [open, setOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [availableLoacations, setAvailableLoacations] = useState([]);
@@ -95,7 +98,7 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
     setOpen(true);
     if (sellerId) {
       try {
-        const sellersResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
+        const sellersResponse = await axiosInstance.get(`/${GET_SELLER_API}`);
         const sellerData = sellersResponse.data.data;
 
         const seller = sellerData.find((seller) => seller._id === sellerId);
@@ -127,15 +130,15 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
     const fetchData = async () => {
       if (sellerId) {
         try {
-          const locationResponse = await axios.get(`${environment.api_path}/${GET_LOCATION_API}`);
+          const locationResponse = await axiosInstance.get(`${GET_LOCATION_API}`);
           const locationData = locationResponse.data.data;
           setAvailableLoacations(locationData);
 
-          const warehouseResponse = await axios.get(`${environment.api_path}/${GET_WAREHOUSE_API}`);
+          const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
           const warehouseData = warehouseResponse.data.data;
           setAvailableWarehouses(warehouseData);
 
-          const sellersResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
+          const sellersResponse = await axiosInstance.get(`${GET_SELLER_API}`);
           const sellerData = sellersResponse.data.data;
 
           const seller = sellerData.find((seller) => seller._id === sellerId);
@@ -147,6 +150,14 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
             warehouse: seller ? seller.warehouse : "",
             aadhar_number: seller ? seller.aadhar_number : "",
           });
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      } else {
+        try {
+          const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
+          const warehouseData = warehouseResponse.data.data;
+          setAvailableWarehouses(warehouseData);
         } catch (error) {
           console.error("Error fetching data:", error);
         }
@@ -181,6 +192,22 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
 
   const handleChangeWarehouse = (event) => {
     setSelectedWarehouse(event.target.value);
+  };
+
+  const handleEditModal = () => {
+    if (permission[2]?.isSelected === false) {
+      handleError("You don't have permission to Edit");
+      return;
+    }
+    handleOpen();
+  };
+
+  const handleAddModal = () => {
+    if (permission[0]?.isSelected === false) {
+      handleError("You don't have permission to Add Seller");
+      return;
+    }
+    handleOpen();
   };
 
   const handleSubmit = async () => {
@@ -220,7 +247,7 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
           warehouse: selectedWarehouse,
           seller_location: formData.seller_location || "",
         };
-        await axios.put(`${environment.api_path}/${GET_SELLER_API}/${sellerId}`, payloadformData);
+        await axiosInstance.put(`${GET_SELLER_API}/${sellerId}`, payloadformData);
       } else {
         payloadformData = {
           seller_name: formData.seller_name || "",
@@ -230,9 +257,10 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
           seller_location: formData.seller_location || "",
         };
 
-        await axios.post(`${environment.api_path}/${GET_SELLER_API}`, payloadformData);
+        await axiosInstance.post(`${GET_SELLER_API}`, payloadformData);
         window.location.reload();
       }
+      handleError("Seller Updated Successfully");
       setIsRefetch(true);
       handleClose();
     } catch (error) {
@@ -267,9 +295,9 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
   return (
     <div>
       {sellerId ? (
-        <EditIcon onClick={handleOpen} />
+        <EditIcon onClick={handleEditModal} />
       ) : (
-        <Button variant="text" style={{ color: "white" }} onClick={handleOpen}>
+        <Button variant="text" style={{ color: "white" }} onClick={handleAddModal}>
           +Add Record
         </Button>
       )}
@@ -362,6 +390,16 @@ export default function SellerTableModal({ sellerId = null, setIsRefetch = () =>
           </FormControl>
         </Box>
       </Modal>
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setOpenSnackbar(false)}
+          severity="error"
+        >
+          {submitError}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 }

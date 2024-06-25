@@ -10,6 +10,8 @@ import TextField from "@mui/material/TextField";
 import { FormControl, FormHelperText } from "@mui/material";
 import { environment } from "environments/environment";
 import { GET_VENDOR_API } from "environments/apiPaths";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 import {
   validatePhoneNumber,
   validateEmail,
@@ -17,6 +19,7 @@ import {
   validatePANNumber,
 } from "validatorsFunctions/contactValidators";
 import EditIcon from "@mui/icons-material/Edit";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "absolute",
@@ -33,7 +36,7 @@ const style = {
   flexDirection: "column",
 };
 
-export default function VendorTableModal({ vendorId = null, setIsRefetch = () => {} }) {
+export default function VendorTableModal({ vendorId = null, permission, setIsRefetch = () => {} }) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const [formData, setFormData] = useState({
@@ -52,11 +55,14 @@ export default function VendorTableModal({ vendorId = null, setIsRefetch = () =>
   const [addressError, setAddressError] = useState("");
   const [gstError, setGstError] = useState("");
   const [panError, setPanError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const vendorResponse = await axios.get(`${environment.api_path}/${GET_VENDOR_API}`);
+        const vendorResponse = await axiosInstance.get(`${GET_VENDOR_API}`);
         const vendorData = vendorResponse.data.data;
 
         const vendor = vendorData.find((vendor) => vendor._id === vendorId);
@@ -64,7 +70,7 @@ export default function VendorTableModal({ vendorId = null, setIsRefetch = () =>
         setFormData({
           vendor_name: vendor ? vendor.vendor_name : "",
           contact_person: vendor ? vendor.contact_person : "",
-          address: vendor ? vendor.address : "",
+          address: vendor ? vendor?.address?.street_address : "",
           email: vendor ? vendor.email : "",
           phone_number: vendor ? vendor.phone_number : 0,
           gst_number: vendor ? vendor.gst_number : "",
@@ -112,17 +118,61 @@ export default function VendorTableModal({ vendorId = null, setIsRefetch = () =>
         return; // Don't submit if there are validation errors
       }
       console.log("here");
+
+      let newFormData = {
+        vendor_name: formData.vendor_name,
+        address: {
+          street_address: formData.address,
+          street_address2: "",
+          state: "",
+          city: "",
+          zip_code: "",
+          country: "",
+        },
+        contact_person: formData.contact_person,
+        email: formData.email,
+        phone_number: formData.phone_number,
+        gst_number: formData.gst_number,
+        pan_number: formData.pan_number,
+      };
       if (vendorId) {
-        await axios.put(`${environment.api_path}/${GET_VENDOR_API}/${vendorId}`, formData);
+        await axiosInstance.put(`${GET_VENDOR_API}/${vendorId}`, newFormData);
       } else {
-        await axios.post(`${environment.api_path}/${GET_VENDOR_API}`, formData);
+        await axiosInstance.post(`${GET_VENDOR_API}`, newFormData);
         window.location.reload();
       }
+      handleError("Vendor Updated Successfully");
       setIsRefetch(true);
       handleClose();
     } catch (error) {
       console.error("Error submitting form:", error);
+      if (error.response && error.response.data && error.response.data.message) {
+        handleError(error.response.data.message);
+      } else {
+        handleError("An error occurred while submitting the form. Please try again later.");
+      }
     }
+  };
+
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
+  };
+
+  const handleEditModal = () => {
+    if (permission[2]?.isSelected === false) {
+      handleError("You don't have permission to Edit");
+      return;
+    }
+    handleOpen();
+  };
+
+  const handleAddModal = () => {
+    if (permission[0]?.isSelected === false) {
+      handleError("You don't have permission to Add Vendors");
+      return;
+    }
+    handleOpen();
   };
 
   const handleInputChange = (event) => {
@@ -183,9 +233,9 @@ export default function VendorTableModal({ vendorId = null, setIsRefetch = () =>
   return (
     <div>
       {vendorId ? (
-        <EditIcon onClick={handleOpen} />
+        <EditIcon onClick={handleEditModal} />
       ) : (
-        <Button variant="text" style={{ color: "white" }} onClick={handleOpen}>
+        <Button variant="text" style={{ color: "white" }} onClick={handleAddModal}>
           +Add Record
         </Button>
       )}
@@ -296,6 +346,16 @@ export default function VendorTableModal({ vendorId = null, setIsRefetch = () =>
           </FormControl>
         </Box>
       </Modal>
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setOpenSnackbar(false)}
+          severity="error"
+        >
+          {submitError}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 }

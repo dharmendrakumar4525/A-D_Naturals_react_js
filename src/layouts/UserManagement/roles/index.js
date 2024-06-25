@@ -16,30 +16,189 @@ Coded by www.creative-tim.com
 // @mui material components
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
+import PropTypes from "prop-types";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
 import RolesTableModal from "layouts/UserManagement/roles/rolesTableModal";
-
 // Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
-
-// Data
-
-import projectsTableData from "layouts/UserManagement/roles/rolesTableData";
-import MDInput from "components/MDInput";
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios"; // Import axios
+import { environment } from "environments/environment"; // Assuming environment is a file that contains environment variables
+import DeleteIcon from "@mui/icons-material/Delete";
+import { GET_ROLES_API, GET_PERMISSION } from "environments/apiPaths";
+import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
+import { Margin } from "@mui/icons-material";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
+import { axiosInstance } from "environments/environment";
+import Loader from "../../../assets/images/Loader.gif";
 
 function RolesTable() {
-  const { columns: pColumns, rows: pRows } = projectsTableData();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [rowData, setRowData] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
+  const [isRefetch, setIsRefetch] = useState(false);
+  const [permission, setPermission] = useState({});
+  const [submitError, setSubmitError] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  const onSearch = (query) => {
+    setSearchQuery(query);
+  };
+
+  //----------------------------Delete Function---------------------------------
+
+  const handleDelete = async (roleId) => {
+    if (permission[3]?.isSelected === false) {
+      handleError("You don't have permission to delete");
+      return;
+    }
+
+    try {
+      await axiosInstance.delete(`${GET_ROLES_API}/${roleId}`);
+      setRowData((prevData) => prevData.filter((role) => role._id !== roleId));
+      handleError("Role Deleted Successully");
+    } catch (error) {
+      console.error("Error deleting role:", error);
+    }
+  };
+
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
+  };
+  //----------------------------Filter Function ---------------------------------
+
+  const filterData = () => {
+    console.log(searchQuery, "Here");
+    if (!searchQuery) {
+      setRowData(originalData);
+      return;
+    }
+
+    const filteredData = originalData.filter((role) =>
+      role.role.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    console.log(filteredData, "here");
+
+    setRowData(filteredData);
+  };
+
+  useEffect(() => {
+    filterData();
+  }, [searchQuery]);
+
+  //----------------------------Fetch Function---------------------------------
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const rolesResponse = await axiosInstance.get(GET_ROLES_API);
+        const rolesData = rolesResponse.data;
+        console.log(rolesData);
+        setRowData(rolesData);
+        setOriginalData(rolesData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [isRefetch]);
+
+  //-------------------------------- GET PERMISSION Array ------------------------
+  useEffect(() => {
+    const fetchPermissionData = async () => {
+      setLoading(true);
+      const data = getLocalStorageData("A&D_User");
+      if (!data || !data._id) {
+        console.error("Invalid user data:", data);
+        return;
+      }
+
+      console.log(data, "permission");
+
+      try {
+        const url = `${GET_PERMISSION}${data._id}`;
+        console.log("Fetching permissions from URL:", url);
+        const permissionResponse = await axiosInstance.get(url);
+
+        console.log("Permission response:", permissionResponse);
+
+        const permissionData = permissionResponse.data.data.permissions[0].ParentChildchecklist;
+        console.log("Permission data:", permissionData);
+
+        // Check if the permission data contains an object with module name "roles"
+        const modulePermission = permissionData.find((item) => item.moduleName === "roles");
+        console.log(modulePermission);
+
+        // If found, save that object in the permission state
+        if (modulePermission) {
+          setPermission(modulePermission.childList);
+          console.log("Module permission found:", modulePermission);
+        } else {
+          console.log("Module permission 'roles' not found.");
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+
+      setLoading(false);
+    };
+
+    fetchPermissionData();
+  }, [isRefetch]);
+
+  //----------------------------Row Data---------------------------------
+  const data = {
+    columns: [
+      { Header: "Role", accessor: "role", width: "30%", align: "left" },
+      { Header: "Action", accessor: "action", align: "center" },
+    ],
+
+    rows: rowData.map((user) => ({
+      role: <Role title={user.role} />,
+      action: (
+        <>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <MDTypography
+              component="a"
+              href="#"
+              variant="caption"
+              color="text"
+              fontWeight="medium"
+              onClick={() => handleDelete(user._id)}
+              style={{ marginRight: "8px" }}
+            >
+              <DeleteIcon />
+            </MDTypography>
+            <MDTypography component="a" href="#" variant="caption" color="text" fontWeight="medium">
+              <RolesTableModal
+                userId={user._id}
+                setIsRefetch={setIsRefetch}
+                permission={permission}
+              />
+            </MDTypography>
+          </div>
+        </>
+      ),
+    })),
+  };
+  //----------------------------Main Component---------------------------------
   return (
     <DashboardLayout>
-      <DashboardNavbar />
+      <DashboardNavbar onSearch={onSearch} />
       <MDBox pt={6} pb={3}>
         <Grid container spacing={6}>
           <Grid item xs={12}>
@@ -60,7 +219,7 @@ function RolesTable() {
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                 >
                   Roles Table
-                  <RolesTableModal />
+                  <RolesTableModal permission={permission} />
                   {/* <MDBox pr={1}>
                     <MDInput
                       style={{ backgroundColor: "white", borderRadius: 8, Text: "white" }}
@@ -73,15 +232,54 @@ function RolesTable() {
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                <DataTable
-                  table={{ columns: pColumns, rows: pRows }}
-                  isSorted={false}
-                  entriesPerPage={false}
-                  showTotalEntries={false}
-                  noEndBorder
-                />
+                {permission[1]?.isSelected === true ? (
+                  <DataTable
+                    table={{ columns: data.columns, rows: data.rows }}
+                    isSorted={false}
+                    entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                    showTotalEntries={true}
+                    noEndBorder
+                    pagination={{ variant: "contained", color: "info" }}
+                  />
+                ) : (
+                  <MDTypography
+                    sx={{
+                      margin: 10,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      fontSize: "18px",
+                      fontWeight: "bold",
+                      textAlign: "center",
+                    }}
+                  >
+                    Permission not Granted to View the Roles
+                    <MDTypography
+                      sx={{
+                        fontSize: "16px",
+                        fontWeight: "normal",
+                      }}
+                    >
+                      Contact the Admin for Access
+                    </MDTypography>
+                  </MDTypography>
+                )}
               </MDBox>
             </Card>
+            <Snackbar
+              open={openSnackbar}
+              autoHideDuration={6000}
+              onClose={() => setOpenSnackbar(false)}
+            >
+              <MuiAlert
+                elevation={6}
+                variant="filled"
+                onClose={() => setOpenSnackbar(false)}
+                severity="error"
+              >
+                {submitError}
+              </MuiAlert>
+            </Snackbar>
           </Grid>
         </Grid>
       </MDBox>
@@ -91,3 +289,16 @@ function RolesTable() {
 }
 
 export default RolesTable;
+
+//----------------------------Roles Component---------------------------------
+const Role = ({ title }) => (
+  <MDBox lineHeight={1} textAlign="left" key={title}>
+    <MDTypography display="block" variant="button" fontWeight="medium">
+      {title}
+    </MDTypography>
+  </MDBox>
+);
+
+Role.propTypes = {
+  title: PropTypes.string.isRequired,
+};

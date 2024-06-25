@@ -7,8 +7,11 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 import { FormControl, FormHelperText } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "absolute",
@@ -25,15 +28,18 @@ const style = {
   flexDirection: "column",
 };
 
-export default function RolesTableModal({ userId = null, setIsRefetch = () => {} }) {
+export default function RolesTableModal({ userId = null, permission, setIsRefetch = () => {} }) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({ role: "" });
   const [roleError, setRoleError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const rolesResponse = await axios.get("http://localhost:3000/api/web/roles");
+        const rolesResponse = await axiosInstance.get("/roles");
         const role = rolesResponse.data.find((role) => role._id === userId);
         setFormData({ role: role ? role.role : "" });
       } catch (error) {
@@ -43,6 +49,26 @@ export default function RolesTableModal({ userId = null, setIsRefetch = () => {}
     fetchData();
   }, [userId]);
 
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
+  };
+
+  const handleEditModal = () => {
+    if (permission[2]?.isSelected === false) {
+      handleError("You don't have permission to Edit");
+      return;
+    }
+    handleOpen();
+  };
+
+  const handleAddModal = () => {
+    if (permission[0]?.isSelected === false) {
+      handleError("You don't have permission to Add Role");
+      return;
+    }
+    handleOpen();
+  };
   const handleSubmit = async () => {
     try {
       if (!formData.role.trim()) {
@@ -50,15 +76,22 @@ export default function RolesTableModal({ userId = null, setIsRefetch = () => {}
         return; // Don't submit if there are validation errors
       }
       const response = await (userId
-        ? axios.put(`http://localhost:3000/api/web/roles/${userId}`, formData)
-        : axios.post("http://localhost:3000/api/web/roles", formData));
+        ? axiosInstance.put(`/roles/${userId}`, formData)
+        : axiosInstance.post("/roles", formData));
 
       setIsRefetch(true);
+
       handleClose();
+      handleError("role Updated Successully");
       setFormData({ role: "" });
       window.location.reload();
     } catch (error) {
       console.error("Error submitting form:", error);
+      if (error.response && error.response.data && error.response.data.message) {
+        handleError(error.response.data.message);
+      } else {
+        handleError("An error occurred while submitting the form. Please try again later.");
+      }
     }
   };
 
@@ -68,9 +101,9 @@ export default function RolesTableModal({ userId = null, setIsRefetch = () => {}
   return (
     <div>
       {userId ? (
-        <EditIcon onClick={handleOpen} />
+        <EditIcon onClick={handleEditModal} />
       ) : (
-        <Button variant="text" style={{ color: "white" }} onClick={handleOpen}>
+        <Button variant="text" style={{ color: "white" }} onClick={handleAddModal}>
           +Add Record
         </Button>
       )}
@@ -106,6 +139,16 @@ export default function RolesTableModal({ userId = null, setIsRefetch = () => {}
           </FormControl>
         </Box>
       </Modal>
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setOpenSnackbar(false)}
+          severity="error"
+        >
+          {submitError}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 }

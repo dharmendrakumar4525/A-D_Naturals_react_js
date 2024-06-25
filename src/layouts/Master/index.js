@@ -7,32 +7,43 @@ import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatist
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { GET_USERS_API, GET_ROLES_API, GET_SELLER_API } from "environments/apiPaths";
+import {
+  GET_SELLER_API,
+  GET_VENDOR_API,
+  GET_LOCATION_API,
+  GET_EXPENSE_API,
+  GET_WAREHOUSE_API,
+} from "environments/apiPaths";
 import { environment } from "environments/environment";
+import { axiosInstance } from "environments/environment";
 
 function MasterTables() {
   const [locationCount, setLocationCount] = useState([]);
   const [sellerCount, setSellerCount] = useState([]);
   const [vendorCount, setVendorCount] = useState([]);
+  const [expenseCount, setExpenseCount] = useState([]);
   const [warehouseCount, setWarehouseCount] = useState([]);
 
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const locationResponse = await axios.get(`${environment.api_path}/location`);
-        const sellerResponse = await axios.get(`${environment.api_path}/${GET_SELLER_API}`);
-        const vendorResponse = await axios.get(`${environment.api_path}/vendor`);
-        const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
+        const locationResponse = await axiosInstance.get(`${GET_LOCATION_API}`);
+        const sellerResponse = await axiosInstance.get(`${GET_SELLER_API}`);
+        const vendorResponse = await axiosInstance.get(`${GET_VENDOR_API}`);
+        const warehouseResponse = await axiosInstance.get(`${GET_WAREHOUSE_API}`);
+        const expenseResponse = await axiosInstance.get(`${GET_EXPENSE_API}`);
 
         const locationData = locationResponse.data.data.length;
         const sellerData = sellerResponse.data.data.length;
         const vendorData = vendorResponse.data.data.length;
         const warehouseData = warehouseResponse.data.data.length;
+        const expenseData = expenseResponse.data.data.length;
 
         setLocationCount(locationData);
         setSellerCount(sellerData);
         setVendorCount(vendorData);
         setWarehouseCount(warehouseData);
+        setExpenseCount(expenseData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -95,7 +106,7 @@ function MasterTables() {
             </MDBox>
           </Grid>
           <Grid item xs={12} md={6} lg={3}>
-            <MDBox mb={31.5}>
+            <MDBox mb={1.5}>
               <Link to="/master/sellers">
                 <ComplexStatisticsCard
                   color="primary"
@@ -106,6 +117,24 @@ function MasterTables() {
                     color: "success",
                     amount: "",
                     label: "Sellers Table",
+                  }}
+                  z
+                />
+              </Link>
+            </MDBox>
+          </Grid>
+          <Grid item xs={12} md={6} lg={3}>
+            <MDBox mb={1.5}>
+              <Link to="/master/expenses">
+                <ComplexStatisticsCard
+                  color="primary"
+                  icon="person_add"
+                  title="Expenses"
+                  count={expenseCount}
+                  percentage={{
+                    color: "success",
+                    amount: "",
+                    label: "Expenses Table",
                   }}
                   z
                 />

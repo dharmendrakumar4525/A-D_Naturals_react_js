@@ -18,6 +18,9 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import { validateEmail, validatePhoneNumber } from "validatorsFunctions/contactValidators";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
+import { axiosInstance } from "environments/environment";
 
 const style = {
   position: "absolute",
@@ -63,7 +66,7 @@ export function SelectRole({ availableRoles, handleChange, selectedRole, roleErr
   );
 }
 
-export default function UserTableModal({ userId = null, setIsRefetch = () => {} }) {
+export default function UserTableModal({ userId = null, permission, setIsRefetch = () => {} }) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
 
@@ -81,15 +84,17 @@ export default function UserTableModal({ userId = null, setIsRefetch = () => {} 
   const [phoneError, setPhoneError] = useState("");
   const [roleError, setRoleError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const rolesResponse = await axios.get("http://localhost:3000/api/web/roles");
+        const rolesResponse = await axiosInstance.get("/roles");
         setAvailableRoles(rolesResponse.data);
 
         if (userId) {
-          const usersResponse = await axios.get("http://localhost:3000/api/web/users");
+          const usersResponse = await axiosInstance.get("/users");
           const user = usersResponse.data.find((user) => user._id === userId);
 
           setSelectedRole(user.role);
@@ -133,6 +138,26 @@ export default function UserTableModal({ userId = null, setIsRefetch = () => {} 
     event.preventDefault();
   };
 
+  const handleError = (errorMessage) => {
+    setSubmitError(errorMessage);
+    setOpenSnackbar(true);
+  };
+  const handleEditModal = () => {
+    if (permission[2]?.isSelected === false) {
+      handleError("You don't have permission to Edit");
+      return;
+    }
+    handleOpen();
+  };
+
+  const handleAddModal = () => {
+    if (permission[0]?.isSelected === false) {
+      handleError("You don't have permission to Add User");
+      return;
+    }
+    handleOpen();
+  };
+
   const handleSubmit = async () => {
     try {
       if (!selectedRole) {
@@ -147,14 +172,10 @@ export default function UserTableModal({ userId = null, setIsRefetch = () => {} 
       if (!validatePhoneNumber(formData.phone)) {
         setPhoneError("Enter a valid 10-digit phone number");
       }
-      if (!formData.password.trim()) {
-        setPasswordError("Password is required");
-      }
 
       if (
         !selectedRole ||
         !formData.name.trim() ||
-        !formData.password.trim() ||
         !validateEmail(formData.email) ||
         !validatePhoneNumber(formData.phone)
       ) {
@@ -169,27 +190,32 @@ export default function UserTableModal({ userId = null, setIsRefetch = () => {} 
           role: selectedRole,
           password: formData.password || "",
         };
-        const response = await axios.put(
-          `http://localhost:3000/api/web/users/${userId}`,
-          formPayload
-        );
+        const response = await axiosInstance.put(`/users/${userId}`, formPayload);
         console.log("responceccccccccccc", response);
       } else {
-        formPayload = {
-          name: formData.name || "",
-          email: formData.email || "",
-          phone: formData.phone || "",
-          role: selectedRole,
-          password: formData.password || "",
-        };
+        if (formData.password === "") {
+          formPayload = {
+            name: formData.name || "",
+            email: formData.email || "",
+            phone: formData.phone || "",
+            role: selectedRole,
+          };
+        } else {
+          formPayload = {
+            name: formData.name || "",
+            email: formData.email || "",
+            phone: formData.phone || "",
+            role: selectedRole,
+            password: formData.password || "",
+          };
+        }
+
         console.log("formPayload", formPayload);
-        const response = await axios.post(
-          "http://localhost:3000/api/web/users/register",
-          formPayload
-        );
+        const response = await axiosInstance.post("/users/register", formPayload);
         window.location.reload();
       }
       setIsRefetch(true);
+      handleError("User Updated Successully");
       handleClose();
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -225,9 +251,9 @@ export default function UserTableModal({ userId = null, setIsRefetch = () => {} 
   return (
     <div>
       {userId ? (
-        <EditIcon onClick={handleOpen} />
+        <EditIcon onClick={handleEditModal} />
       ) : (
-        <Button variant="text" style={{ color: "white" }} onClick={handleOpen}>
+        <Button variant="text" style={{ color: "white" }} onClick={handleAddModal}>
           +Add Record
         </Button>
       )}
@@ -320,6 +346,16 @@ export default function UserTableModal({ userId = null, setIsRefetch = () => {} 
           </FormControl>
         </Box>
       </Modal>
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setOpenSnackbar(false)}
+          severity="error"
+        >
+          {submitError}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 }

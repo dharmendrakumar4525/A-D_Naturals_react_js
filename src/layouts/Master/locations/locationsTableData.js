@@ -10,6 +10,7 @@ import { GET_VENDOR_API } from "environments/apiPaths";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VendorTableModal from "layouts/Master/vendors/vendorsTableModal";
 import LocationsTableModal from "layouts/Master/locations/locationsTableModal";
+import { axiosInstance } from "environments/environment";
 
 export default function data() {
   const [rowData, setRowData] = useState([]);
@@ -18,7 +19,7 @@ export default function data() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const locationResponse = await axios.get(`${environment.api_path}/location`);
+        const locationResponse = await axiosInstance.get(`/location`);
         const locationData = locationResponse.data.data;
 
         // const warehouseResponse = await axios.get(`${environment.api_path}/warehouse`);
@@ -49,7 +50,7 @@ export default function data() {
 
   const handleDelete = async (vendorId) => {
     try {
-      await axios.delete(`${environment.api_path}/location/${vendorId}`);
+      await axiosInstance.delete(`/location/${vendorId}`);
       setRowData((prevData) => prevData.filter((vendor) => vendor._id !== vendorId));
     } catch (error) {
       console.error("Error deleting seller:", error);
