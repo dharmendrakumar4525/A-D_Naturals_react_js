@@ -102,7 +102,7 @@ function WarehouseOrder() {
           );
 
           console.log(matchingWarehouses);
-
+          setWarehouse(matchingWarehouses[0]._id);
           filteredObjects = filteredObjects.filter((object) =>
             object.warehouses.some(
               (warehouse) =>
