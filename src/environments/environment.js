@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const environment = {
+/*export const environment = {
   production: false,
   app_name: "a&d-naturals-local",
   encryption: false,
@@ -17,11 +17,11 @@ export const environment = {
   },
   // request_encode_key: '@#$Gg4sdVV5443g$#TVS@#f3g2&^%JH#2fc2@^%f2f23f#@@#fg',
   // private_key: 'JuYo]&%^%f2f23f#'
-};
-
-/* export const environment = {
-  api_path: "https://8anma2kjyp.us-east-1.awsapprunner.com/api/web",
 }; */
+
+export const environment = {
+  api_path: "https://8anma2kjyp.us-east-1.awsapprunner.com/api/web",
+};
 
 export const getTokenFromStore = () => {
   try {
