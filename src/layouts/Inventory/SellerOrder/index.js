@@ -153,7 +153,7 @@ function PendingSellerOrder() {
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox pt={6} pb={3}>
-        <Grid container spacing={6}>
+        <Grid container spacing={6} sx={{ minHeight: "75vh" }}>
           <Grid item xs={12}>
             <Card>
               <MDBox

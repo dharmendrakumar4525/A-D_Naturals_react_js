@@ -48,7 +48,8 @@ function RolesTable() {
   const [permission, setPermission] = useState({});
   const [submitError, setSubmitError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loadingData, setLoadingData] = useState(true);
+  const [loadingPermissions, setLoadingPermissions] = useState(true);
 
   const onSearch = (query) => {
     setSearchQuery(query);
@@ -100,7 +101,7 @@ function RolesTable() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
+      setLoadingData(true);
       try {
         const rolesResponse = await axiosInstance.get(GET_ROLES_API);
         const rolesData = rolesResponse.data;
@@ -111,7 +112,7 @@ function RolesTable() {
         console.error("Error fetching data:", error);
       }
 
-      setLoading(false);
+      setLoadingData(false);
     };
 
     fetchData();
@@ -120,7 +121,7 @@ function RolesTable() {
   //-------------------------------- GET PERMISSION Array ------------------------
   useEffect(() => {
     const fetchPermissionData = async () => {
-      setLoading(true);
+      setLoadingPermissions(true);
       const data = getLocalStorageData("A&D_User");
       if (!data || !data._id) {
         console.error("Invalid user data:", data);
@@ -154,11 +155,13 @@ function RolesTable() {
         console.error("Error fetching data:", error);
       }
 
-      setLoading(false);
+      setLoadingPermissions(false);
     };
 
     fetchPermissionData();
   }, [isRefetch]);
+
+  const isLoading = loadingData || loadingPermissions;
 
   //----------------------------Row Data---------------------------------
   const data = {
@@ -200,7 +203,7 @@ function RolesTable() {
     <DashboardLayout>
       <DashboardNavbar onSearch={onSearch} />
       <MDBox pt={6} pb={3}>
-        <Grid container spacing={6}>
+        <Grid container spacing={6} sx={{ minHeight: "75vh" }}>
           <Grid item xs={12}>
             <Card>
               <MDBox
@@ -232,7 +235,12 @@ function RolesTable() {
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                {permission[1]?.isSelected === true ? (
+                {isLoading ? (
+                  <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                    <img src={Loader} alt="loading..." />
+                    <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                  </MDBox>
+                ) : permission[1]?.isSelected === true ? (
                   <DataTable
                     table={{ columns: data.columns, rows: data.rows }}
                     isSorted={false}

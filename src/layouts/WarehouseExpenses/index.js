@@ -57,6 +57,8 @@ const WareHouseExpenseTable = () => {
   const [submitError, setSubmitError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [user, setUser] = useState("");
+  const [loadingData, setLoadingData] = useState(true);
+  const [loadingPermissions, setLoadingPermissions] = useState(true);
 
   const openWareHouseFilterModal = () => {
     setIsWareHouseModalOpen(true);
@@ -207,7 +209,7 @@ const WareHouseExpenseTable = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
+      setLoadingData(true);
       try {
         const warehouseExpenseResponse = await axiosInstance.get(`${GET_WAREHOUSE_EXPENSE_API}`);
         const warehouseExpenseList = warehouseExpenseResponse.data.data;
@@ -267,7 +269,7 @@ const WareHouseExpenseTable = () => {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-      setLoading(false);
+      setLoadingData(false);
     };
 
     fetchData();
@@ -276,6 +278,7 @@ const WareHouseExpenseTable = () => {
   //-------------------------------- GET PERMISSION Array ------------------------
   useEffect(() => {
     const fetchPermissionData = async () => {
+      setLoadingPermissions(true);
       const data = getLocalStorageData("A&D_User");
       console.log(data, "permission");
       try {
@@ -294,10 +297,13 @@ const WareHouseExpenseTable = () => {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+      setLoadingPermissions(false);
     };
 
     fetchPermissionData();
   }, [isRefetch]);
+
+  const isLoading = loadingData || loadingPermissions;
 
   //----------------------------------Row Data----------------------------------
 
@@ -335,7 +341,7 @@ const WareHouseExpenseTable = () => {
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox pt={6} pb={3}>
-        <Grid container spacing={6}>
+        <Grid container spacing={6} sx={{ minHeight: "75vh" }}>
           <Grid item xs={12}>
             <Card>
               <MDBox
@@ -422,22 +428,20 @@ const WareHouseExpenseTable = () => {
                     <p style={{ color: "red" }}>{error}</p>
                   </div>
                 )}
-                {permission[1]?.isSelected === true ? (
-                  loading ? (
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                      <img src={Loader} alt="Loading..." />
-                    </div>
-                  ) : (
-                    <MDBox p={2}>
-                      <DataTable
-                        table={data}
-                        isSorted={false}
-                        entriesPerPage={false}
-                        showTotalEntries={false}
-                        noEndBorder
-                      />
-                    </MDBox>
-                  )
+                {isLoading ? (
+                  <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                    <img src={Loader} alt="loading..." />
+                    <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                  </MDBox>
+                ) : permission[1]?.isSelected === true ? (
+                  <DataTable
+                    table={{ columns: data.columns, rows: data.rows }}
+                    isSorted={false}
+                    entriesPerPage={{ defaultValue: 10, entries: [10, 15, 20, 25] }}
+                    showTotalEntries={true}
+                    noEndBorder
+                    pagination={{ variant: "contained", color: "info" }}
+                  />
                 ) : (
                   <MDTypography
                     sx={{
@@ -450,7 +454,7 @@ const WareHouseExpenseTable = () => {
                       textAlign: "center",
                     }}
                   >
-                    Permission not Granted to View the WareHouse Orders
+                    Permission not Granted to View the WareHouse Expenses
                     <MDTypography
                       sx={{
                         fontSize: "16px",

@@ -190,7 +190,7 @@ function WarehouseTable() {
     <DashboardLayout>
       <DashboardNavbar onSearch={onSearch} />
       <MDBox pt={6} pb={3}>
-        <Grid container spacing={6}>
+        <Grid container spacing={6} sx={{ minHeight: "75vh" }}>
           <Grid item xs={12}>
             <Card>
               <MDBox
@@ -239,7 +239,7 @@ function WarehouseTable() {
                       textAlign: "center",
                     }}
                   >
-                    Permission not Granted to View the Locations
+                    Permission not Granted to View the Warehouse
                     <MDTypography
                       sx={{
                         fontSize: "16px",

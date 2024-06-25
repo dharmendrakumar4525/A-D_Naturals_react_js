@@ -30,6 +30,7 @@ import axios from "axios";
 import { GET_ROLES_API } from "environments/apiPaths";
 import { getLocalStorageData } from "validatorsFunctions/HelperFunctions";
 import { axiosInstance } from "environments/environment";
+import Loader from "../../../assets/images/Loader.gif";
 
 function ManagePermission() {
   const [role, setRole] = useState(initialData);
@@ -43,6 +44,8 @@ function ManagePermission() {
   const [submitError, setSubmitError] = useState("");
   const [userRole, setUserRole] = useState("");
   const [isRefetch, setIsRefetch] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
+  const [loadingPermissions, setLoadingPermissions] = useState(true);
 
   const openRoleFilterModal = () => {
     setIsRoleModalOpen(true);
@@ -51,6 +54,7 @@ function ManagePermission() {
   //-------------------------------- GET PERMISSION Array ------------------------
   useEffect(() => {
     const fetchPermissionData = async () => {
+      setLoadingPermissions(true);
       const data = getLocalStorageData("A&D_User");
       console.log(data, "permission");
       try {
@@ -62,6 +66,7 @@ function ManagePermission() {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+      setLoadingPermissions(false);
     };
 
     fetchPermissionData();
@@ -204,11 +209,13 @@ function ManagePermission() {
     }
   };
 
+  const isLoading = loadingPermissions;
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox pt={6} pb={3}>
-        <Grid container spacing={6}>
+        <Grid container spacing={6} sx={{ minHeight: "75vh" }}>
           <Grid item xs={12}>
             <Card>
               <MDBox
@@ -247,7 +254,12 @@ function ManagePermission() {
                 </MDTypography>
               </MDBox>
 
-              {userRole !== "SuperAdmin" ? (
+              {isLoading ? (
+                <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                  <img src={Loader} alt="loading..." />
+                  <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                </MDBox>
+              ) : userRole !== "SuperAdmin" ? (
                 <MDBox p={2} display="flex" justifyContent="center" alignItems="center">
                   <MDTypography
                     sx={{
@@ -302,62 +314,66 @@ function ManagePermission() {
                   </Button>
                 </MDBox>
               )}
-              <MDBox p={2}>
-                <Grid container spacing={2}>
-                  {dashboardPermission.map((module) => (
-                    <Grid item xs={12} sm={6} md={4} key={module.id}>
-                      <Card>
-                        <MDBox p={2}>
-                          <ListItem>
-                            <ListItemIcon>
-                              <Checkbox
-                                size="small"
-                                checked={module.isSelected}
-                                onChange={() => handleParentSelect(module.id)}
-                              />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={capitalizeFirstLetter(module.moduleName)}
-                              primaryTypographyProps={{ fontSize: 13, fontWeight: "bold" }}
-                            />
-                            <Button onClick={() => handleParentDropdownToggle(module.id)}>
-                              {module.isClosed ? (
-                                <img src={arrowUpIcon} alt="Arrow Up" height={10} width={10} />
-                              ) : (
-                                <img
-                                  src={downwardArrowIcon}
-                                  alt="Downward Arrow"
-                                  height={16}
-                                  width={16}
+              {!isLoading ? (
+                <MDBox p={2}>
+                  <Grid container spacing={2}>
+                    {dashboardPermission.map((module) => (
+                      <Grid item xs={12} sm={6} md={4} key={module.id}>
+                        <Card>
+                          <MDBox p={2}>
+                            <ListItem>
+                              <ListItemIcon>
+                                <Checkbox
+                                  size="small"
+                                  checked={module.isSelected}
+                                  onChange={() => handleParentSelect(module.id)}
                                 />
-                              )}
-                            </Button>
-                          </ListItem>
-                          <Collapse in={!module.isClosed} timeout="auto" unmountOnExit>
-                            <List component="div" disablePadding>
-                              {module.childList?.map((child) => (
-                                <ListItem key={child.id} style={{ paddingLeft: 40 }}>
-                                  <ListItemIcon>
-                                    <Checkbox
-                                      size="small"
-                                      checked={child.isSelected}
-                                      onChange={() => handleChildSelect(module.id, child.id)}
-                                    />
-                                  </ListItemIcon>
-                                  <ListItemText
-                                    primary={capitalizeFirstLetter(child.value)}
-                                    primaryTypographyProps={{ fontSize: 13 }}
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={capitalizeFirstLetter(module.moduleName)}
+                                primaryTypographyProps={{ fontSize: 13, fontWeight: "bold" }}
+                              />
+                              <Button onClick={() => handleParentDropdownToggle(module.id)}>
+                                {module.isClosed ? (
+                                  <img src={arrowUpIcon} alt="Arrow Up" height={10} width={10} />
+                                ) : (
+                                  <img
+                                    src={downwardArrowIcon}
+                                    alt="Downward Arrow"
+                                    height={16}
+                                    width={16}
                                   />
-                                </ListItem>
-                              ))}
-                            </List>
-                          </Collapse>
-                        </MDBox>
-                      </Card>
-                    </Grid>
-                  ))}
-                </Grid>
-              </MDBox>
+                                )}
+                              </Button>
+                            </ListItem>
+                            <Collapse in={!module.isClosed} timeout="auto" unmountOnExit>
+                              <List component="div" disablePadding>
+                                {module.childList?.map((child) => (
+                                  <ListItem key={child.id} style={{ paddingLeft: 40 }}>
+                                    <ListItemIcon>
+                                      <Checkbox
+                                        size="small"
+                                        checked={child.isSelected}
+                                        onChange={() => handleChildSelect(module.id, child.id)}
+                                      />
+                                    </ListItemIcon>
+                                    <ListItemText
+                                      primary={capitalizeFirstLetter(child.value)}
+                                      primaryTypographyProps={{ fontSize: 13 }}
+                                    />
+                                  </ListItem>
+                                ))}
+                              </List>
+                            </Collapse>
+                          </MDBox>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </MDBox>
+              ) : (
+                ""
+              )}
               <Snackbar
                 open={openSnackbar}
                 autoHideDuration={6000}

@@ -44,6 +44,7 @@ import { Margin } from "@mui/icons-material";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import { axiosInstance } from "environments/environment";
+import Loader from "../../../assets/images/Loader.gif";
 
 function UserTable() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,6 +54,8 @@ function UserTable() {
   const [permission, setPermission] = useState({});
   const [submitError, setSubmitError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
+  const [loadingPermissions, setLoadingPermissions] = useState(true);
 
   const onSearch = (query) => {
     setSearchQuery(query);
@@ -83,6 +86,7 @@ function UserTable() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoadingData(true);
       try {
         const usersResponse = await axiosInstance.get(GET_USERS_API);
         const usersData = usersResponse.data;
@@ -107,6 +111,7 @@ function UserTable() {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+      setLoadingData(false);
     };
 
     fetchData();
@@ -136,6 +141,7 @@ function UserTable() {
   //-------------------------------- GET PERMISSION Array ------------------------
   useEffect(() => {
     const fetchPermissionData = async () => {
+      setLoadingPermissions(true);
       const data = getLocalStorageData("A&D_User");
       if (!data || !data._id) {
         console.error("Invalid user data:", data);
@@ -167,10 +173,13 @@ function UserTable() {
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+      setLoadingPermissions(false);
     };
 
     fetchPermissionData();
   }, [isRefetch]);
+
+  const isLoading = loadingData || loadingPermissions;
 
   //----------------------------Row Data---------------------------------
 
@@ -217,7 +226,7 @@ function UserTable() {
     <DashboardLayout>
       <DashboardNavbar onSearch={onSearch} />
       <MDBox pt={6} pb={3}>
-        <Grid container spacing={6}>
+        <Grid container spacing={6} sx={{ minHeight: "75vh" }}>
           <Grid item xs={12}>
             <Card>
               <MDBox
@@ -240,7 +249,12 @@ function UserTable() {
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                {permission[1]?.isSelected === true ? (
+                {isLoading ? (
+                  <MDBox mx="auto" my="auto" style={{ textAlign: "center", paddingBottom: 50 }}>
+                    <img src={Loader} alt="loading..." />
+                    <MDTypography sx={{ fontSize: 12 }}>Please Wait....</MDTypography>
+                  </MDBox>
+                ) : permission[1]?.isSelected === true ? (
                   <DataTable
                     table={{ columns: data.columns, rows: data.rows }}
                     isSorted={false}

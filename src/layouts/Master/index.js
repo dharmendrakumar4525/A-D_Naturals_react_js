@@ -62,7 +62,7 @@ function MasterTables() {
       {!loading && (
         <>
           <DashboardNavbar />
-          <MDBox py={3}>
+          <MDBox py={3} sx={{ minHeight: "75vh" }}>
             <Grid container spacing={3}>
               <Grid item xs={12} md={6} lg={3}>
                 <MDBox mb={1.5}>
